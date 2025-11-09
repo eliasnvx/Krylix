@@ -1,0 +1,39 @@
+# Gradle
+.gradle/
+build/
+out/
+bin/
+
+# Runtime
+run/
+logs/
+*.log
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.project
+.classpath
+.settings/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Config
+CLAUDE.local.md
+.windsurf/
+
+# Fabric
+remappedSrc/
+remappedTest/
+
+# Forge
+*.launch
+
+# Misc
+*.class

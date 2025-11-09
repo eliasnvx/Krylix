@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(sed:*)",
+      "Bash(gradle wrapper:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)",
+      "Bash(./gradlew tasks:*)",
+      "Bash(./gradlew projects:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(./gradlew :fabric:build:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(./gradlew :forge:dependencies:*)",
+      "Bash(./gradlew :forge:compileKotlin:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

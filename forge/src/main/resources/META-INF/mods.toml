@@ -1,0 +1,31 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/eliasnvx/Krylix/issues"
+
+[[mods]]
+modId = "krylix"
+version = "${version}"
+displayName = "Krylix"
+displayURL = "https://modrinth.com/mod/krylix"
+logoFile = "icon.png"
+authors = "eliasnvx"
+description = '''
+Next-generation kill feed for Minecraft inspired by CS:GO and Valorant.
+Brings professional FPS-style kill notifications to Minecraft PvP.
+'''
+
+[[dependencies.krylix]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.krylix]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,1.21)"
+ordering = "NONE"
+side = "CLIENT"
+
