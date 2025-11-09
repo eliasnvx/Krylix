@@ -1,129 +1,126 @@
-# Krylix - CS:GO Style Kill Notifications
+## How this template can save you a lot of time
 
-<div align="center">
+_Read the documentation below to know how to initialize your mod from this template. It's fast as you just have to search and replace text._
 
-![Krylix Logo](https://img.shields.io/badge/Krylix-Kill%20Notifications-brightgreen?style=for-the-badge)
-![Minecraft Version](https://img.shields.io/badge/Minecraft-1.20.1-orange?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
-![Mod Loaders](https://img.shields.io/badge/Loaders-Fabric%20%7C%20Forge-purple?style=for-the-badge)
-![Kotlin](https://img.shields.io/badge/Written%20in-Kotlin-7F52FF?style=for-the-badge&logo=kotlin)
+Don't lose time setting up your project, everything is ready is this template, including:
+- 📂 **All your code in the same repository**: Multi module gradle project set up and ready to use including forge, fabric, and common code
+- 🆕 **Gradle 8**: Project is ready and uses Gradle 8, for both fabric and forge
+- ⚙️ **Mod settings**: For both fabric & forge, mod settings template is ready, you just have to define the settings of your mod. Powered by cloth config.
+- 👷 **Continuous integration**: On each push / pull request (customizable), github triggers a workflow that will check and build both fabric and forge. The artefacts are downloadable from the web interface
+- 🚚 **Continuous delivery**: On each tag pushed on the main branch (customizable), github triggers a workflow that builds and automatically creates a release with the artefacts and the changelog.
+- ⏩ **Easy to update**: All the versions are stored in one file [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt). It allows you to update the project without modifying gradle files.
+- ✅ **Linting**: Linting is included and automatically checks your code to make sure you follow kotlin coding conventions. It can be customized as it relies on ktlint.
+- 🇰 **Kotlin**: Be more productive by using Kotlin instead of Java. Try it out, you won't come back to Java.
 
-**A Minecraft mod that brings CS:GO-style real-time kill notifications with smooth animations and full customization to your server.**
+Versions:
+- Minecraft `1.20.1`
+- Gradle `8.1.1`
+- Kotlin `1.9.10`
+More details in [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt)
 
-[![Features](#-features)] [![Installation](#-installation)] [![Configuration](#-configuration)] [![Development](#-development)] [![Contributing](#-contributing)]
+## How to use this template for your mods
 
-</div>
+### 1. Open project with intelliJ
 
-## 🌟 Features
+_It should work with other IDE, it only depends on gradle, I did not test it_
 
-### ⚡ Real-time Kill Notifications
-- **CS:GO Style**: Professional kill feed design inspired by Counter-Strike
-- **Smooth Animations**: Fluid transitions and visual effects
-- **Customizable Display**: Full control over appearance and positioning
-- **Multi-language Support**: Works with different server languages
+Load gradle project, it may crash because of SDK errors, in that case:
+- Make sure that you are using java jdk 17 (File > Project Structure > SDK > Select JDK 17 & language level SDK Default)
+- Make sure that gradle uses jdk 17 (File > Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM: Select Project SDK)
+- Reload gradle project
 
-### 🎨 Visual Customization
-- **Color Schemes**: Choose from predefined themes or create custom colors
-- **Animation Speed**: Adjust notification duration and transition speed
-- **Position Control**: Place notifications anywhere on screen
-- **Font Styling**: Customizable text formatting and sizes
+### 2. Search & remplace:
 
-### ⚙️ Advanced Configuration
-- **Per-Weapon Settings**: Different styles for different weapons
-- **Kill Streak Notifications**: Special effects for multiple kills
-- **Sound Effects**: Optional audio feedback for kills
-- **Filter Options**: Choose which kills to display
+- `{license}`: The mod license. Example: `GNU-LGPL-3.0`
+- `{githubUser}`: The user that owns the github repo. Example: `lilmods`
+- `{githubRepo}`: The name of the github repo. Example: `kotlin-minecraft-mod-template`
+- `{author}`:  The author of the mod. It will be in the mod description (forge & fabric)
+- `modid` **(and not `modId` !!!)**: The mod id. Has to be unique across mc mods. **Make sure to also rename [modid.mixins.json](fabric/src/main/resources/modid.mixins.json)**
+- `com.example.modid`: The mod package. Has to be unique across mc mods to prevent conflits on runtime. Make sure to also rename filenames.
+- `ModName`: The mod name. Make sure to also rename filenames.
+- `ModDescription`: The mod description
+- Replace [LICENSE](LICENSE) file with your license
+- Make sure [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt) is correct.
 
-### 🔧 Developer Friendly
-- **Kotlin Powered**: Modern, type-safe codebase
-- **Multi-Loader Support**: Works on both Fabric and Forge
-- **API Integration**: Easy integration with other mods
-- **Performance Optimized**: Minimal impact on server performance
+Now you can reload gradle project. You should be able to build and run clients. If it's not the case, you renamed
+something wrong. You can see an example here: https://github.com/lilmods/aim-assistance/commit/44743e66f04cde44ad8ccb9490b680069f874c1d.
 
-## 📋 Requirements
+#### Troubleshooting:
 
-- **Minecraft**: 1.20.1
-- **Java**: 17 or higher
-- **Mod Loader**: Fabric Loader 0.14.21+ OR Forge 47.0.19+
-- **Dependencies**: 
-  - Fabric: Fabric API 0.84.0+, Fabric Language Kotlin
-  - Forge: KotlinForForge 4.3.0+
+If the build below says "passing" and it does not work in your environment, it means that you did something wrong because
+the CI built the project properly.
 
-## 🚀 Installation
+- [![build fabric](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-fabric.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-fabric.yml)
+- [![build forge](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-forge.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-forge.yml)
 
-### Fabric Installation
+If you have an issue, it could be because of:
+- Wrong rename: 
+  - Take a look at https://github.com/lilmods/aim-assistance/commit/44743e66f04cde44ad8ccb9490b680069f874c1d to see an example of template init
+  - Open git diff with intelliJ, to check every change you made, something may be wrong
+  - You may have forgotten to rename something (folder or filename for example)
+- Caching issues
+  - Try to stop gradle daemon: `./gradlew --stop`
+  - Try to restart intelliJ: `Files > Invalidate caches & restart`
+  - Delete gradle cache: `~/.gradle/caches` (you will need to re-download everything)
 
-1. **Download the latest Fabric release** from the [Releases page](https://github.com/eliasnvx/Krylix/releases)
-2. **Install Fabric Loader** if not already present
-3. **Install Fabric Language Kotlin** 
-4. **Place the JAR file** in your `mods/` directory
-5. **Install Fabric API** (required dependency)
-6. **Start your game**
+### 3. Updating versions
 
-### Forge Installation
+All the versions of libraries are stored in [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt).
+The file is documented for you to know how to bump versions.
 
-1. **Download the latest Forge release** from the [Releases page](https://github.com/eliasnvx/Krylix/releases)
-2. **Install Forge** 47.0.19 or higher
-3. **Place the JAR file** in your `mods/` directory
-4. **Start your game**
+### 4. Releasing new versions
 
-## 🏗️ Development
+Put a tag on any branch following this format:
+- fabric: `1.0.0-MC1.19.x-fabric`
+- forge: `1.0.0-MC1.19.x-forge`
 
-### Building from Source
+The CD workflows are defined in [.github/workflows](.github/workflows) folder. The release will then be "deployed" on
+github. In the releases tab, you will see your new version with a changelog that contains everything you did put on
+[CHANGELOG-forge.md](CHANGELOG-forge.md) (for forge) and [CHANGELOG-fabric.md](CHANGELOG-fabric.md) (for fabric).
 
-```bash
-# Clone the repository
-git clone https://github.com/eliasnvx/Krylix.git
-cd Krylix
+You can see example of releases published from this repo here https://github.com/lilmods/kotlin-minecraft-mod-template/releases
 
-# Build for all platforms
-./gradlew build
+- [![release fabric](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-fabric.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-fabric.yml)
+- [![release forge](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-forge.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-forge.yml)
 
-# Build specific platform
-./gradlew :fabric:build
-./gradlew :forge:build
-```
+### 5. Put the common code in the common module!
 
-### Project Structure
+If you have common code between forge and fabric, you can put it in the `common` module (you can rename it if you want).
+The code will then be packaged in the `.jar` produced by fabric and forge.
 
-```
-Krylix/
-├── common/              # Shared code between platforms
-│   └── src/main/kotlin/
-├── fabric/              # Fabric-specific implementation
-│   └── src/main/kotlin/
-├── forge/               # Forge-specific implementation
-│   └── src/main/kotlin/
-├── gradle/              # Gradle configuration
-└── build.gradle.kts     # Root build configuration
-```
+### 6. The project has a linter
 
-## 🤝 Contributing
+It forced you to follow some conventions. In the root [build.gradle.kts](build.gradle.kts), `ktlint` is imported. You
+can remove it if you want, in that case, you have to remove the step in the CI workflows 
+[.github/workflows](.github/workflows). There is an IntelliJ plugin to help you. You also can customize the ktlint
+configuration by looking on their official documentation.
 
-We welcome contributions! Please follow these steps:
+### 7. The project automatically builds .jar
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to the branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
+Everytime the CI runs and succeed, produced artefacts are stored in the workflow run summary. For example, as you can
+see in https://github.com/lilmods/kotlin-minecraft-mod-template/actions/runs/5111050925, there is an "Artifacts" block.
+You can click on it to download the produced .jar files.
 
-## 📄 License
+### 8. Fabric specific stuff to know
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project uses Kotlin. However, mixins does not work with Kotlin for now, so it's written in Java. There are some
+examples. The template uses `modmenu` & `cloth-config` to manage the mod settings. Everything is ready.
 
-## 🙏 Credits
+Run client: execute `runClient` gradle task.
 
-- **Lead Developer**: [eliasnvx](https://github.com/eliasnvx)
-- **Contributors**: [All contributors](https://github.com/eliasnvx/Krylix/graphs/contributors)
-- **Inspiration**: CS:GO kill notification system
+### 9. Forge specific stuff to know
 
----
+The template uses `cloth-config` to manage the mod settings. Everything is ready.
 
-<div align="center">
+Run client: execute `runClient` gradle task
 
-**⭐ Star this repository if you find it useful!**
+### 10. Done !
 
-Made with ❤️ and ☕ for the Minecraft community
+You can delete everything in the readme from this line, you are ready to go, have fun :)
 
-</div>
+# ModName
+
+[![build fabric](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-fabric.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-fabric.yml)
+[![build forge](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-forge.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-forge.yml)
+[![release fabric](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-fabric.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-fabric.yml)
+[![release forge](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-forge.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-forge.yml)

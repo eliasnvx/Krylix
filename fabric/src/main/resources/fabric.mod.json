@@ -1,36 +1,43 @@
 {
   "schemaVersion": 1,
-  "id": "krylix",
+  "id": "modid",
   "version": "${version}",
-  "name": "Krylix",
-  "description": "Next-generation kill feed for Minecraft inspired by CS:GO and Valorant",
+
+  "name": "modid",
+  "description": "ModDescription",
   "authors": [
-    "eliasnvx"
+    "{author}"
   ],
   "contact": {
-    "homepage": "https://modrinth.com/mod/krylix",
-    "sources": "https://github.com/eliasnvx/Krylix",
-    "issues": "https://github.com/eliasnvx/Krylix/issues"
+    "homepage": "https://github.com/{githubUser}/{githubRepo}/issues",
+    "sources": "https://github.com/{githubUser}/{githubRepo}"
   },
-  "license": "MIT",
-  "icon": "assets/krylix/icon.png",
-  "environment": "client",
+
+  "license": "{license}",
+  "icon": "assets/modid/icon.png",
+
+  "environment": "*",
   "entrypoints": {
-    "client": [
+    "main": [
       {
         "adapter": "kotlin",
-        "value": "io.eliasnvx.krylix.fabric.KrylixFabric"
+        "value": "com.example.modid.fabric.ModName"
       }
+    ],
+    "modmenu": [
+      "com.example.modid.fabric.config.ModMenu"
     ]
   },
-  "mixins": [],
+  "mixins": [
+    "modid.mixins.json"
+  ],
+
   "depends": {
-    "fabricloader": ">=0.15.0",
-    "fabric-language-kotlin": ">=1.10.0",
-    "minecraft": "~1.20.1",
-    "java": ">=17"
+    "fabricloader": ">=0.14.0",
+    "minecraft": "1.20.1",
+    "java": ">=17",
+    "fabric-language-kotlin": ">=1.10.0+kotlin.1.9.0",
+    "cloth-config": ">=11.0.0"
   },
-  "suggests": {
-    "fabric-api": ">=0.92.0"
-  }
+  "suggests": {}
 }

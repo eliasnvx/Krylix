@@ -1,27 +1,31 @@
 plugins {
-    id("architectury-plugin")
-    id("dev.architectury.loom")
+    kotlin("jvm")
+    kotlin("plugin.serialization") version kotlinVersion
 }
 
-val minecraftVersion = rootProject.property("minecraft_version").toString()
-val kotlinVersion = rootProject.property("kotlin_version").toString()
-val kotlinxSerializationVersion = rootProject.property("kotlinx_serialization_version").toString()
-val kotlinxCoroutinesVersion = rootProject.property("kotlinx_coroutines_version").toString()
-val architecturyVersion = rootProject.property("architectury_version").toString()
+group = "$modGroup.common.krylix"
+version = coreVersion
 
-architectury {
-    common(rootProject.property("enabled_platforms").toString().split(","))
+repositories {
+    mavenCentral()
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
-    minecraft("com.mojang:minecraft:$minecraftVersion")
-    mappings(loom.officialMojangMappings())
+    // Logging
+    implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
+    
+    // Kotlinx Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+}
 
-    // Architectury
-    modImplementation("dev.architectury:architectury:$architecturyVersion")
-
-    // Kotlin
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion")
+tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = jvmTarget
+    }
 }

@@ -1,38 +1,68 @@
 plugins {
-    id("architectury-plugin")
-    id("dev.architectury.loom")
+    id("fabric-loom") version loomVersion
+    kotlin("jvm")
+    `maven-publish`
+    java
 }
 
-val minecraftVersion = rootProject.property("minecraft_version").toString()
-val fabricLoaderVersion = rootProject.property("fabric_loader_version").toString()
-val fabricApiVersion = rootProject.property("fabric_api_version").toString()
-val fabricKotlinVersion = rootProject.property("fabric_kotlin_version").toString()
-val architecturyVersion = rootProject.property("architectury_version").toString()
+base {
+    archivesName.set(modId)
+}
 
-architectury {
-    platformSetupLoomIde()
-    fabric()
+group = "$modGroup.fabric"
+version = "$fabricModVersion-fabric"
+
+repositories {
+    maven("https://maven.shedaniel.me/") // cloth config
+    maven("https://maven.terraformersmc.com/releases/") // mod menu
 }
 
 dependencies {
+    compileOnly(project(":common"))
     minecraft("com.mojang:minecraft:$minecraftVersion")
-    mappings(loom.officialMojangMappings())
-
-    modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
-    modApi("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
-    modApi("dev.architectury:architectury-fabric:$architecturyVersion")
-
-    // Fabric Language Kotlin
+    mappings("net.fabricmc:yarn:$yarnMappings:v2")
+    modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
-
-    // Common
-    implementation(project(":common"))
+    modApi("me.shedaniel.cloth:cloth-config-fabric:$clothConfigVersion") {
+        exclude("net.fabricmc.fabric-api")
+    }
+    modApi("com.terraformersmc:modmenu:$modMenuVersion")
 }
 
-tasks.processResources {
-    inputs.property("version", project.version)
+sourceSets {
+    main {
+        java {
+            srcDir(project(":common").sourceSets.main.get().java)
+        }
 
-    filesMatching("fabric.mod.json") {
-        expand("version" to project.version)
+        kotlin {
+            srcDir(project(":common").sourceSets.main.get().kotlin)
+        }
+
+        resources {
+            srcDir(project(":common").sourceSets.main.get().resources)
+        }
     }
+}
+
+tasks {
+    processResources {
+        inputs.property("version", project.version)
+        filesMatching("fabric.mod.json") {
+            expand(mutableMapOf("version" to project.version))
+        }
+    }
+
+    jar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        from("LICENSE")
+    }
+
+    compileKotlin {
+        kotlinOptions.jvmTarget = jvmTarget
+    }
+}
+
+java {
+    withSourcesJar()
 }

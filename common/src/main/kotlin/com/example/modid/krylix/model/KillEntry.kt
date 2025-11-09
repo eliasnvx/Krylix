@@ -1,22 +1,22 @@
-package io.eliasnvx.krylix.model
+package com.example.modid.krylix.model
 
 import kotlinx.serialization.Serializable
-import net.minecraft.world.item.ItemStack
 
 /**
- * Представляет запись о убийстве в kill feed
+ * Представляет запись о убийстве в kill feed (platform-agnostic версия)
  *
  * @property killerName Имя убийцы (может быть null для environmental deaths)
  * @property victimName Имя жертвы
- * @property weapon ItemStack оружия/инструмента (может быть AIR для голых рук)
+ * @param weaponName Название оружия/инструмента (строковое представление)
  * @property distance Дистанция убийства в блоках (null если не применимо)
  * @property timestamp Время создания записи в миллисекундах
  * @property isHeadshot Флаг для headshot убийств (для будущего расширения)
  */
+@Serializable
 data class KillEntry(
     val killerName: String?,
     val victimName: String,
-    val weapon: ItemStack,
+    val weaponName: String,
     val distance: Double? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val isHeadshot: Boolean = false

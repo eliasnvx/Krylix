@@ -1,4 +1,4 @@
-package io.eliasnvx.krylix
+package com.example.modid.krylix
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger

@@ -1,36 +1,30 @@
+
 import java.text.SimpleDateFormat
 import java.util.*
 
-val mavenGroup = rootProject.property("maven_group").toString()
-val modVersion = rootProject.property("mod_version").toString()
-val modId = rootProject.property("mod_id").toString()
-val minecraftVersion = rootProject.property("minecraft_version").toString()
-val forgeVersion = rootProject.property("forge_version").toString()
-val kotlinVersion = rootProject.property("kotlin_version").toString()
-
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinGradlePlugin")
     }
 }
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.22"
-    id("net.minecraftforge.gradle") version "[6.0,6.2)"
+    id("org.jetbrains.kotlin.jvm") version kotlinVersion
+    id("net.minecraftforge.gradle") version forgeGradlePlugin
 }
 
-group = "$mavenGroup.forge"
-version = "$modVersion-forge"
+group = "$modGroup.forge"
+version = "$forgeModVersion-forge"
 
 repositories {
-    maven("https://maven.minecraftforge.net/") // Forge maven
     maven("https://thedarkcolour.github.io/KotlinForForge/") // Kotlin for Forge
     maven("https://maven.shedaniel.me/") // Cloth config
 }
 
 dependencies {
-    minecraft("net.minecraftforge:forge:$forgeVersion")
-    implementation("thedarkcolour:kotlinforforge:4.3.0")
+    minecraft("net.minecraftforge:forge:$minecraftVersion-$forgeVersion")
+    implementation("thedarkcolour:kotlinforforge:$kotlinForForge")
+    api(fg.deobf("me.shedaniel.cloth:cloth-config-forge:$clothConfigVersion"))
     compileOnly(project(":common"))
 }
 
@@ -69,7 +63,7 @@ sourceSets {
 }
 
 tasks {
-    val javaVersion = JavaVersion.valueOf("VERSION_17")
+    val javaVersion = JavaVersion.valueOf("VERSION_$jvmTarget")
     compileJava {
         options.encoding = "UTF-8"
         sourceCompatibility = javaVersion.toString()
