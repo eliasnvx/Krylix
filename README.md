@@ -1,126 +1,228 @@
-## How this template can save you a lot of time
+# Krylix - Advanced Kill Feed Mod
 
-_Read the documentation below to know how to initialize your mod from this template. It's fast as you just have to search and replace text._
+<div align="center">
 
-Don't lose time setting up your project, everything is ready is this template, including:
-- 📂 **All your code in the same repository**: Multi module gradle project set up and ready to use including forge, fabric, and common code
-- 🆕 **Gradle 8**: Project is ready and uses Gradle 8, for both fabric and forge
-- ⚙️ **Mod settings**: For both fabric & forge, mod settings template is ready, you just have to define the settings of your mod. Powered by cloth config.
-- 👷 **Continuous integration**: On each push / pull request (customizable), github triggers a workflow that will check and build both fabric and forge. The artefacts are downloadable from the web interface
-- 🚚 **Continuous delivery**: On each tag pushed on the main branch (customizable), github triggers a workflow that builds and automatically creates a release with the artefacts and the changelog.
-- ⏩ **Easy to update**: All the versions are stored in one file [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt). It allows you to update the project without modifying gradle files.
-- ✅ **Linting**: Linting is included and automatically checks your code to make sure you follow kotlin coding conventions. It can be customized as it relies on ktlint.
-- 🇰 **Kotlin**: Be more productive by using Kotlin instead of Java. Try it out, you won't come back to Java.
+![Krylix Logo](https://img.shields.io/badge/Krylix-Kill%20Feed%20HUD-brightgreen?style=for-the-badge)
+![Minecraft Version](https://img.shields.io/badge/Minecraft-1.20.1-orange?style=for-the-badge)
+![Forge](https://img.shields.io/badge/Forge-47.1.0-red?style=for-the-badge)
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9.10-purple?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
-Versions:
-- Minecraft `1.20.1`
-- Gradle `8.1.1`
-- Kotlin `1.9.10`
-More details in [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt)
+**A modern, feature-rich kill feed HUD mod for Minecraft Forge that displays player kills with style, animations, and kill streak tracking.**
 
-## How to use this template for your mods
+</div>
 
-### 1. Open project with intelliJ
+## ✨ Features
 
-_It should work with other IDE, it only depends on gradle, I did not test it_
+### 🎯 Kill Feed Display
+- **Horizontal Layout**: Clean, modern kill feed in the top-right corner
+- **Player Heads**: Shows actual player skins with correct rendering
+- **Mob Heads**: Displays 30+ mob textures with proper UV mapping
+- **Weapon Icons**: Animated weapon display with smooth bobbing effect
+- **Health Display**: Shows killer's remaining HP
+- **Distance Tracking**: Records kill distance for each entry
+- **15-Second Display**: Entries fade out smoothly after 15 seconds
 
-Load gradle project, it may crash because of SDK errors, in that case:
-- Make sure that you are using java jdk 17 (File > Project Structure > SDK > Select JDK 17 & language level SDK Default)
-- Make sure that gradle uses jdk 17 (File > Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM: Select Project SDK)
-- Reload gradle project
+### 🔥 Kill Streaks System
+Track consecutive kills with epic announcements:
+- **DOUBLE KILL!** - 2 kills in 10 seconds
+- **TRIPLE KILL!** - 3 kills in 10 seconds
+- **MEGA KILL!** - 4 kills in 10 seconds
+- **ULTRA KILL!** - 5 kills in 10 seconds
+- **MONSTER KILL!** - 6 kills in 10 seconds
+- **RAMPAGE!** - 7 kills in 10 seconds
+- **GODLIKE!** - 8+ kills in 10 seconds
 
-### 2. Search & remplace:
+Each streak comes with:
+- 🔊 Unique sound effects with increasing pitch
+- 💬 Golden text announcement in chat
+- ⏱️ 10-second window to continue the streak
 
-- `{license}`: The mod license. Example: `GNU-LGPL-3.0`
-- `{githubUser}`: The user that owns the github repo. Example: `lilmods`
-- `{githubRepo}`: The name of the github repo. Example: `kotlin-minecraft-mod-template`
-- `{author}`:  The author of the mod. It will be in the mod description (forge & fabric)
-- `modid` **(and not `modId` !!!)**: The mod id. Has to be unique across mc mods. **Make sure to also rename [modid.mixins.json](fabric/src/main/resources/modid.mixins.json)**
-- `com.example.modid`: The mod package. Has to be unique across mc mods to prevent conflits on runtime. Make sure to also rename filenames.
-- `ModName`: The mod name. Make sure to also rename filenames.
-- `ModDescription`: The mod description
-- Replace [LICENSE](LICENSE) file with your license
-- Make sure [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt) is correct.
+### 🎨 Visual Effects
+- **Smooth Animations**: Weapon bobbing animation
+- **Fade Out**: Smooth alpha transition before removal
+- **No Background**: Clean, minimalist design
+- **Dynamic Positioning**: Automatically adjusts for multiple entries
+- **Color Coding**: Different colors for killers and victims
 
-Now you can reload gradle project. You should be able to build and run clients. If it's not the case, you renamed
-something wrong. You can see an example here: https://github.com/lilmods/aim-assistance/commit/44743e66f04cde44ad8ccb9490b680069f874c1d.
+### 🎮 Supported Mobs
+30+ mob textures including:
+- Zombie, Skeleton, Creeper, Spider, Enderman
+- Piglin, Zombified Piglin, Wither Skeleton
+- Blaze, Ghast, Witch, Phantom
+- Guardian, Elder Guardian, Shulker
+- Wither, Ender Dragon
+- And many more!
 
-#### Troubleshooting:
+## 📋 Requirements
 
-If the build below says "passing" and it does not work in your environment, it means that you did something wrong because
-the CI built the project properly.
+- **Minecraft**: 1.20.1
+- **Forge**: 47.1.0 or higher
+- **Java**: 17 or higher
+- **KotlinForForge**: 4.3.0 (included)
 
-- [![build fabric](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-fabric.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-fabric.yml)
-- [![build forge](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-forge.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/build-forge.yml)
+## 🚀 Installation
 
-If you have an issue, it could be because of:
-- Wrong rename: 
-  - Take a look at https://github.com/lilmods/aim-assistance/commit/44743e66f04cde44ad8ccb9490b680069f874c1d to see an example of template init
-  - Open git diff with intelliJ, to check every change you made, something may be wrong
-  - You may have forgotten to rename something (folder or filename for example)
-- Caching issues
-  - Try to stop gradle daemon: `./gradlew --stop`
-  - Try to restart intelliJ: `Files > Invalidate caches & restart`
-  - Delete gradle cache: `~/.gradle/caches` (you will need to re-download everything)
+1. **Download the latest release** from the [Releases page](https://github.com/eliasnvx/Krylix/releases)
+2. **Install Forge** 1.20.1-47.1.0 if not already present
+3. **Place the JAR file** in your `.minecraft/mods/` directory
+4. **Launch Minecraft** with Forge profile
 
-### 3. Updating versions
+### Quick Setup
 
-All the versions of libraries are stored in [Versions.kt](buildSrc/src/main/kotlin/com/example/gradle/Versions.kt).
-The file is documented for you to know how to bump versions.
+```bash
+# Download and install
+wget https://github.com/eliasnvx/Krylix/releases/latest/download/Krylix-forge.jar
+cp Krylix-forge.jar ~/.minecraft/mods/
+```
 
-### 4. Releasing new versions
+## 🎮 Commands
 
-Put a tag on any branch following this format:
-- fabric: `1.0.0-MC1.19.x-fabric`
-- forge: `1.0.0-MC1.19.x-forge`
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/testkill` | `op` | Generate random test kill |
+| `/testkill sword` | `op` | Test sword kill |
+| `/testkill bow` | `op` | Test bow kill |
+| `/testkill axe` | `op` | Test axe kill |
+| `/testkill headshot` | `op` | Test headshot kill |
+| `/testkill multi` | `op` | Generate multiple test kills |
 
-The CD workflows are defined in [.github/workflows](.github/workflows) folder. The release will then be "deployed" on
-github. In the releases tab, you will see your new version with a changelog that contains everything you did put on
-[CHANGELOG-forge.md](CHANGELOG-forge.md) (for forge) and [CHANGELOG-fabric.md](CHANGELOG-fabric.md) (for fabric).
+## 🏗️ Development
 
-You can see example of releases published from this repo here https://github.com/lilmods/kotlin-minecraft-mod-template/releases
+### Building from Source
 
-- [![release fabric](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-fabric.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-fabric.yml)
-- [![release forge](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-forge.yml/badge.svg?branch=main)](https://github.com/lilmods/kotlin-minecraft-mod-template/actions/workflows/release-forge.yml)
+```bash
+# Clone the repository
+git clone https://github.com/eliasnvx/Krylix.git
+cd Krylix
 
-### 5. Put the common code in the common module!
+# Build with Gradle
+./gradlew :forge:build
 
-If you have common code between forge and fabric, you can put it in the `common` module (you can rename it if you want).
-The code will then be packaged in the `.jar` produced by fabric and forge.
+# Run client for testing
+./gradlew :forge:runClient -Pusername=Player2
+```
 
-### 6. The project has a linter
+### Project Structure
 
-It forced you to follow some conventions. In the root [build.gradle.kts](build.gradle.kts), `ktlint` is imported. You
-can remove it if you want, in that case, you have to remove the step in the CI workflows 
-[.github/workflows](.github/workflows). There is an IntelliJ plugin to help you. You also can customize the ktlint
-configuration by looking on their official documentation.
+```
+Krylix/
+├── common/                  # Common code (shared)
+│   └── src/main/kotlin/
+│       └── model/          # Data models
+├── forge/                   # Forge implementation
+│   └── src/main/kotlin/
+│       ├── client/         # Client-side code
+│       │   ├── KillFeedHud.kt
+│       │   └── ClientEvents.kt
+│       └── KrylixServerCommands.kt
+├── fabric/                  # Fabric implementation (planned)
+└── buildSrc/               # Build configuration
+```
 
-### 7. The project automatically builds .jar
+### Key Components
 
-Everytime the CI runs and succeed, produced artefacts are stored in the workflow run summary. For example, as you can
-see in https://github.com/lilmods/kotlin-minecraft-mod-template/actions/runs/5111050925, there is an "Artifacts" block.
-You can click on it to download the produced .jar files.
+#### KillFeedHud.kt
+Main HUD rendering logic:
+- Player/mob head rendering
+- Weapon animation
+- Kill streak tracking
+- Sound effects
 
-### 8. Fabric specific stuff to know
+#### KillEntry.kt
+Data model for kill events:
+- Killer/victim information
+- Weapon and distance
+- Timestamp for fade-out
+- Alpha calculation
 
-This project uses Kotlin. However, mixins does not work with Kotlin for now, so it's written in Java. There are some
-examples. The template uses `modmenu` & `cloth-config` to manage the mod settings. Everything is ready.
+#### NetworkPackets.kt
+Network synchronization:
+- Client-server communication
+- Kill event broadcasting
 
-Run client: execute `runClient` gradle task.
+## 🎨 Customization
 
-### 9. Forge specific stuff to know
+### Adding New Mobs
 
-The template uses `cloth-config` to manage the mod settings. Everything is ready.
+Edit `KillFeedHud.kt` to add new mob textures:
 
-Run client: execute `runClient` gradle task
+```kotlin
+private fun getMobTexture(mobName: String?): ResourceLocation? {
+    return when (mobName?.lowercase()) {
+        "your_mob" -> ResourceLocation("minecraft", "textures/entity/your_mob.png")
+        // ...
+    }
+}
+```
 
-### 10. Done !
+### Adjusting Kill Streak Timings
 
-You can delete everything in the readme from this line, you are ready to go, have fun :)
+Modify the streak window in `processKillStreak()`:
 
-# ModName
+```kotlin
+// Change 10000ms (10 seconds) to your preferred duration
+if (currentTime - streak.lastKillTime > 10000) {
+    streak.count = 1
+}
+```
 
-[![build fabric](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-fabric.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-fabric.yml)
-[![build forge](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-forge.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/build-forge.yml)
-[![release fabric](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-fabric.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-fabric.yml)
-[![release forge](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-forge.yml/badge.svg?branch=main)](https://github.com/{githubUser}/{githubRepo}/actions/workflows/release-forge.yml)
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Commit your changes**: `git commit -m 'Add amazing feature'`
+4. **Push to the branch**: `git push origin feature/amazing-feature`
+5. **Open a Pull Request**
+
+### Code Style
+
+- Follow Kotlin coding conventions
+- Use meaningful variable names
+- Add KDoc comments for public APIs
+- Test your changes with `/testkill` commands
+
+## 🐛 Known Issues
+
+- ~~Enderman head rendering~~ ✅ Fixed in v1.0.1
+- ~~ConcurrentModificationException crash~~ ✅ Fixed in v1.0.1
+
+## 📈 Roadmap
+
+- [x] **v1.0**: Basic kill feed with player/mob heads
+- [x] **v1.1**: Kill streak system
+- [x] **v1.2**: Weapon animations
+- [ ] **v1.3**: Death type icons (fire, fall, explosion)
+- [ ] **v1.4**: Distance-based coloring
+- [ ] **v1.5**: Headshot indicator
+- [ ] **v2.0**: Configuration GUI
+- [ ] **v2.1**: Fabric support
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Credits
+
+- **Lead Developer**: [eliasnvx](https://github.com/eliasnvx)
+- **Built with**: [KotlinForForge](https://github.com/thedarkcolour/KotlinForForge)
+- **Inspired by**: Classic FPS kill feed systems
+
+## 📊 Statistics
+
+- **30+ Mob Textures**: Comprehensive mob support
+- **7 Kill Streak Levels**: From Double Kill to Godlike
+- **15-Second Display**: Perfect timing for visibility
+- **60 FPS Animations**: Smooth weapon bobbing
+
+---
+
+<div align="center">
+
+**⭐ Star this repository if you find it useful!**
+
+Made with ❤️ for the Minecraft PvP community
+
+</div>

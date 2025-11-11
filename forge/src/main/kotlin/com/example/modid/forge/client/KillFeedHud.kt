@@ -309,9 +309,8 @@ object KillFeedHud {
                 guiGraphics.blit(texture, x, y, headSize, headSize, 8.0f, 8.0f, 8, 8, 64, 64)
             }
             "enderman" -> {
-                // Для эндермена текстура 64x32, голова маленькая и в другом месте
-                // Эндермен имеет узкую голову 4x4, масштабируем до 16x16
-                guiGraphics.blit(texture, x, y, headSize, headSize, 4.0f, 0.0f, 4, 4, 64, 32)
+                // Для эндермена текстура 64x32, голова 8x8 в позиции (0, 0)
+                guiGraphics.blit(texture, x, y, headSize, headSize, 0.0f, 0.0f, 8, 8, 64, 32)
             }
             else -> {
                 // Для остальных мобов текстуры 64x32, лицо в (8, 8)
