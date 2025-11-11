@@ -2,14 +2,12 @@ name: 🔨 Build
 
 on:
   pull_request:
-    branches: [ 'main', 'dev' ]
+    branches: [ '1.20.1-dev', 'dev' ]
   push:
-    branches: [ 'main', 'dev' ]
+    branches: [ '1.20.1-dev', 'dev' ]
     paths-ignore:
       - '**.md'
       - '.gitignore'
-      - 'MODRINTH.md'
-      - 'ICON_INFO.md'
 
 jobs:
   build-forge:

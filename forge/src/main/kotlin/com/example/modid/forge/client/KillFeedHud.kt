@@ -99,14 +99,31 @@ object KillFeedHud {
     private fun parseWeaponItem(weaponName: String?): ItemStack {
         val name = weaponName ?: "Unknown"
         return when {
-            name.contains("Sword") -> Items.DIAMOND_SWORD.defaultInstance
-            name.contains("Axe") -> Items.IRON_AXE.defaultInstance
-            name.contains("Bow") -> Items.BOW.defaultInstance
-            name.contains("Crossbow") -> Items.CROSSBOW.defaultInstance
-            name.contains("Trident") -> Items.TRIDENT.defaultInstance
-            name.contains("Pickaxe") -> Items.IRON_PICKAXE.defaultInstance
-            name.contains("Shovel") -> Items.IRON_SHOVEL.defaultInstance
-            else -> Items.WOODEN_SWORD.defaultInstance
+            // Оружие ближнего боя
+            name.contains("Sword", ignoreCase = true) -> Items.DIAMOND_SWORD.defaultInstance
+            name.contains("Axe", ignoreCase = true) -> Items.IRON_AXE.defaultInstance
+            name.contains("Pickaxe", ignoreCase = true) -> Items.IRON_PICKAXE.defaultInstance
+            name.contains("Shovel", ignoreCase = true) -> Items.IRON_SHOVEL.defaultInstance
+            
+            // Дальнобойное оружие
+            name.contains("Bow", ignoreCase = true) -> Items.BOW.defaultInstance
+            name.contains("Crossbow", ignoreCase = true) -> Items.CROSSBOW.defaultInstance
+            name.contains("Trident", ignoreCase = true) -> Items.TRIDENT.defaultInstance
+            
+            // Снаряды (стрелы, файрболы и т.д.)
+            name.contains("Projectile", ignoreCase = true) -> Items.ARROW.defaultInstance
+            name.contains("Arrow", ignoreCase = true) -> Items.ARROW.defaultInstance
+            name.contains("Spectral Arrow", ignoreCase = true) -> Items.SPECTRAL_ARROW.defaultInstance
+            name.contains("Fireball", ignoreCase = true) -> Items.FIRE_CHARGE.defaultInstance
+            name.contains("Firework", ignoreCase = true) -> Items.FIREWORK_ROCKET.defaultInstance
+            
+            // Специальные атаки
+            name.contains("Melee", ignoreCase = true) -> Items.IRON_SWORD.defaultInstance
+            name.contains("Magic", ignoreCase = true) -> Items.ENCHANTED_BOOK.defaultInstance
+            name.contains("Explosion", ignoreCase = true) -> Items.TNT.defaultInstance
+            
+            // По умолчанию - меч
+            else -> Items.IRON_SWORD.defaultInstance
         }
     }
     
