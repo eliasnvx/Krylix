@@ -268,7 +268,7 @@ object KillFeedHud {
             "creeper" -> ResourceLocation("minecraft", "textures/entity/creeper/creeper.png")
             "spider" -> ResourceLocation("minecraft", "textures/entity/spider/spider.png")
             "cave spider" -> ResourceLocation("minecraft", "textures/entity/spider/cave_spider.png")
-            "enderman" -> ResourceLocation("minecraft", "textures/entity/enderman/enderman.png")
+            "enderman" -> null
             "piglin" -> ResourceLocation("minecraft", "textures/entity/piglin/piglin.png")
             "piglin brute" -> ResourceLocation("minecraft", "textures/entity/piglin/piglin_brute.png")
             "zombified piglin", "zombie pigman" -> ResourceLocation("minecraft", "textures/entity/piglin/zombified_piglin.png")
@@ -309,8 +309,9 @@ object KillFeedHud {
                 guiGraphics.blit(texture, x, y, headSize, headSize, 8.0f, 8.0f, 8, 8, 64, 64)
             }
             "enderman" -> {
-                // Для эндермена текстура 64x32, голова 8x8 в позиции (0, 0)
-                guiGraphics.blit(texture, x, y, headSize, headSize, 0.0f, 0.0f, 8, 8, 64, 32)
+                // Для эндермена текстура 64x32, голова маленькая - пробуем разные позиции
+                // Эндермен имеет узкую голову, попробуем (40, 0) - overlay слой
+                guiGraphics.blit(texture, x, y, headSize, headSize, 40.0f, 0.0f, 8, 8, 64, 32)
             }
             else -> {
                 // Для остальных мобов текстуры 64x32, лицо в (8, 8)

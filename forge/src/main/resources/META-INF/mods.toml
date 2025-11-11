@@ -10,7 +10,7 @@ version = "1.0.0"
 displayName = "Krylix"
 authors = "eliasnvx"
 description = '''
-Kill feed мод в стиле CS:GO/Valorant для Minecraft
+A modern, feature-rich kill feed HUD mod for Minecraft Forge that displays player kills with style, animations, and kill streak tracking.
 '''
 updateJSONURL="https://raw.githubusercontent.com/eliasnvx/Krylix/main/updates.json"
 logoFile="icon.png"

@@ -8,6 +8,10 @@
 ![Kotlin](https://img.shields.io/badge/Kotlin-1.9.10-purple?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
+[![CurseForge](https://img.shields.io/badge/CurseForge-Download-orange?style=for-the-badge&logo=curseforge)](https://curseforge.com/minecraft/mc-mods/krylix)
+[![Modrinth](https://img.shields.io/badge/Modrinth-Download-green?style=for-the-badge&logo=modrinth)](https://modrinth.com/mod/krylix)
+[![GitHub](https://img.shields.io/badge/GitHub-Source-black?style=for-the-badge&logo=github)](https://github.com/eliasnvx/Krylix)
+
 **A modern, feature-rich kill feed HUD mod for Minecraft Forge that displays player kills with style, animations, and kill streak tracking.**
 
 </div>
