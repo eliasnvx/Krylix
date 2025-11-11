@@ -1,12 +1,16 @@
 package com.example.modid.krylix.model
 
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 /**
  * Представляет запись о убийстве в kill feed (platform-agnostic версия)
  *
  * @property killerName Имя убийцы (может быть null для environmental deaths)
+ * @property killerUUIDString UUID убийцы для получения скина (хранится как String)
  * @property victimName Имя жертвы
+ * @property victimUUIDString UUID жертвы для получения скина (хранится как String)
+ * @property killerHealth HP убийцы после убийства
  * @param weaponName Название оружия/инструмента (строковое представление)
  * @property distance Дистанция убийства в блоках (null если не применимо)
  * @property timestamp Время создания записи в миллисекундах
@@ -15,7 +19,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class KillEntry(
     val killerName: String?,
+    val killerUUIDString: String? = null,
     val victimName: String,
+    val victimUUIDString: String? = null,
+    val killerHealth: Float = 20.0f,
     val weaponName: String,
     val distance: Double? = null,
     val timestamp: Long = System.currentTimeMillis(),

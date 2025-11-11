@@ -2,6 +2,7 @@ package com.example.modid.forge
 
 import com.example.modid.krylix.Krylix
 import com.example.modid.krylix.model.KillEntry
+import com.example.modid.forge.network.NetworkPackets
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.damagesource.DamageSource
 import net.minecraft.world.entity.LivingEntity
@@ -24,13 +25,20 @@ object KillFeedManager {
         if (!isEnabled || entity.level().isClientSide) return
         
         val victimName = entity.name.string
-        val killerName = (source.entity as? LivingEntity)?.name?.string
+        val victimUUIDString = (entity as? Player)?.uuid?.toString()
+        val killerEntity = source.entity as? LivingEntity
+        val killerName = killerEntity?.name?.string
+        val killerUUIDString = (killerEntity as? Player)?.uuid?.toString()
+        val killerHealth = (killerEntity as? Player)?.health ?: 20.0f
         val weaponName = getWeaponName(source)
-        val distance = calculateDistance(source.entity as? LivingEntity, entity)
+        val distance = calculateDistance(killerEntity, entity)
         
         val killEntry = KillEntry(
             killerName = killerName,
+            killerUUIDString = killerUUIDString,
             victimName = victimName,
+            victimUUIDString = victimUUIDString,
+            killerHealth = killerHealth,
             weaponName = weaponName,
             distance = distance
         )
@@ -77,11 +85,10 @@ object KillFeedManager {
      * Отправляет уведомление об убийстве всем игрокам на сервере
      */
     private fun broadcastKillNotification(killEntry: KillEntry) {
-        val server = ServerLifecycleHooks.getCurrentServer()
-        server?.playerList?.players?.forEach { player ->
-            // TODO: Отправить уведомление через network packet
-            Krylix.LOGGER.debug("Sending kill notification to ${player.name.string}: $killEntry")
-        }
+        // Отправляем через network packets всем клиентам
+        NetworkPackets.sendKillNotificationToAll(killEntry)
+        
+        Krylix.LOGGER.debug("Broadcasted kill notification to all clients: $killEntry")
     }
     
     /**

@@ -1,6 +1,6 @@
 
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 buildscript {
     dependencies {
@@ -17,7 +17,8 @@ group = "$modGroup.forge"
 version = "$forgeModVersion-forge"
 
 repositories {
-    maven("https://thedarkcolour.github.io/KotlinForForge/") // Kotlin for Forge
+    maven("https://thedarkcolour.github.io/KotlinForForge/") // Kotlin for Forge (legacy)
+    maven("https://maven.thedarkcolour.me/releases") // Kotlin for Forge (releases)
     maven("https://maven.shedaniel.me/") // Cloth config
 }
 
@@ -37,6 +38,22 @@ minecraft.let {
         create("client") {
             workingDirectory(project.file("run"))
             property("forge.logging.console.level", "debug")
+
+            // Добавляем поддержку username из аргументов командной строки
+            if (project.hasProperty("username")) {
+                args("--username", project.property("username"))
+            }
+
+            mods {
+                create(modId) {
+                    sources(sourceSets.main.get())
+                }
+            }
+        }
+        create("server") {
+            workingDirectory(project.file("run"))
+            property("forge.logging.console.level", "debug")
+            args("--nogui")
             mods {
                 create(modId) {
                     sources(sourceSets.main.get())

@@ -1,46 +1,42 @@
 package com.example.modid.forge
 
 import com.example.modid.forge.config.ModConfig
+import com.example.modid.forge.network.NetworkPackets
+import com.example.modid.forge.client.KrylixClient
 import com.example.modid.krylix.Krylix
 import me.shedaniel.autoconfig.AutoConfig
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer
-import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.screens.Screen
-import net.minecraftforge.client.ConfigScreenHandler
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.RegisterCommandsEvent
 import net.minecraftforge.event.entity.living.LivingDeathEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
 import net.minecraftforge.fml.ModLoadingContext
 import net.minecraftforge.fml.common.Mod
-import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.context.CommandContext
-import net.minecraft.commands.CommandSourceStack
-import net.minecraft.commands.Commands
-import net.minecraft.network.chat.Component
 import net.minecraft.world.entity.player.Player
-import java.util.function.Supplier
 
 @Mod(Krylix.MOD_ID)
 class KrylixForge {
     init {
         Krylix.LOGGER.info("Initializing Krylix Forge mod")
         
-        // Init config screen
-        AutoConfig.register(ModConfig::class.java, ::JanksonConfigSerializer)
-        ModLoadingContext
-            .get()
-            .registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory::class.java) {
-                ConfigScreenHandler.ConfigScreenFactory { _: Minecraft?, parent: Screen? ->
-                    AutoConfig.getConfigScreen(
-                        ModConfig::class.java,
-                        parent,
-                    ).get()
-                }
+        // Регистрация network packets
+        NetworkPackets
+        
+        // Init config screen (только на клиенте)
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient) {
+            try {
+                AutoConfig.register(ModConfig::class.java, ::JanksonConfigSerializer)
+                // Config screen registration будет в отдельном client классе
+                
+                // Ручная регистрация client-side событий
+                KrylixClient.registerClientEvents()
+            } catch (e: Exception) {
+                Krylix.LOGGER.warn("Failed to register config screen: ${e.message}")
             }
+        }
 
-        // Register event bus for game events
+        // Register event bus for server-safe events only
         MinecraftForge.EVENT_BUS.register(this)
+        MinecraftForge.EVENT_BUS.register(KrylixServerCommands)
         
         // Initialize common mod code
         Krylix.init()
@@ -49,7 +45,7 @@ class KrylixForge {
     }
     
     /**
-     * Обработчик события смерти сущности для отслеживания убийств
+     * Обработчик события смерти сущности для отслеживания убийств (server-safe)
      */
     @SubscribeEvent
     fun onLivingDeath(event: LivingDeathEvent) {
@@ -62,41 +58,5 @@ class KrylixForge {
         }
         
         Krylix.LOGGER.debug("Living death event: ${entity.name.string} died from ${source.msgId}")
-    }
-    
-    /**
-     * Обработчик регистрации команд
-     */
-    @SubscribeEvent
-    fun onRegisterCommands(event: RegisterCommandsEvent) {
-        val dispatcher: CommandDispatcher<CommandSourceStack> = event.dispatcher
-        
-        // Команда /krylix toggle - включить/выключить kill feed
-        dispatcher.register(
-            Commands.literal("krylix")
-                .then(Commands.literal("toggle")
-                    .executes { context: CommandContext<CommandSourceStack> ->
-                        KillFeedManager.setEnabled(!KillFeedManager.isEnabled)
-                        context.source.sendSuccess(
-                            Supplier { Component.literal("Kill feed ${if (KillFeedManager.isEnabled) "enabled" else "disabled"}") },
-                            true
-                        )
-                        1
-                    }
-                )
-                .then(Commands.literal("status")
-                    .executes { context: CommandContext<CommandSourceStack> ->
-                        val status = if (KillFeedManager.isEnabled) "enabled" else "disabled"
-                        val count = KillFeedManager.getActiveNotifications().size
-                        context.source.sendSuccess(
-                            Supplier { Component.literal("Kill feed status: $status, Active notifications: $count") },
-                            true
-                        )
-                        1
-                    }
-                )
-        )
-        
-        Krylix.LOGGER.debug("Krylix commands registered")
     }
 }
