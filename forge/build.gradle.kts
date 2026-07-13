@@ -17,8 +17,7 @@ group = "$modGroup.forge"
 version = "$forgeModVersion-forge"
 
 repositories {
-    maven("https://thedarkcolour.github.io/KotlinForForge/") // Kotlin for Forge (legacy)
-    maven("https://maven.thedarkcolour.me/releases") // Kotlin for Forge (releases)
+    maven("https://thedarkcolour.github.io/KotlinForForge/") // Kotlin for Forge
     maven("https://maven.shedaniel.me/") // Cloth config
 }
 

@@ -1,4 +1,4 @@
-package com.example.modid.krylix
+package com.eliasnvx.krylix
 
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -10,20 +10,13 @@ import org.apache.logging.log4j.Logger
 object Krylix {
     const val MOD_ID = "krylix"
     const val MOD_NAME = "Krylix"
-    const val MOD_VERSION = "1.0.0"
 
     val LOGGER: Logger = LogManager.getLogger(MOD_NAME)
 
     /**
-     * Инициализация мода
-     * Вызывается из platform-specific entry points (Fabric/Forge)
+     * Инициализация общей (platform-agnostic) части мода, вызывается из KrylixForge.init
      */
     fun init() {
-        LOGGER.info("Initializing $MOD_NAME v$MOD_VERSION")
-
-        // TODO: Регистрация событий
-        // TODO: Загрузка конфига
-
-        LOGGER.info("$MOD_NAME initialized successfully")
+        LOGGER.info("Initializing $MOD_NAME")
     }
 }

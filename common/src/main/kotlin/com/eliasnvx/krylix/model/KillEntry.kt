@@ -1,7 +1,6 @@
-package com.example.modid.krylix.model
+package com.eliasnvx.krylix.model
 
 import kotlinx.serialization.Serializable
-import java.util.UUID
 
 /**
  * Представляет запись о убийстве в kill feed (platform-agnostic версия)

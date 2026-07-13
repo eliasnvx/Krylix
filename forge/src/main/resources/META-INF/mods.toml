@@ -6,11 +6,11 @@ issueTrackerURL = "https://github.com/eliasnvx/Krylix/issues"
 
 [[mods]]
 modId = "krylix"
-version = "1.0.0"
+version = "1.1.0"
 displayName = "Krylix"
 authors = "eliasnvx"
 description = '''
-A modern, feature-rich kill feed HUD mod for Minecraft Forge that displays player kills with style, animations, and kill streak tracking.
+A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft Forge, with a full configuration GUI and localization into 13 languages.
 '''
 updateJSONURL="https://raw.githubusercontent.com/eliasnvx/Krylix/main/updates.json"
 logoFile="icon.png"

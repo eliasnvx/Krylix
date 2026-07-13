@@ -1,4 +1,4 @@
-# Krylix - Advanced Kill Feed Mod
+# Krylix - Advanced Kill Feed & PvP Stats Mod
 
 <div align="center">
 
@@ -12,51 +12,62 @@
 [![Modrinth](https://img.shields.io/badge/Modrinth-Download-green?style=for-the-badge&logo=modrinth)](https://modrinth.com/mod/krylix)
 [![GitHub](https://img.shields.io/badge/GitHub-Source-black?style=for-the-badge&logo=github)](https://github.com/eliasnvx/Krylix)
 
-**A modern, feature-rich kill feed HUD mod for Minecraft Forge that displays player kills with style, animations, and kill streak tracking.**
+**A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft Forge — with a real GUI, persistent settings, and full localization.**
 
 </div>
 
 ## ✨ Features
 
-### 🎯 Kill Feed Display
-- **Horizontal Layout**: Clean, modern kill feed in the top-right corner
-- **Player Heads**: Shows actual player skins with correct rendering
-- **Mob Heads**: Displays 30+ mob textures with proper UV mapping
-- **Weapon Icons**: Animated weapon display with smooth bobbing effect
-- **Health Display**: Shows killer's remaining HP
-- **Distance Tracking**: Records kill distance for each entry
-- **15-Second Display**: Entries fade out smoothly after 15 seconds
+### 🎯 Kill Feed
+- Horizontal entries in the top corner with player/mob heads, weapon icon, and a heart + HP number
+- 30+ mob face textures verified against decompiled vanilla models (not guessed UVs)
+- Clean self-kill / environmental death entries (no confusing blank killer avatar)
+- Rounded-corner avatars, cached skins (no per-frame skin lookups)
 
-### 🔥 Kill Streaks System
-Track consecutive kills with epic announcements:
-- **DOUBLE KILL!** - 2 kills in 10 seconds
-- **TRIPLE KILL!** - 3 kills in 10 seconds
-- **MEGA KILL!** - 4 kills in 10 seconds
-- **ULTRA KILL!** - 5 kills in 10 seconds
-- **MONSTER KILL!** - 6 kills in 10 seconds
-- **RAMPAGE!** - 7 kills in 10 seconds
-- **GODLIKE!** - 8+ kills in 10 seconds
+### 🧟 Mob Kill Stats Panel
+- Top-left HUD panel tracking hostile-mob kills for the current world (per-world, not per-dimension)
+- Persists across restarts via server-side saved data
 
-Each streak comes with:
-- 🔊 Unique sound effects with increasing pitch
-- 💬 Golden text announcement in chat
-- ⏱️ 10-second window to continue the streak
+### ❤️ Health Indicator
+- Compact HP readout above whatever entity is under your crosshair, extended-range raytrace (works past interaction distance)
+- 4 configurable bar styles: Blocks, ASCII, Dots, Number Only
 
-### 🎨 Visual Effects
-- **Smooth Animations**: Weapon bobbing animation
-- **Fade Out**: Smooth alpha transition before removal
-- **No Background**: Clean, minimalist design
-- **Dynamic Positioning**: Automatically adjusts for multiple entries
-- **Color Coding**: Different colors for killers and victims
+### 🏆 Leaderboard (GUI, not chat)
+- Dedicated screen (`O` by default) styled as a dark rounded panel, not a chat dump
+- **PvP tab**: kills / deaths / K-D per player
+- **Mob Kills tab**: players ranked by personal mob-kill count
+- Self-row highlight, avatars, empty states, and page-switch controls that appear once you scroll to the bottom of a page (60 entries/page)
 
-### 🎮 Supported Mobs
-30+ mob textures including:
-- Zombie, Skeleton, Creeper, Spider, Enderman
-- Piglin, Zombified Piglin, Wither Skeleton
-- Blaze, Ghast, Witch, Phantom
-- Guardian, Elder Guardian, Shulker
-- Wither, Ender Dragon
-- And many more!
+### ⚙️ Configuration (Cloth Config)
+All settings are in the mod's config screen and persist across restarts:
+- Kill feed display duration, max visible entries
+- Toggle kill feed / mob stats panel / health indicator independently
+- Health bar style
+- **Server-side**: restrict kill broadcasts to players in the same dimension (default: off, broadcasts everywhere)
+
+### ⌨️ Keybinds (bound by default, no setup needed)
+| Key | Action |
+|-----|--------|
+| `K` | Toggle kill feed |
+| `L` | Toggle mob stats panel |
+| `O` | Open the leaderboard |
+| `H` | Toggle health indicator |
+
+Toggling a HUD element plays a click sound and shows an action-bar confirmation (ON/OFF), so it's never unclear whether the key press registered.
+
+### 🌍 Localization
+Fully translated into 13 languages:
+
+English · Русский · Беларуская · Українська · Polski · 简体中文 · 繁體中文（台灣）· Deutsch · Svenska · Nederlands · Español · Português (Brasil) · Français
+
+Switch your Minecraft language and every config option, keybind name, leaderboard label, and toggle message updates — no reload required.
+
+### 🎮 Supported Mob Textures
+27 mobs with textures verified via decompiled vanilla models and cropped-texture visual checks (not guesswork):
+
+Zombie, Husk, Drowned, Zombie Villager, Skeleton, Wither Skeleton, Stray, Creeper, Spider, Cave Spider, Piglin, Piglin Brute, Zombified Piglin, Blaze, Ghast, Witch, Pillager, Vindicator, Evoker, Silverfish, Endermite, Iron Golem, Snow Golem, Enderman, Ravager, Warden, Wither
+
+Mobs with composite geometry where no single crop reads as a recognizable face — confirmed by decompiling their models and visually inspecting the actual crop, not guessed — intentionally fall back to a neutral colored square instead: Slime, Magma Cube (eyes/mouth are separate small cubes, not part of a single face rectangle), Guardian, Elder Guardian, Shulker (front-face crop is just plain scale/shell pattern with no recognizable feature), Phantom (head is a 7:3 flat rectangle that distorts badly stretched into a square icon), Vex, Hoglin, Zoglin, Ender Dragon (no single head cube in its model).
 
 ## 📋 Requirements
 
@@ -65,31 +76,26 @@ Each streak comes with:
 - **Java**: 17 or higher
 - **KotlinForForge**: 4.3.0 (included)
 
+Forge only — there is no Fabric build.
+
 ## 🚀 Installation
 
-1. **Download the latest release** from the [Releases page](https://github.com/eliasnvx/Krylix/releases)
+1. **Download the latest release** from the [Releases page](https://github.com/eliasnvx/Krylix/releases) or [Modrinth](https://modrinth.com/mod/krylix)
 2. **Install Forge** 1.20.1-47.1.0 if not already present
 3. **Place the JAR file** in your `.minecraft/mods/` directory
-4. **Launch Minecraft** with Forge profile
-
-### Quick Setup
-
-```bash
-# Download and install
-wget https://github.com/eliasnvx/Krylix/releases/latest/download/Krylix-forge.jar
-cp Krylix-forge.jar ~/.minecraft/mods/
-```
+4. **Launch Minecraft** with the Forge profile
 
 ## 🎮 Commands
 
-| Command | Permission | Description |
-|---------|------------|-------------|
-| `/testkill` | `op` | Generate random test kill |
-| `/testkill sword` | `op` | Test sword kill |
-| `/testkill bow` | `op` | Test bow kill |
-| `/testkill axe` | `op` | Test axe kill |
-| `/testkill headshot` | `op` | Test headshot kill |
-| `/testkill multi` | `op` | Generate multiple test kills |
+| Command | Side | Permission | Description |
+|---------|------|------------|-------------|
+| `/krylix toggle` | Server | `op` | Enable/disable the kill feed server-wide |
+| `/krylix status` | Server | `op` | Show server-side kill feed status |
+| `/krylix hud toggle` | Client | — | Toggle the kill feed HUD (same as pressing `K`) |
+| `/krylix hud clear` | Client | — | Clear active kill feed entries |
+| `/krylix hud count` | Client | — | Show active notification count |
+| `/krylix leaderboard testfill [count]` | Client | — | Fill the leaderboard with random test players (1–500, default 60) to preview scrolling/pagination — visual only, not saved |
+| `/krylix leaderboard clear` | Client | — | Clear the test leaderboard data |
 
 ## 🏗️ Development
 
@@ -111,69 +117,41 @@ cd Krylix
 
 ```
 Krylix/
-├── common/                  # Common code (shared)
-│   └── src/main/kotlin/
-│       └── model/          # Data models
-├── forge/                   # Forge implementation
-│   └── src/main/kotlin/
-│       ├── client/         # Client-side code
-│       │   ├── KillFeedHud.kt
-│       │   └── ClientEvents.kt
-│       └── KrylixServerCommands.kt
-├── fabric/                  # Fabric implementation (planned)
-└── buildSrc/               # Build configuration
+├── buildSrc/                 # Shared Gradle version constants (Versions.kt)
+├── common/                   # Platform-agnostic code
+│   └── src/main/kotlin/com/eliasnvx/krylix/
+│       ├── core/             # Config data model, HealthBarStyle
+│       └── model/            # KillEntry
+└── forge/                    # Forge implementation (all real logic lives here)
+    └── src/main/kotlin/com/eliasnvx/krylix/forge/
+        ├── client/            # HUD rendering, leaderboard GUI, keybinds, textures
+        ├── config/            # Cloth Config wiring
+        ├── network/           # SimpleChannel packets
+        ├── KrylixForge.kt     # Mod entry point, death-event handling
+        ├── KillFeedManager.kt
+        ├── MobKillStatsData.kt      # Per-world aggregate mob kills (SavedData)
+        └── PlayerKillStatsData.kt   # Per-world per-player kills/deaths/mob-kills (SavedData)
 ```
 
 ### Key Components
 
-#### KillFeedHud.kt
-Main HUD rendering logic:
-- Player/mob head rendering
-- Weapon animation
-- Kill streak tracking
-- Sound effects
+- **`KillFeedHud.kt`** — kill feed rendering: heads, weapon icon, heart/HP
+- **`MobStatsHud.kt`** / **`MobStatsClient.kt`** — top-left aggregate mob-kill panel
+- **`LeaderboardScreen.kt`** — the GUI leaderboard (custom-drawn, not `ObjectSelectionList`)
+- **`HealthIndicator.kt`** — crosshair-target world-space HP billboard, mirrors vanilla nametag rendering
+- **`HudRender.kt`** — shared scissor-based rounded-corner rendering helper
+- **`MobTextures.kt`** — the verified mob-face UV atlas
+- **`NetworkPackets.kt`** — `SimpleChannel` packets for kill notifications and stat sync
 
-#### KillEntry.kt
-Data model for kill events:
-- Killer/victim information
-- Weapon and distance
-- Timestamp for fade-out
-- Alpha calculation
+## 🧪 Testing
 
-#### NetworkPackets.kt
-Network synchronization:
-- Client-server communication
-- Kill event broadcasting
+The `common` module has JUnit 5 unit tests for `KillEntry` (fade-out expiry/alpha, self-kill/suicide detection):
 
-## 🎨 Customization
-
-### Adding New Mobs
-
-Edit `KillFeedHud.kt` to add new mob textures:
-
-```kotlin
-private fun getMobTexture(mobName: String?): ResourceLocation? {
-    return when (mobName?.lowercase()) {
-        "your_mob" -> ResourceLocation("minecraft", "textures/entity/your_mob.png")
-        // ...
-    }
-}
-```
-
-### Adjusting Kill Streak Timings
-
-Modify the streak window in `processKillStreak()`:
-
-```kotlin
-// Change 10000ms (10 seconds) to your preferred duration
-if (currentTime - streak.lastKillTime > 10000) {
-    streak.count = 1
-}
+```bash
+./gradlew :common:test
 ```
 
 ## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
@@ -183,26 +161,8 @@ We welcome contributions! Please follow these steps:
 
 ### Code Style
 
-- Follow Kotlin coding conventions
-- Use meaningful variable names
-- Add KDoc comments for public APIs
-- Test your changes with `/testkill` commands
-
-## 🐛 Known Issues
-
-- ~~Enderman head rendering~~ ✅ Fixed in v1.0.1
-- ~~ConcurrentModificationException crash~~ ✅ Fixed in v1.0.1
-
-## 📈 Roadmap
-
-- [x] **v1.0**: Basic kill feed with player/mob heads
-- [x] **v1.1**: Kill streak system
-- [x] **v1.2**: Weapon animations
-- [ ] **v1.3**: Death type icons (fire, fall, explosion)
-- [ ] **v1.4**: Distance-based coloring
-- [ ] **v1.5**: Headshot indicator
-- [ ] **v2.0**: Configuration GUI
-- [ ] **v2.1**: Fabric support
+- Kotlin, enforced via `ktlint` (`./gradlew :forge:build` runs the check)
+- No unverified UV/texture guesses — decompile and visually confirm before adding a new mob texture
 
 ## 📄 License
 
@@ -211,15 +171,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Credits
 
 - **Lead Developer**: [eliasnvx](https://github.com/eliasnvx)
-- **Built with**: [KotlinForForge](https://github.com/thedarkcolour/KotlinForForge)
-- **Inspired by**: Classic FPS kill feed systems
-
-## 📊 Statistics
-
-- **30+ Mob Textures**: Comprehensive mob support
-- **7 Kill Streak Levels**: From Double Kill to Godlike
-- **15-Second Display**: Perfect timing for visibility
-- **60 FPS Animations**: Smooth weapon bobbing
+- **Built with**: [KotlinForForge](https://github.com/thedarkcolour/KotlinForForge), [Cloth Config](https://github.com/shedaniel/cloth-config)
 
 ---
 
