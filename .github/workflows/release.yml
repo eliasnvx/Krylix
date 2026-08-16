@@ -7,13 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g., 1.1.0)'
+        description: 'Release version (e.g., 1.2.0)'
         required: true
         type: string
 
 jobs:
-  release-forge:
-    name: 📦 Release Forge
+  release-mod:
+    name: 📦 Release Mod (NeoForge + Fabric)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -24,11 +24,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: ☕ Set up JDK 17
+      - name: ☕ Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
           cache: 'gradle'
 
       - name: ✅ Validate Gradle wrapper
@@ -37,8 +37,8 @@ jobs:
       - name: 🔧 Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: 🏗️ Build Forge with Gradle
-        run: ./gradlew :forge:build -x ktlintMainSourceSetCheck -x ktlintTestSourceSetCheck --no-daemon --stacktrace
+      - name: 🏗️ Build with Gradle
+        run: ./gradlew build -x ktlintMainSourceSetCheck -x ktlintTestSourceSetCheck --no-daemon --stacktrace
         env:
           GRADLE_OPTS: "-Xmx3G"
 
@@ -76,15 +76,16 @@ jobs:
             ---
 
             ### 📥 Downloads
-            - Download the JAR file below
-            - Requires Minecraft 1.20.1 + Forge 47.1.0+
-            - Requires KotlinForForge 4.3.0 (bundled)
+            - Download the NeoForge or Fabric JAR files below
+            - Requires Minecraft 1.21.1
 
             ### 🔗 Links
             - [CurseForge](https://curseforge.com/minecraft/mc-mods/krylix)
             - [Modrinth](https://modrinth.com/mod/krylix)
             - [GitHub](https://github.com/eliasnvx/Krylix)
-          files: forge/build/libs/*.jar
+          files: |
+            fabric/build/libs/*.jar
+            neoforge/build/libs/*.jar
           draft: false
           prerelease: false
         env:
