@@ -1,22 +1,26 @@
 // Common
-const val kotlinVersion = "1.9.10"
-const val jvmTarget = "17"
+const val jvmTarget = "21"
 
 // Minecraft
-const val minecraftVersion = "1.20.1"
+const val minecraftVersion = "1.21.1"
 
 // Mod
 const val modId = "krylix"
 const val modGroup = "com.eliasnvx"
 const val coreVersion = "1.1.0"
 
-// Forge - also update mods.toml
-const val kotlinForForge = "4.3.0" // https://github.com/thedarkcolour/KotlinForForge
-const val kotlinGradlePlugin = kotlinVersion
-const val forgeVersion = "47.1.0" // https://files.minecraftforge.net/net/minecraftforge/forge
-const val forgeGradlePlugin = "[6.0,6.2)" // https://files.minecraftforge.net/net/minecraftforge/gradle/ForgeGradle/
-const val forgeModVersion = "1.1.0-MC$minecraftVersion"
-const val forgeModArchive = "$modId-$forgeModVersion-forge"
+// NeoForge
+const val neoForgeVersion = "21.1.77" // https://projects.neoforged.net/neoforged/neoforge
+const val neoModDevPlugin = "2.0.78" // https://projects.neoforged.net/neoforged/moddevgradle
+const val neoForgeModVersion = "1.1.0-MC$minecraftVersion"
+const val neoForgeModArchive = "$modId-$neoForgeModVersion-neoforge"
+
+// Fabric
+const val fabricLoomVersion = "1.7.4"
+const val fabricLoaderVersion = "0.16.5"
+const val fabricApiVersion = "0.104.0+1.21.1"
+const val fabricModVersion = "1.1.0-MC$minecraftVersion"
+const val fabricModArchive = "$modId-$fabricModVersion-fabric"
 
 // External dependencies
-const val clothConfigVersion = "11.1.106" // https://linkie.shedaniel.dev/dependencies
+const val clothConfigVersion = "15.0.140" // https://linkie.shedaniel.dev/dependencies

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "krylix",
+  "version": "${version}",
+  "name": "Krylix",
+  "description": "A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft Fabric, with a full configuration GUI and localization into 13 languages.",
+  "authors": [
+    "eliasnvx"
+  ],
+  "contact": {
+    "homepage": "https://github.com/eliasnvx/Krylix",
+    "sources": "https://github.com/eliasnvx/Krylix",
+    "issues": "https://github.com/eliasnvx/Krylix/issues"
+  },
+  "license": "MIT",
+  "icon": "icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.eliasnvx.krylix.fabric.KrylixFabric"
+    ],
+    "client": [
+      "com.eliasnvx.krylix.fabric.client.KrylixFabricClient"
+    ]
+  },
+  "mixins": [
+    "krylix.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "cloth-config": "*"
+  }
+}
