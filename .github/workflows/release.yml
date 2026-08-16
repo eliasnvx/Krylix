@@ -13,7 +13,7 @@ on:
 
 jobs:
   release-mod:
-    name: 📦 Release Mod (NeoForge + Fabric)
+    name: 📦 Release Mod (NeoForge + Fabric + Forge)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -76,7 +76,7 @@ jobs:
             ---
 
             ### 📥 Downloads
-            - Download the NeoForge or Fabric JAR files below
+            - Download the NeoForge, Fabric, or Forge JAR files below
             - Requires Minecraft 1.21.1
 
             ### 🔗 Links
@@ -86,6 +86,7 @@ jobs:
           files: |
             fabric/build/libs/*.jar
             neoforge/build/libs/*.jar
+            forge/build/libs/*.jar
           draft: false
           prerelease: false
         env:

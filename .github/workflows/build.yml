@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-mod:
-    name: 🏗️ Build Mod (NeoForge + Fabric)
+    name: 🏗️ Build Mod (NeoForge + Fabric + Forge)
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
     
@@ -70,6 +70,14 @@ jobs:
           path: fabric/build/libs/*.jar
           retention-days: 30
       
+      - name: 📊 Upload Forge artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: Krylix-Forge-${{ github.sha }}
+          path: forge/build/libs/*.jar
+          retention-days: 30
+      
       - name: 📝 Build summary
         if: success()
         run: |
@@ -78,4 +86,4 @@ jobs:
           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📦 NeoForge and Fabric artifacts uploaded successfully!" >> $GITHUB_STEP_SUMMARY
+          echo "📦 NeoForge, Fabric, and Forge artifacts uploaded successfully!" >> $GITHUB_STEP_SUMMARY

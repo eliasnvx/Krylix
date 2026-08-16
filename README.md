@@ -4,7 +4,7 @@
 
 ![Krylix Logo](https://img.shields.io/badge/Krylix-Kill%20Feed%20HUD-brightgreen?style=for-the-badge)
 ![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21.1-orange?style=for-the-badge)
-![Loaders](https://img.shields.io/badge/Loader-NeoForge%20|%20Fabric-red?style=for-the-badge)
+![Loaders](https://img.shields.io/badge/Loader-NeoForge%20|%20Fabric%20|%20Forge-red?style=for-the-badge)
 ![Java](https://img.shields.io/badge/Java-21-purple?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
@@ -12,7 +12,7 @@
 [![Modrinth](https://img.shields.io/badge/Modrinth-Download-green?style=for-the-badge&logo=modrinth)](https://modrinth.com/mod/krylix)
 [![GitHub](https://img.shields.io/badge/GitHub-Source-black?style=for-the-badge&logo=github)](https://github.com/eliasnvx/Krylix)
 
-**A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft (NeoForge & Fabric) — with a real GUI, persistent settings, and full localization.**
+**A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft (NeoForge, Fabric, & Forge) — with a real GUI, persistent settings, and full localization.**
 
 </div>
 
