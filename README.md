@@ -1,90 +1,90 @@
-# Krylix - Advanced Kill Feed & PvP Stats Mod
+# Krylix - Advanced Kill Feed, Mob Stats & PvP Suite
 
 <div align="center">
 
 ![Krylix Logo](https://img.shields.io/badge/Krylix-Kill%20Feed%20HUD-brightgreen?style=for-the-badge)
-![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21.1-orange?style=for-the-badge)
-![Loaders](https://img.shields.io/badge/Loader-NeoForge%20|%20Fabric%20|%20Forge-red?style=for-the-badge)
-![Java](https://img.shields.io/badge/Java-21-purple?style=for-the-badge)
+![Minecraft Version](https://img.shields.io/badge/Minecraft-26.1.2-orange?style=for-the-badge)
+![Loaders](https://img.shields.io/badge/Loader-NeoForge%20|%20Fabric-red?style=for-the-badge)
+![Java](https://img.shields.io/badge/Java-25-purple?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 [![CurseForge](https://img.shields.io/badge/CurseForge-Download-orange?style=for-the-badge&logo=curseforge)](https://curseforge.com/minecraft/mc-mods/krylix)
 [![Modrinth](https://img.shields.io/badge/Modrinth-Download-green?style=for-the-badge&logo=modrinth)](https://modrinth.com/mod/krylix)
 [![GitHub](https://img.shields.io/badge/GitHub-Source-black?style=for-the-badge&logo=github)](https://github.com/eliasnvx/Krylix)
 
-**A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft (NeoForge, Fabric, & Forge) — with a real GUI, persistent settings, and full localization.**
+**A state-of-the-art kill feed, mob-kill tracker, crosshair health indicator with genuine Minecraft heart textures, and player leaderboard for Minecraft (NeoForge & Fabric) — featuring smooth modern GUI rendering, persistent settings, and full localization.**
 
 </div>
 
 ## ✨ Features
 
 ### 🎯 Kill Feed
-- Horizontal entries in the top corner with player/mob heads, weapon icon, and a heart + HP number
-- 30+ mob face textures verified against decompiled vanilla models (not guessed UVs)
-- Clean self-kill / environmental death entries (no confusing blank killer avatar)
-- Rounded-corner avatars, cached skins (no per-frame skin lookups)
+- Horizontal notifications in the top corner with player/mob heads, weapon icon, and animated HP indicator.
+- 36+ mob face textures verified against decompiled vanilla model geometries with pixel-perfect UV mapping.
+- Clean self-kill and environmental death entries.
+- Native player face rendering with support for 3D outer layers (hats, hair, accessories).
 
 ### 💀 Death Recap
 - An elegant "Death Recap" overlay displayed directly on the death screen.
-- Shows exactly who killed you, with what weapon, from what distance, their remaining HP, and the total damage you dealt to them.
+- Shows who killed you, weapon used, combat distance, killer's remaining HP, and total damage dealt.
 
 ### 🧟 Mob Kill Stats Panel
-- Top-left HUD panel tracking hostile-mob kills for the current world (per-world, not per-dimension)
-- Persists across restarts via server-side saved data
+- Sleek top-left HUD panel tracking mob kills for the current world.
+- Accurately cropped mob face icons for 36+ hostile and neutral entities.
+- Persists across restarts via server-side saved data.
 
-### ❤️ Health Indicator
-- Compact HP readout above whatever entity is under your crosshair, extended-range raytrace (works past interaction distance)
-- Smooth 3D billboarding above mob heads, mirroring vanilla nametags perfectly.
+### ❤️ Crosshair Health Indicator
+- Dynamic, elevated 2-line nameplate displayed above the target mob under your crosshair.
+- **Genuine Minecraft GUI Hearts** rendered directly from the game's texture atlas (`hud/heart/full`, `half`, `container`) alongside crisp `HP/MaxHP` numbers.
+- **Full-Bright Rendering**: stays 100% vibrant and clear even under dense forest canopies, caves, or nighttime darkness.
+- Extended-range raycasting with precision targeting.
 
-### 🏆 Leaderboard (GUI, not chat)
-- Dedicated screen (`O` by default) styled as a dark rounded panel, not a chat dump
-- **PvP tab**: kills / deaths / K-D per player
-- **Mob Kills tab**: players ranked by personal mob-kill count
-- Self-row highlight, avatars, empty states, and page-switch controls that appear once you scroll to the bottom of a page (60 entries/page)
+### 🏆 Leaderboard GUI
+- Dedicated screen (`O` by default) styled as a modern dark rounded panel:
+  - **PvP Tab**: Kills / Deaths / K-D ratio per player.
+  - **Mob Kills Tab**: Players ranked by personal mob-kill count.
+- High-definition player face avatars with outer skin layers.
+- Interactive pagination controls (60 entries/page), smooth scrolling, and self-row highlighting.
 
 ### ⚙️ Configuration (Cloth Config)
-All settings are in the mod's config screen and persist across restarts:
-- Kill feed display duration, max visible entries
-- Toggle kill feed / mob stats panel / health indicator independently
-- **Server-side**: restrict kill broadcasts to players in the same dimension (default: off, broadcasts everywhere)
+All settings are easily configurable through the in-game options menu:
+- Kill feed display duration and max visible entries.
+- Independent toggles for Kill Feed, Mob Stats Panel, and Health Indicator.
+- **Server-side**: optional dimension-restricted kill broadcasts.
 
-### ⌨️ Keybinds (bound by default, no setup needed)
+### ⌨️ Keybinds
 | Key | Action |
 |-----|--------|
-| `K` | Toggle kill feed |
-| `L` | Toggle mob stats panel |
-| `O` | Open the leaderboard |
-| `H` | Toggle health indicator |
+| `K` | Toggle Kill Feed HUD |
+| `L` | Toggle Mob Kill Stats Panel |
+| `O` | Open Leaderboard Screen |
+| `H` | Toggle Crosshair Health Indicator |
 
-Toggling a HUD element plays a click sound and shows an action-bar confirmation (ON/OFF), so it's never unclear whether the key press registered.
+Toggling any HUD element plays an audio cue and displays an action-bar confirmation.
 
 ### 🌍 Localization
 Fully translated into 13 languages:
 
 English · Русский · Беларуская · Українська · Polski · 简体中文 · 繁體中文（台灣）· Deutsch · Svenska · Nederlands · Español · Português (Brasil) · Français
 
-Switch your Minecraft language and every config option, keybind name, leaderboard label, and toggle message updates — no reload required.
-
-### 🎮 Supported Mob Textures
-27 mobs with textures verified via decompiled vanilla models and cropped-texture visual checks (not guesswork):
-
-Zombie, Husk, Drowned, Zombie Villager, Skeleton, Wither Skeleton, Stray, Creeper, Spider, Cave Spider, Piglin, Piglin Brute, Zombified Piglin, Blaze, Ghast, Witch, Pillager, Vindicator, Evoker, Silverfish, Endermite, Iron Golem, Snow Golem, Enderman, Ravager, Warden, Wither
-
-Mobs with composite geometry where no single crop reads as a recognizable face intentionally fall back to a neutral colored square instead (e.g. Slime, Magma Cube, Guardian, Shulker, Phantom, Ender Dragon).
+---
 
 ## 📋 Requirements
 
-- **Minecraft**: 1.21.1
-- **NeoForge**: 21.1.77 or higher
-- **Fabric**: Fabric API + Fabric Loader
-- **Java**: 21
+- **Minecraft**: 26.1 (26.1.2)
+- **Java**: 25+
+- **NeoForge**: 26.1.2.95+ or **Fabric**: Fabric API + Fabric Loader
+
+---
 
 ## 🚀 Installation
 
-1. **Download the latest release** from the [Releases page](https://github.com/eliasnvx/Krylix/releases) or [Modrinth](https://modrinth.com/mod/krylix)
-2. **Install NeoForge or Fabric** for Minecraft 1.21.1
-3. **Place the JAR file** in your `.minecraft/mods/` directory
-4. **Launch Minecraft**
+1. Download the latest `.jar` from [Releases](https://github.com/eliasnvx/Krylix/releases) or [Modrinth](https://modrinth.com/mod/krylix).
+2. Install **NeoForge** or **Fabric** for Minecraft 26.1.
+3. Place the downloaded file into your `.minecraft/mods/` directory.
+4. Launch the game!
+
+---
 
 ## 🎮 Commands
 
@@ -92,15 +92,15 @@ Mobs with composite geometry where no single crop reads as a recognizable face i
 |---------|------|------------|-------------|
 | `/krylix toggle` | Server | `op` | Enable/disable the kill feed server-wide |
 | `/krylix status` | Server | `op` | Show server-side kill feed status |
-| `/krylix hud toggle` | Client | — | Toggle the kill feed HUD (same as pressing `K`) |
+| `/krylix hud toggle` | Client | — | Toggle the kill feed HUD (same as `K`) |
 | `/krylix hud clear` | Client | — | Clear active kill feed entries |
 | `/krylix hud count` | Client | — | Show active notification count |
-| `/krylix leaderboard testfill [count]` | Client | — | Fill the leaderboard with random test players (visual only, not saved) |
-| `/krylix leaderboard clear` | Client | — | Clear the test leaderboard data |
+| `/krylix leaderboard testfill [count]` | Client | — | Fill leaderboard with test player entries |
+| `/krylix leaderboard clear` | Client | — | Clear test leaderboard data |
 
-## 🏗️ Development
+---
 
-### Building from Source
+## 🏗️ Development & Building
 
 ```bash
 # Clone the repository
@@ -110,55 +110,24 @@ cd Krylix
 # Build all modules (NeoForge and Fabric)
 ./gradlew build
 
-# Run NeoForge client for testing
+# Run NeoForge client
 ./gradlew :neoforge:runClient
 
-# Run Fabric client for testing
+# Run Fabric client
 ./gradlew :fabric:runClient
 ```
 
-### Project Structure (Multi-Loader Architecture)
+### Multi-Loader Architecture
 
 ```
 Krylix/
-├── buildSrc/                 # Shared Gradle version constants
-├── common/                   # Shared Java 21 core logic, data models, translations, textures
-│   └── src/main/java/com/eliasnvx/krylix/
-│       ├── core/             # Config options, Enums
-│       └── model/            # KillEntry
-├── neoforge/                 # NeoForge 1.21.1 implementation
-│   └── src/main/java/com/eliasnvx/krylix/forge/
-│       ├── client/           # HUD rendering, Leaderboard GUI, Keybinds
-│       ├── config/           # Cloth Config wiring
-│       └── network/          # NeoForge Payload Registry
-└── fabric/                   # Fabric 1.21.1 implementation
-    └── src/main/java/com/eliasnvx/krylix/fabric/
-        ├── client/           # HUD rendering, Keybinds (Fabric API)
-        ├── config/           # Cloth Config wiring
-        └── network/          # Fabric ClientPlayNetworking
+├── buildSrc/                 # Gradle plugins & version constants
+├── common/                   # Shared Java 25 logic, models, network packets, translations
+├── neoforge/                 # NeoForge 26.1 implementation (EventBus, RenderPipelines, ClientPayLoads)
+└── fabric/                   # Fabric 26.1 implementation (Mixins, ClientPlayNetworking)
 ```
 
-### Key Components
-
-- **`KillFeedHud.java`** — kill feed rendering: heads, weapon icon, heart/HP
-- **`MobStatsHud.java`** / **`MobStatsClient.java`** — top-left aggregate mob-kill panel
-- **`LeaderboardScreen.java`** — the GUI leaderboard with pagination and sorting
-- **`DeathRecapClient.java`** — death screen overlay
-- **`HealthIndicator.java`** — 3D billboarding nametags for mob health over crosshair
-- **`HudRender.java`** — shared scissor-based rounded-corner rendering helper
-- **`MobTextures.java`** — the verified mob-face UV atlas
-
-## 🤝 Contributing
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit your changes**: `git commit -m 'Add amazing feature'`
-4. **Push to the branch**: `git push origin feature/amazing-feature`
-5. **Open a Pull Request**
-
-### Code Style
-- Pure Java 21.
-- Logic is shared via `:common` as much as possible.
+---
 
 ## 📄 License
 
@@ -169,12 +138,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Lead Developer**: [eliasnvx](https://github.com/eliasnvx)
 - **Built with**: [Cloth Config](https://github.com/shedaniel/cloth-config)
 
----
-
 <div align="center">
 
-**⭐ Star this repository if you find it useful!**
-
-Made with ❤️ for the Minecraft PvP community
+**⭐ Star this repository if you love clean PvP HUDs!**
 
 </div>
