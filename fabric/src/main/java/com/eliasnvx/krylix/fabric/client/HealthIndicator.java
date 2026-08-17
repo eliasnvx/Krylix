@@ -165,8 +165,7 @@ public class HealthIndicator {
         if (style == null) style = HealthBarStyle.HEARTS;
 
         return switch (style) {
-            case HEARTS -> "❤".repeat(filled) + "♡".repeat(empty) + " " + hp + "/" + maxHp;
-            case BLOCKS -> "█".repeat(filled) + "░".repeat(empty) + " " + hp + "/" + maxHp;
+            case HEARTS, BLOCKS -> "❤".repeat(filled) + "♡".repeat(empty) + " " + hp + "/" + maxHp;
             case ASCII -> "[" + "|".repeat(filled) + ".".repeat(empty) + "] " + hp + "/" + maxHp;
             case DOTS -> "●".repeat(filled) + "○".repeat(empty) + " " + hp + "/" + maxHp;
             case NUMBER_ONLY -> hp + "/" + maxHp + " HP";
