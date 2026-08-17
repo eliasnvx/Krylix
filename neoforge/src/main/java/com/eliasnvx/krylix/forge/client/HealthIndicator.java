@@ -218,9 +218,32 @@ public class HealthIndicator {
 
     private static void drawQuad(PoseStack.Pose pose, VertexConsumer buffer, float x1, float y1, float x2, float y2, int light) {
         Matrix4f mat = pose.pose();
-        buffer.addVertex(mat, x1, y2, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 1.0F).setLight(light);
-        buffer.addVertex(mat, x2, y2, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 1.0F).setLight(light);
-        buffer.addVertex(mat, x2, y1, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 0.0F).setLight(light);
-        buffer.addVertex(mat, x1, y1, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 0.0F).setLight(light);
+        buffer.addVertex(mat, x1, y2, 0.0F)
+                .setColor(255, 255, 255, 255)
+                .setUv(0.0F, 1.0F)
+                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                .setLight(light)
+                .setNormal(pose, 0.0F, 1.0F, 0.0F);
+
+        buffer.addVertex(mat, x2, y2, 0.0F)
+                .setColor(255, 255, 255, 255)
+                .setUv(1.0F, 1.0F)
+                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                .setLight(light)
+                .setNormal(pose, 0.0F, 1.0F, 0.0F);
+
+        buffer.addVertex(mat, x2, y1, 0.0F)
+                .setColor(255, 255, 255, 255)
+                .setUv(1.0F, 0.0F)
+                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                .setLight(light)
+                .setNormal(pose, 0.0F, 1.0F, 0.0F);
+
+        buffer.addVertex(mat, x1, y1, 0.0F)
+                .setColor(255, 255, 255, 255)
+                .setUv(0.0F, 0.0F)
+                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
+                .setLight(light)
+                .setNormal(pose, 0.0F, 1.0F, 0.0F);
     }
 }
