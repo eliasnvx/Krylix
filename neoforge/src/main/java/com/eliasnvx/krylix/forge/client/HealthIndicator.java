@@ -118,7 +118,7 @@ public class HealthIndicator {
         return Component.literal(bar).withStyle(style -> style.withColor(color));
     }
 
-    public static void onRenderNameTag(RenderNameTagEvent.CanRender event) {
+    public static void onCanRenderNameTag(RenderNameTagEvent.CanRender event) {
         if (!isIndicatorEnabled()) return;
         Entity entity = event.getEntity();
         if (!(entity instanceof LivingEntity living) || !living.isAlive()) return;
@@ -129,10 +129,9 @@ public class HealthIndicator {
         updateTarget();
         if (currentTarget == living) {
             EntityRenderState state = event.getEntityRenderState();
-            Component nameComponent = event.getContent() != null ? event.getContent() : living.getDisplayName();
-            event.setContent(nameComponent);
-            state.nameTag = nameComponent;
-            state.scoreText = createHealthComponent(living);
+            if (event.getContent() == null) {
+                event.setContent(living.getDisplayName());
+            }
             if (state.nameTagAttachment == null) {
                 state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(event.getPartialTick()));
                 if (state.nameTagAttachment == null) {
@@ -141,6 +140,26 @@ public class HealthIndicator {
             }
             event.setCanRender(net.minecraft.util.TriState.TRUE);
         }
+    }
+
+    public static void onDoRenderNameTag(RenderNameTagEvent.DoRender event) {
+        if (!isIndicatorEnabled()) return;
+        LivingEntity living = currentTarget;
+        if (living == null || !living.isAlive()) return;
+        EntityRenderState state = event.getEntityRenderState();
+        if (state.nameTagAttachment == null) return;
+
+        Component healthBar = createHealthComponent(living);
+        event.getSubmitNodeCollector().submitNameTag(
+                event.getPoseStack(),
+                state.nameTagAttachment,
+                10,
+                healthBar,
+                !state.isDiscrete,
+                state.lightCoords,
+                state.distanceToCameraSq,
+                event.getCameraRenderState()
+        );
     }
 
     private static String barText(float pct, int hp, int maxHp) {

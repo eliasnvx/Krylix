@@ -25,7 +25,8 @@ public class KrylixClient {
         NeoForge.EVENT_BUS.addListener(instance::onRenderGui);
         NeoForge.EVENT_BUS.addListener(instance::onClientTick);
         NeoForge.EVENT_BUS.addListener(DeathRecapClient::onScreenRender);
-        NeoForge.EVENT_BUS.addListener(HealthIndicator::onRenderNameTag);
+        NeoForge.EVENT_BUS.addListener(HealthIndicator::onCanRenderNameTag);
+        NeoForge.EVENT_BUS.addListener(HealthIndicator::onDoRenderNameTag);
 
         Krylix.LOGGER.info("Krylix client events registered successfully");
     }

@@ -2,8 +2,11 @@ package com.eliasnvx.krylix.fabric.client;
 
 import com.eliasnvx.krylix.core.HealthBarStyle;
 import com.eliasnvx.krylix.fabric.config.KrylixConfig;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
@@ -127,7 +130,6 @@ public class HealthIndicator {
             if (state.nameTag == null) {
                 state.nameTag = living.getDisplayName();
             }
-            state.scoreText = createHealthComponent(living);
             if (state.nameTagAttachment == null) {
                 state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTick));
                 if (state.nameTagAttachment == null) {
@@ -135,6 +137,24 @@ public class HealthIndicator {
                 }
             }
         }
+    }
+
+    public static void onSubmitNameDisplay(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+        if (!isIndicatorEnabled()) return;
+        LivingEntity living = currentTarget;
+        if (living == null || !living.isAlive() || state.nameTagAttachment == null) return;
+
+        Component healthBar = createHealthComponent(living);
+        submitNodeCollector.submitNameTag(
+                poseStack,
+                state.nameTagAttachment,
+                10,
+                healthBar,
+                !state.isDiscrete,
+                state.lightCoords,
+                state.distanceToCameraSq,
+                cameraRenderState
+        );
     }
 
     private static String barText(float pct, int hp, int maxHp) {
