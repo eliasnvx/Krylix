@@ -72,11 +72,11 @@ jobs:
       
       - name: 📊 Upload Forge artifacts
         uses: actions/upload-artifact@v4
-        if: success()
+        if: success() && hashFiles('forge/build/libs/*.jar') != ''
         with:
-          name: Krylix-Forge-${{ github.sha }}
-          path: forge/build/libs/*.jar
-          retention-days: 30
+            name: Krylix-Forge-${{ github.sha }}
+            path: forge/build/libs/*.jar
+            retention-days: 30
       
       - name: 📝 Build summary
         if: success()
