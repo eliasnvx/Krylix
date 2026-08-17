@@ -58,12 +58,10 @@ public class DeathRecapClient {
         int cardX = (screenWidth - cardWidth) / 2;
         int cardY = (screenHeight / 4) - 20;
 
-        HudRender.rounded(guiGraphics, cardX, cardY, cardWidth, cardHeight, 6, () -> {
-            guiGraphics.fill(cardX, cardY, cardX + cardWidth, cardY + cardHeight, 0xCC111116);
-        });
+        HudRender.roundedFill(guiGraphics, cardX, cardY, cardWidth, cardHeight, 6, 0xCC111116);
 
         String titleText = Component.translatable("krylix.deathrecap.title").getString();
-        guiGraphics.centeredText(font, titleText, cardX + cardWidth / 2, cardY + 8, 0xFF5555);
+        guiGraphics.centeredText(font, titleText, cardX + cardWidth / 2, cardY + 8, 0xFFFF5555);
 
         int avatarSize = 28;
         int nameWidth = font.width(recap.killerName());
@@ -79,13 +77,14 @@ public class DeathRecapClient {
         renderKillerAvatar(guiGraphics, recap, avatarX, avatarY, avatarSize);
 
         int textX = avatarX + avatarSize + 12;
-        guiGraphics.text(font, recap.killerName(), textX, avatarY + 2, 0xFFFFFF);
+        guiGraphics.text(font, recap.killerName(), textX, avatarY + 2, 0xFFFFFFFF);
 
         ItemStack weaponItem = parseWeaponItem(recap.weaponName());
         guiGraphics.item(weaponItem, textX + nameWidth + 6, avatarY - 3);
 
-        guiGraphics.text(font, hpText, textX, avatarY + 16, 0xFFFFFF);
-        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, 
+        guiGraphics.text(font, hpText, textX, avatarY + 16, 0xFFFFFFFF);
+        guiGraphics.blitSprite(
+                RenderPipelines.GUI_TEXTURED,
                 Identifier.fromNamespaceAndPath("minecraft", "hud/heart/full"),
                 textX + font.width(hpText) + 3,
                 avatarY + 15,
@@ -102,23 +101,23 @@ public class DeathRecapClient {
         }
 
         int bottomStartX = cardX + (cardWidth - fullBottomWidth) / 2;
-        guiGraphics.text(font, damageDealtText, bottomStartX, cardY + cardHeight - 14, 0xFFAA00);
+        guiGraphics.text(font, damageDealtText, bottomStartX, cardY + cardHeight - 14, 0xFFFFAA00);
 
         if (!distText.isEmpty()) {
-            guiGraphics.text(font, distText, bottomStartX + font.width(damageDealtText), cardY + cardHeight - 14, 0xAAAAAA);
+            guiGraphics.text(font, distText, bottomStartX + font.width(damageDealtText), cardY + cardHeight - 14, 0xFFAAAAAA);
         }
 
         String badgeText = "";
-        int badgeColor = 0xFFD700;
+        int badgeColor = 0xFFFFD700;
         if (recap.isSmash()) {
             badgeText = "🔨 SMASH";
-            badgeColor = 0xFF8822;
+            badgeColor = 0xFFFF8822;
         } else if (recap.isLongshot()) {
             badgeText = "🎯 LONGSHOT";
-            badgeColor = 0x50DCC8;
+            badgeColor = 0xFF50DCC8;
         } else if (recap.isCritical()) {
             badgeText = "⚡ CRIT";
-            badgeColor = 0xFFD700;
+            badgeColor = 0xFFFFD700;
         }
 
         if (!badgeText.isEmpty()) {
@@ -151,20 +150,16 @@ public class DeathRecapClient {
             if (skinTexture != null) isMob = true;
         }
 
-        Identifier finalSkinTexture = skinTexture;
-        boolean finalIsMob = isMob;
-        HudRender.rounded(guiGraphics, x, y, size, 3, () -> {
-            if (finalSkinTexture != null) {
-                if (finalIsMob) {
-                    String entityId = MobTextures.guessEntityId(recap.killerName());
-                    MobTextures.blitMobFace(guiGraphics, finalSkinTexture, entityId, x, y, size);
-                } else {
-                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, finalSkinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, size, size);
-                }
+        if (skinTexture != null) {
+            if (isMob) {
+                String entityId = MobTextures.guessEntityId(recap.killerName());
+                MobTextures.blitMobFace(guiGraphics, skinTexture, entityId, x, y, size);
             } else {
-                guiGraphics.fill(x, y, x + size, y + size, 0x80808080);
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, skinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, size, size);
             }
-        });
+        } else {
+            HudRender.roundedFill(guiGraphics, x, y, size, size, 3, 0x80808080);
+        }
     }
 
     private static ItemStack parseWeaponItem(String weaponId) {

@@ -118,9 +118,9 @@ public class HealthIndicator {
         float pct = Math.max(0f, Math.min(1f, target.getHealth() / maxHealth));
 
         int color;
-        if (pct > 0.6f) color = 0x55FF55;
-        else if (pct > 0.3f) color = 0xFFFF55;
-        else color = 0xFF5555;
+        if (pct > 0.6f) color = 0xFF55FF55;
+        else if (pct > 0.3f) color = 0xFFFFFF55;
+        else color = 0xFFFF5555;
 
         int hp = Math.round(target.getHealth());
         int maxHp = Math.round(maxHealth);
@@ -134,7 +134,7 @@ public class HealthIndicator {
         int bgH = 22;
 
         guiGraphics.fill(bgX, bgY, bgX + bgW, bgY + bgH, 0x80000000);
-        guiGraphics.centeredText(font, nameText, centerX, centerY, 0xFFFFFF);
+        guiGraphics.centeredText(font, nameText, centerX, centerY, 0xFFFFFFFF);
         guiGraphics.centeredText(font, hpText, centerX, centerY + 10, color);
     }
 

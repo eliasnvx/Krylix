@@ -105,16 +105,14 @@ public class LeaderboardScreen extends Screen {
         int px = panelX();
         int py = panelY();
 
-        HudRender.rounded(guiGraphics, px, py, panelWidth, panelHeight, 6, () -> {
-            guiGraphics.fill(px, py, px + panelWidth, py + panelHeight, 0xE6101014);
-        });
+        HudRender.roundedFill(guiGraphics, px, py, panelWidth, panelHeight, 6, 0xE6101014);
 
-        guiGraphics.centeredText(font, title, px + panelWidth / 2, py + 8, 0xFFFFFF);
+        guiGraphics.centeredText(font, title, px + panelWidth / 2, py + 8, 0xFFFFFFFF);
 
         int closeX = px + panelWidth - 18;
         int closeY = py + 7;
         boolean closeHovered = mouseX >= closeX && mouseX <= closeX + 12 && mouseY >= closeY && mouseY <= closeY + 12;
-        guiGraphics.text(font, "x", closeX + 3, closeY + 2, closeHovered ? 0xFFFFFF : 0x999999);
+        guiGraphics.text(font, "x", closeX + 3, closeY + 2, closeHovered ? 0xFFFFFFFF : 0xFF999999);
 
         renderTabs(guiGraphics, mouseX, mouseY, px, py);
 
@@ -124,22 +122,22 @@ public class LeaderboardScreen extends Screen {
                 Component.translatable("krylix.leaderboard.tab_mob_kills").getString();
         String rankHeaderText = Component.translatable("krylix.leaderboard.header_rank").getString();
         
-        guiGraphics.text(font, rankHeaderText, px + 12, headerY, 0x888888);
-        guiGraphics.text(font, Component.translatable("krylix.leaderboard.header_player").getString(), px + avatarColumnX, headerY, 0x888888);
+        guiGraphics.text(font, rankHeaderText, px + 12, headerY, 0xFF888888);
+        guiGraphics.text(font, Component.translatable("krylix.leaderboard.header_player").getString(), px + avatarColumnX, headerY, 0xFF888888);
         int statsHeaderWidth = font.width(statsHeaderText);
-        guiGraphics.text(font, statsHeaderText, px + panelWidth - statsHeaderWidth - 12, headerY, 0x888888);
+        guiGraphics.text(font, statsHeaderText, px + panelWidth - statsHeaderWidth - 12, headerY, 0xFF888888);
         guiGraphics.fill(px + 8, py + headerHeight - 4, px + panelWidth - 8, py + headerHeight - 3, 0x40FFFFFF);
 
         if (fullEntries().isEmpty()) {
             String emptyKey = mode == Mode.PLAYERS ? "screen.krylix.leaderboard.empty_players" : "screen.krylix.leaderboard.empty_mob_kills";
             String emptyText = Component.translatable(emptyKey).getString();
-            guiGraphics.centeredText(font, emptyText, px + panelWidth / 2, listTop() + listHeight() / 2 - 4, 0xAAAAAA);
+            guiGraphics.centeredText(font, emptyText, px + panelWidth / 2, listTop() + listHeight() / 2 - 4, 0xFFAAAAAA);
         } else {
             renderRows(guiGraphics, mouseX, mouseY);
         }
 
         String footerText = Component.translatable("krylix.leaderboard.footer", fullEntries().size()).getString();
-        guiGraphics.centeredText(font, footerText, px + panelWidth / 2, py + panelHeight - 14, 0x777777);
+        guiGraphics.centeredText(font, footerText, px + panelWidth / 2, py + panelHeight - 14, 0xFF777777);
     }
 
     private int[] tabRect(int index, int px, int py) {
@@ -162,12 +160,10 @@ public class LeaderboardScreen extends Screen {
         boolean active = mode == tabMode;
         boolean hovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
         
-        HudRender.rounded(guiGraphics, x, y, w, h, 3, () -> {
-            int bg = active ? 0xCC3A7BD5 : (hovered ? 0x30FFFFFF : 0x20FFFFFF);
-            guiGraphics.fill(x, y, x + w, y + h, bg);
-        });
+        int bg = active ? 0xCC3A7BD5 : (hovered ? 0x30FFFFFF : 0x20FFFFFF);
+        HudRender.roundedFill(guiGraphics, x, y, w, h, 3, bg);
         
-        int textColor = active ? 0xFFFFFF : 0xAAAAAA;
+        int textColor = active ? 0xFFFFFFFF : 0xFFAAAAAA;
         int textWidth = font.width(label);
         guiGraphics.text(font, label, x + (w - textWidth) / 2, y + (h - 8) / 2, textColor);
     }
@@ -179,35 +175,35 @@ public class LeaderboardScreen extends Screen {
         prevButtonRect = null;
         nextButtonRect = null;
 
-        HudRender.rounded(guiGraphics, px + 6, top, panelWidth - 12, bottom - top, 4, () -> {
-            String localUuid = minecraft != null && minecraft.player != null ? minecraft.player.getUUID().toString() : null;
-            List<PlayerStatEntry> entries = pageEntries();
+        guiGraphics.enableScissor(px + 6, top, px + panelWidth - 6, bottom);
+        String localUuid = minecraft != null && minecraft.player != null ? minecraft.player.getUUID().toString() : null;
+        List<PlayerStatEntry> entries = pageEntries();
 
-            int y = top - scrollOffset;
-            for (int i = 0; i < entries.size(); i++) {
-                if (y + rowHeight >= top && y <= bottom) {
-                    PlayerStatEntry entry = entries.get(i);
-                    boolean rowHovered = mouseX >= px + 6 && mouseX <= px + panelWidth - 6 && mouseY >= y && mouseY <= y + rowHeight;
-                    boolean isSelf = entry.uuid().equals(localUuid);
-                    
-                    int bgColor = 0;
-                    if (rowHovered) bgColor = 0x33FFFFFF;
-                    else if (isSelf) bgColor = 0x2255AAFF;
-                    else if (i % 2 == 0) bgColor = 0x18FFFFFF;
-                    
-                    if (bgColor != 0) {
-                        guiGraphics.fill(px + 6, y, px + panelWidth - 6, y + rowHeight, bgColor);
-                    }
-
-                    renderRow(guiGraphics, entry, page * pageSize + i, px, y);
+        int y = top - scrollOffset;
+        for (int i = 0; i < entries.size(); i++) {
+            if (y + rowHeight >= top && y <= bottom) {
+                PlayerStatEntry entry = entries.get(i);
+                boolean rowHovered = mouseX >= px + 6 && mouseX <= px + panelWidth - 6 && mouseY >= y && mouseY <= y + rowHeight;
+                boolean isSelf = entry.uuid().equals(localUuid);
+                
+                int bgColor = 0;
+                if (rowHovered) bgColor = 0x33FFFFFF;
+                else if (isSelf) bgColor = 0x2255AAFF;
+                else if (i % 2 == 0) bgColor = 0x18FFFFFF;
+                
+                if (bgColor != 0) {
+                    guiGraphics.fill(px + 6, y, px + panelWidth - 6, y + rowHeight, bgColor);
                 }
-                y += rowHeight;
-            }
 
-            if (totalPages() > 1 && y + rowHeight >= top && y <= bottom) {
-                renderPaginationRow(guiGraphics, mouseX, mouseY, px, y);
+                renderRow(guiGraphics, entry, page * pageSize + i, px, y);
             }
-        });
+            y += rowHeight;
+        }
+
+        if (totalPages() > 1 && y + rowHeight >= top && y <= bottom) {
+            renderPaginationRow(guiGraphics, mouseX, mouseY, px, y);
+        }
+        guiGraphics.disableScissor();
     }
 
     private void renderPaginationRow(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int px, int y) {
@@ -227,17 +223,15 @@ public class LeaderboardScreen extends Screen {
 
         renderPageButton(guiGraphics, mouseX, mouseY, prevButtonRect, false, hasPrev);
         renderPageButton(guiGraphics, mouseX, mouseY, nextButtonRect, true, hasNext);
-        guiGraphics.text(font, pageText, startX + btnSize + gap, y + (rowHeight - 8) / 2, 0xCCCCCC);
+        guiGraphics.text(font, pageText, startX + btnSize + gap, y + (rowHeight - 8) / 2, 0xFFCCCCCC);
     }
 
     private void renderPageButton(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int[] rect, boolean pointRight, boolean enabled) {
         int x = rect[0], y = rect[1], w = rect[2], h = rect[3];
         boolean hovered = enabled && mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
         
-        HudRender.rounded(guiGraphics, x, y, w, h, 3, () -> {
-            int bg = !enabled ? 0x15FFFFFF : (hovered ? 0x40FFFFFF : 0x25FFFFFF);
-            guiGraphics.fill(x, y, x + w, y + h, bg);
-        });
+        int bg = !enabled ? 0x15FFFFFF : (hovered ? 0x40FFFFFF : 0x25FFFFFF);
+        HudRender.roundedFill(guiGraphics, x, y, w, h, 3, bg);
         
         int color = enabled ? 0xFFFFFFFF : 0xFF555555;
         renderArrow(guiGraphics, x, y, w, h, pointRight, color);
@@ -267,21 +261,19 @@ public class LeaderboardScreen extends Screen {
 
         String rankText = "#" + (rank + 1);
         int rankX = px + rankColumnEnd - font.width(rankText);
-        guiGraphics.text(font, rankText, rankX, textY, 0xAAAAAA);
+        guiGraphics.text(font, rankText, rankX, textY, 0xFFAAAAAA);
 
         int avatarX = px + avatarColumnX;
         Identifier texture = headTextures.get(entry.uuid());
         
-        HudRender.rounded(guiGraphics, avatarX, avatarY, avatarSize, 2, () -> {
-            if (texture != null) {
-                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 8.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
-                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 40.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
-            } else {
-                guiGraphics.fill(avatarX, avatarY, avatarX + avatarSize, avatarY + avatarSize, 0xFF555555);
-            }
-        });
+        if (texture != null) {
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 8.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 40.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
+        } else {
+            HudRender.roundedFill(guiGraphics, avatarX, avatarY, avatarSize, avatarSize, 2, 0xFF555555);
+        }
 
-        guiGraphics.text(font, entry.name(), avatarX + avatarSize + 6, textY, 0xFFFFFF);
+        guiGraphics.text(font, entry.name(), avatarX + avatarSize + 6, textY, 0xFFFFFFFF);
 
         String statsText;
         if (mode == Mode.PLAYERS) {
@@ -291,7 +283,7 @@ public class LeaderboardScreen extends Screen {
             statsText = Component.translatable("krylix.leaderboard.mob_kills_count", entry.mobKills()).getString();
         }
         int statsWidth = font.width(statsText);
-        guiGraphics.text(font, statsText, px + panelWidth - statsWidth - 12, textY, 0xCCCCCC);
+        guiGraphics.text(font, statsText, px + panelWidth - statsWidth - 12, textY, 0xFFCCCCCC);
     }
 
     @Override

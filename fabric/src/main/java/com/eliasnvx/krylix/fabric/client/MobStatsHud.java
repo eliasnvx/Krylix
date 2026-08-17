@@ -57,7 +57,7 @@ public class MobStatsHud {
             }
 
             String countStr = String.valueOf(entry.getValue());
-            guiGraphics.text(font, countStr, startX + iconSize + padding, y + 4, 0xFFFFFF);
+            guiGraphics.text(font, countStr, startX + iconSize + padding, y + 4, 0xFFFFFFFF);
         }
     }
 }

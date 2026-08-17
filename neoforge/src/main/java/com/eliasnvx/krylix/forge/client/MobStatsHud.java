@@ -43,15 +43,13 @@ public class MobStatsHud {
             Identifier texture = MobTextures.byEntityId(entityId);
             
             final int finalY = y;
-            HudRender.rounded(guiGraphics, x, finalY, iconSize, iconCornerCut, () -> {
-                if (texture != null) {
-                    MobTextures.blitMobFace(guiGraphics, texture, entityId, x, finalY, iconSize);
-                } else {
-                    guiGraphics.fill(x, finalY, x + iconSize, finalY + iconSize, 0x80808080);
-                }
-            });
+            if (texture != null) {
+                MobTextures.blitMobFace(guiGraphics, texture, entityId, x, finalY, iconSize);
+            } else {
+                HudRender.roundedFill(guiGraphics, x, finalY, iconSize, iconSize, iconCornerCut, 0x80808080);
+            }
             
-            guiGraphics.text(font, MobStatsClient.displayName(entityId) + ": " + count, x + iconSize + padding, finalY + 2, 0xFFFFFF);
+            guiGraphics.text(font, MobStatsClient.displayName(entityId) + ": " + count, x + iconSize + padding, finalY + 2, 0xFFFFFFFF);
             y += rowHeight;
         }
     }

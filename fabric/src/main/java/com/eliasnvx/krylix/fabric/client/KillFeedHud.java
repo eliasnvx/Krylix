@@ -204,16 +204,12 @@ public class KillFeedHud {
 
         if (skinTexture != null) {
             try {
-                boolean finalIsMob = isMob;
-                Identifier finalSkinTexture = skinTexture;
-                HudRender.rounded(guiGraphics, x, y, headSize, avatarCornerCut, () -> {
-                    if (finalIsMob) {
-                        MobTextures.blitMobFace(guiGraphics, finalSkinTexture, MobTextures.guessEntityId(playerName), x, y, headSize);
-                    } else {
-                        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, finalSkinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
-                        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, finalSkinTexture, x, y, 40.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
-                    }
-                });
+                if (isMob) {
+                    MobTextures.blitMobFace(guiGraphics, skinTexture, MobTextures.guessEntityId(playerName), x, y, headSize);
+                } else {
+                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, skinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
+                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, skinTexture, x, y, 40.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
+                }
             } catch (Exception e) {
                 renderFallbackHead(guiGraphics, playerName, x, y, alpha);
             }
@@ -225,9 +221,7 @@ public class KillFeedHud {
     private static void renderFallbackHead(GuiGraphicsExtractor guiGraphics, String playerName, int x, int y, float alpha) {
         String name = playerName != null ? playerName : "Unknown";
         int color = name.toLowerCase().contains("1") ? killerColor : victimColor;
-        HudRender.rounded(guiGraphics, x, y, headSize, avatarCornerCut, () -> {
-            guiGraphics.fill(x, y, x + headSize, y + headSize, getAlphaColor(color, alpha));
-        });
+        HudRender.roundedFill(guiGraphics, x, y, headSize, headSize, avatarCornerCut, getAlphaColor(color, alpha));
     }
 
     private static void renderHeartIcon(GuiGraphicsExtractor guiGraphics, int x, int y, float alpha) {
