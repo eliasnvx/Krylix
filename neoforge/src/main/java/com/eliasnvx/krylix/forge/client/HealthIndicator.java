@@ -3,14 +3,16 @@ package com.eliasnvx.krylix.forge.client;
 import com.eliasnvx.krylix.core.HealthBarStyle;
 import com.eliasnvx.krylix.forge.config.KrylixConfig;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 
 import java.util.List;
 
@@ -22,11 +24,15 @@ public class HealthIndicator {
 
     public static void setEnabled(boolean enabled) {
         KrylixConfig.get().healthIndicatorEnabled = enabled;
-        com.eliasnvx.krylix.forge.config.KrylixConfig.save();
+        KrylixConfig.save();
     }
 
     public static boolean isIndicatorEnabled() {
         return KrylixConfig.get().healthIndicatorEnabled;
+    }
+
+    public static LivingEntity getCurrentTarget() {
+        return currentTarget;
     }
 
     public static void updateTarget() {
@@ -97,44 +103,44 @@ public class HealthIndicator {
         return e.level().clip(new ClipContext(origin, next, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, e));
     }
 
-    public static void renderHud(GuiGraphicsExtractor guiGraphics, float partialTick) {
-        if (!KrylixConfig.get().healthIndicatorEnabled) return;
-
-        updateTarget();
-
-        LivingEntity target = currentTarget;
-        if (target == null || !target.isAlive()) return;
-
-        Minecraft minecraft = Minecraft.getInstance();
-        Font font = minecraft.font;
-
-        int screenWidth = minecraft.getWindow().getGuiScaledWidth();
-        int screenHeight = minecraft.getWindow().getGuiScaledHeight();
-        int centerX = screenWidth / 2;
-        int centerY = screenHeight / 2 + 14;
-
-        float maxHealth = Math.max(1f, target.getMaxHealth());
-        float pct = Math.max(0f, Math.min(1f, target.getHealth() / maxHealth));
+    public static Component createHealthComponent(LivingEntity living) {
+        float maxHealth = Math.max(1f, living.getMaxHealth());
+        float pct = Math.max(0f, Math.min(1f, living.getHealth() / maxHealth));
+        int hp = Math.round(living.getHealth());
+        int maxHp = Math.round(maxHealth);
 
         int color;
-        if (pct > 0.6f) color = 0xFF55FF55;
-        else if (pct > 0.3f) color = 0xFFFFFF55;
-        else color = 0xFFFF5555;
+        if (pct > 0.6f) color = 0x55FF55;
+        else if (pct > 0.3f) color = 0xFFFF55;
+        else color = 0xFF5555;
 
-        int hp = Math.round(target.getHealth());
-        int maxHp = Math.round(maxHealth);
-        String hpText = barText(pct, hp, maxHp);
-        String nameText = target.getDisplayName().getString();
+        String bar = barText(pct, hp, maxHp);
+        return Component.literal(bar).withStyle(style -> style.withColor(color));
+    }
 
-        int textWidth = Math.max(font.width(nameText), font.width(hpText));
-        int bgX = centerX - textWidth / 2 - 4;
-        int bgY = centerY - 2;
-        int bgW = textWidth + 8;
-        int bgH = 22;
+    public static void onRenderNameTag(RenderNameTagEvent.CanRender event) {
+        if (!isIndicatorEnabled()) return;
+        Entity entity = event.getEntity();
+        if (!(entity instanceof LivingEntity living) || !living.isAlive()) return;
 
-        guiGraphics.fill(bgX, bgY, bgX + bgW, bgY + bgH, 0x80000000);
-        guiGraphics.centeredText(font, nameText, centerX, centerY, 0xFFFFFFFF);
-        guiGraphics.centeredText(font, hpText, centerX, centerY + 10, color);
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || entity == mc.player) return;
+
+        updateTarget();
+        if (currentTarget == living) {
+            EntityRenderState state = event.getEntityRenderState();
+            if (state.nameTag == null) {
+                state.nameTag = living.getDisplayName();
+            }
+            if (state.nameTagAttachment == null) {
+                state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(event.getPartialTick()));
+                if (state.nameTagAttachment == null) {
+                    state.nameTagAttachment = new Vec3(0, entity.getBbHeight() + 0.5, 0);
+                }
+            }
+            state.scoreText = createHealthComponent(living);
+            event.setCanRender(net.minecraft.util.TriState.TRUE);
+        }
     }
 
     private static String barText(float pct, int hp, int maxHp) {

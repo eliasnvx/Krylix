@@ -16,6 +16,5 @@ public class GuiMixin {
     private void krylix$onRender(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         KillFeedHud.render(guiGraphics, deltaTracker.getGameTimeDeltaTicks());
         MobStatsHud.render(guiGraphics, deltaTracker.getGameTimeDeltaTicks());
-        com.eliasnvx.krylix.fabric.client.HealthIndicator.renderHud(guiGraphics, deltaTracker.getGameTimeDeltaTicks());
     }
 }

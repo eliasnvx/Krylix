@@ -25,6 +25,7 @@ public class KrylixClient {
         NeoForge.EVENT_BUS.addListener(instance::onRenderGui);
         NeoForge.EVENT_BUS.addListener(instance::onClientTick);
         NeoForge.EVENT_BUS.addListener(DeathRecapClient::onScreenRender);
+        NeoForge.EVENT_BUS.addListener(HealthIndicator::onRenderNameTag);
 
         Krylix.LOGGER.info("Krylix client events registered successfully");
     }
@@ -37,7 +38,6 @@ public class KrylixClient {
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         KillFeedHud.render(event.getGuiGraphics(), partialTick);
         MobStatsHud.render(event.getGuiGraphics(), partialTick);
-        HealthIndicator.renderHud(event.getGuiGraphics(), partialTick);
     }
 
     @SubscribeEvent
