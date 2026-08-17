@@ -129,8 +129,8 @@ public class HealthIndicator {
                     attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
                 }
             }
-            // Lift the entire panel +0.75 blocks above the mob
-            state.nameTagAttachment = attach.add(0, 0.75, 0);
+            // Lift the entire panel +1.25 blocks above the mob
+            state.nameTagAttachment = attach.add(0, 1.25, 0);
         }
     }
 
@@ -166,6 +166,7 @@ public class HealthIndicator {
         }
         healthLine.append(Component.literal(" " + hpRounded + "/" + maxHpRounded).withStyle(ChatFormatting.WHITE));
 
-        submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, 10, healthLine, state.isDiscrete, state.lightCoords, state.distanceToCameraSq, cameraRenderState);
+        // Submit with FULL_BRIGHT light level so the hearts are never darkened by shadows
+        submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, 10, healthLine, state.isDiscrete, net.minecraft.util.LightCoordsUtil.FULL_BRIGHT, state.distanceToCameraSq, cameraRenderState);
     }
 }
