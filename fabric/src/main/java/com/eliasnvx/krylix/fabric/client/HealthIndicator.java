@@ -1,13 +1,17 @@
 package com.eliasnvx.krylix.fabric.client;
 
-import com.eliasnvx.krylix.core.HealthBarStyle;
 import com.eliasnvx.krylix.fabric.config.KrylixConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,12 +19,15 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
 
 import java.util.List;
 
 public class HealthIndicator {
     private static final double MAX_DISTANCE = 48.0;
-    private static final int BAR_SEGMENTS = 10;
+    private static final Identifier HEART_CONTAINER = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/container.png");
+    private static final Identifier HEART_FULL = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/full.png");
+    private static final Identifier HEART_HALF = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/half.png");
 
     private static LivingEntity currentTarget = null;
 
@@ -105,21 +112,6 @@ public class HealthIndicator {
         return e.level().clip(new ClipContext(origin, next, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, e));
     }
 
-    public static Component createHealthComponent(LivingEntity living) {
-        float maxHealth = Math.max(1f, living.getMaxHealth());
-        float pct = Math.max(0f, Math.min(1f, living.getHealth() / maxHealth));
-        int hp = Math.round(living.getHealth());
-        int maxHp = Math.round(maxHealth);
-
-        int color;
-        if (pct > 0.6f) color = 0x55FF55;
-        else if (pct > 0.3f) color = 0xFFFF55;
-        else color = 0xFF5555;
-
-        String bar = barText(pct, hp, maxHp);
-        return Component.literal(bar).withStyle(style -> style.withColor(color));
-    }
-
     public static void applyNameplate(Entity entity, EntityRenderState state, float partialTick) {
         if (!isIndicatorEnabled() || !(entity instanceof LivingEntity living) || !living.isAlive()) return;
         Minecraft mc = Minecraft.getInstance();
@@ -144,31 +136,83 @@ public class HealthIndicator {
         LivingEntity living = currentTarget;
         if (living == null || !living.isAlive() || state.nameTagAttachment == null) return;
 
-        Component healthBar = createHealthComponent(living);
-        submitNodeCollector.submitNameTag(
-                poseStack,
-                state.nameTagAttachment,
-                10,
-                healthBar,
-                !state.isDiscrete,
-                state.lightCoords,
-                state.distanceToCameraSq,
-                cameraRenderState
-        );
+        renderTexturedHealth(state, poseStack, submitNodeCollector, cameraRenderState, living);
     }
 
-    private static String barText(float pct, int hp, int maxHp) {
-        int filled = Math.max(0, Math.min(BAR_SEGMENTS, Math.round(pct * BAR_SEGMENTS)));
-        int empty = BAR_SEGMENTS - filled;
-        
-        HealthBarStyle style = KrylixConfig.get().healthBarStyle;
-        if (style == null) style = HealthBarStyle.HEARTS;
+    public static void renderTexturedHealth(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, LivingEntity living) {
+        Minecraft mc = Minecraft.getInstance();
+        Font font = mc.font;
 
-        return switch (style) {
-            case HEARTS, BLOCKS -> "❤".repeat(filled) + "♡".repeat(empty) + " " + hp + "/" + maxHp;
-            case ASCII -> "[" + "|".repeat(filled) + ".".repeat(empty) + "] " + hp + "/" + maxHp;
-            case DOTS -> "●".repeat(filled) + "○".repeat(empty) + " " + hp + "/" + maxHp;
-            case NUMBER_ONLY -> hp + "/" + maxHp + " HP";
-        };
+        float maxHp = Math.max(1f, living.getMaxHealth());
+        float hp = Math.max(0f, Math.min(maxHp, living.getHealth()));
+        int hpRounded = Math.round(hp);
+        int maxHpRounded = Math.round(maxHp);
+
+        int totalHearts = Math.min(10, Math.max(1, (int) Math.ceil(maxHp / 2.0)));
+        float hpPerHeart = maxHp / (float) totalHearts;
+        int fullHearts = (int) (hp / hpPerHeart);
+        boolean hasHalf = (hp - (fullHearts * hpPerHeart)) >= (hpPerHeart * 0.25f);
+
+        int heartsWidth = (totalHearts - 1) * 8 + 9;
+        String text = hpRounded + "/" + maxHpRounded;
+        int textWidth = font.width(text);
+        int spacing = 4;
+        int totalWidth = heartsWidth + spacing + textWidth;
+        float startX = -totalWidth / 2.0f;
+
+        poseStack.pushPose();
+        Vec3 attachment = state.nameTagAttachment;
+        poseStack.translate(attachment.x, attachment.y + 0.5, attachment.z);
+        poseStack.mulPose(cameraRenderState.orientation);
+        poseStack.scale(0.025f, -0.025f, 0.025f);
+
+        final float fStartX = startX;
+        final int fTotalHearts = totalHearts;
+        final int fFullHearts = fullHearts;
+        final boolean fHasHalf = hasHalf;
+        final int light = state.lightCoords;
+
+        // 1. Containers
+        submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_CONTAINER), (pose, buffer) -> {
+            for (int i = 0; i < fTotalHearts; i++) {
+                float hx = fStartX + i * 8;
+                drawQuad(pose, buffer, hx, 10, hx + 9, 19, light);
+            }
+        });
+
+        // 2. Full hearts
+        if (fullHearts > 0) {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_FULL), (pose, buffer) -> {
+                for (int i = 0; i < fFullHearts; i++) {
+                    float hx = fStartX + i * 8;
+                    drawQuad(pose, buffer, hx, 10, hx + 9, 19, light);
+                }
+            });
+        }
+
+        // 3. Half heart
+        if (hasHalf && fullHearts < totalHearts) {
+            final int halfIndex = fullHearts;
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_HALF), (pose, buffer) -> {
+                float hx = fStartX + halfIndex * 8;
+                drawQuad(pose, buffer, hx, 10, hx + 9, 19, light);
+            });
+        }
+
+        // 4. Numbers
+        float textX = startX + heartsWidth + spacing;
+        float textY = 10.5f;
+        FormattedCharSequence seq = Component.literal(text).getVisualOrderText();
+        submitNodeCollector.submitText(poseStack, textX, textY, seq, true, Font.DisplayMode.SEE_THROUGH, 0xFFFFFFFF, 0x40000000, light, 0);
+
+        poseStack.popPose();
+    }
+
+    private static void drawQuad(PoseStack.Pose pose, VertexConsumer buffer, float x1, float y1, float x2, float y2, int light) {
+        Matrix4f mat = pose.pose();
+        buffer.addVertex(mat, x1, y2, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 1.0F).setLight(light);
+        buffer.addVertex(mat, x2, y2, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 1.0F).setLight(light);
+        buffer.addVertex(mat, x2, y1, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 0.0F).setLight(light);
+        buffer.addVertex(mat, x1, y1, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 0.0F).setLight(light);
     }
 }
