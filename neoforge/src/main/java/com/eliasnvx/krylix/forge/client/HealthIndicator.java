@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
@@ -134,7 +135,7 @@ public class HealthIndicator {
                     attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
                 }
             }
-            state.nameTagAttachment = new Vec3(attach.x, attach.y + 0.35, attach.z);
+            state.nameTagAttachment = attach.add(0, 0.35, 0);
             event.setCanRender(net.minecraft.util.TriState.TRUE);
         }
     }
@@ -180,22 +181,21 @@ public class HealthIndicator {
         final int fTotalHearts = totalHearts;
         final int fFullHearts = fullHearts;
         final boolean fHasHalf = hasHalf;
-        final int fullLight = 0xF000F0;
 
-        // 1. Containers (empty heart frames) - Emissive unshadowed render
-        submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(HEART_CONTAINER), (pose, buffer) -> {
+        // 1. Containers (empty heart frames) using unshaded text render type
+        submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(HEART_CONTAINER), (pose, buffer) -> {
             for (int i = 0; i < fTotalHearts; i++) {
                 float hx = fStartX + i * 8;
-                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f, fullLight);
+                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f);
             }
         });
 
         // 2. Full bright red hearts
         if (fullHearts > 0) {
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(HEART_FULL), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(HEART_FULL), (pose, buffer) -> {
                 for (int i = 0; i < fFullHearts; i++) {
                     float hx = fStartX + i * 8;
-                    drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f, fullLight);
+                    drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f);
                 }
             });
         }
@@ -203,9 +203,9 @@ public class HealthIndicator {
         // 3. Half heart
         if (hasHalf && fullHearts < totalHearts) {
             final int halfIndex = fullHearts;
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(HEART_HALF), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(HEART_HALF), (pose, buffer) -> {
                 float hx = fStartX + halfIndex * 8;
-                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f, fullLight);
+                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f);
             });
         }
 
@@ -213,39 +213,17 @@ public class HealthIndicator {
         float textX = startX + heartsWidth + spacing;
         float textY = 10.5f;
         FormattedCharSequence seq = Component.literal(text).getVisualOrderText();
-        submitNodeCollector.submitText(poseStack, textX, textY, seq, true, Font.DisplayMode.SEE_THROUGH, 0xFFFFFFFF, 0x40000000, fullLight, 0);
+        submitNodeCollector.submitText(poseStack, textX, textY, seq, true, Font.DisplayMode.SEE_THROUGH, 0xFFFFFFFF, 0x40000000, LightCoordsUtil.FULL_BRIGHT, 0);
 
         poseStack.popPose();
     }
 
-    private static void drawQuad(PoseStack.Pose pose, VertexConsumer buffer, float x1, float y1, float x2, float y2, int light) {
+    private static void drawQuad(PoseStack.Pose pose, VertexConsumer buffer, float x1, float y1, float x2, float y2) {
         Matrix4f mat = pose.pose();
-        buffer.addVertex(mat, x1, y2, 0.0F)
-                .setColor(255, 255, 255, 255)
-                .setUv(0.0F, 1.0F)
-                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                .setLight(light)
-                .setNormal(pose, 0.0F, 1.0F, 0.0F);
-
-        buffer.addVertex(mat, x2, y2, 0.0F)
-                .setColor(255, 255, 255, 255)
-                .setUv(1.0F, 1.0F)
-                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                .setLight(light)
-                .setNormal(pose, 0.0F, 1.0F, 0.0F);
-
-        buffer.addVertex(mat, x2, y1, 0.0F)
-                .setColor(255, 255, 255, 255)
-                .setUv(1.0F, 0.0F)
-                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                .setLight(light)
-                .setNormal(pose, 0.0F, 1.0F, 0.0F);
-
-        buffer.addVertex(mat, x1, y1, 0.0F)
-                .setColor(255, 255, 255, 255)
-                .setUv(0.0F, 0.0F)
-                .setOverlay(net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY)
-                .setLight(light)
-                .setNormal(pose, 0.0F, 1.0F, 0.0F);
+        int fullLight = LightCoordsUtil.FULL_BRIGHT;
+        buffer.addVertex(mat, x1, y2, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 1.0F).setLight(fullLight);
+        buffer.addVertex(mat, x2, y2, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 1.0F).setLight(fullLight);
+        buffer.addVertex(mat, x2, y1, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 0.0F).setLight(fullLight);
+        buffer.addVertex(mat, x1, y1, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 0.0F).setLight(fullLight);
     }
 }
