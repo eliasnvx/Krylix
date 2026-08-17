@@ -125,7 +125,7 @@ public class HealthIndicator {
             if (state.nameTagAttachment == null) {
                 state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTick));
                 if (state.nameTagAttachment == null) {
-                    state.nameTagAttachment = new Vec3(0, entity.getBbHeight() + 0.5, 0);
+                    state.nameTagAttachment = new Vec3(0, entity.getBbHeight() + 0.65, 0);
                 }
             }
         }
@@ -162,7 +162,7 @@ public class HealthIndicator {
 
         poseStack.pushPose();
         Vec3 attachment = state.nameTagAttachment;
-        poseStack.translate(attachment.x, attachment.y + 0.5, attachment.z);
+        poseStack.translate(attachment.x, attachment.y + 0.65, attachment.z);
         poseStack.mulPose(cameraRenderState.orientation);
         poseStack.scale(0.025f, -0.025f, 0.025f);
 
@@ -170,13 +170,13 @@ public class HealthIndicator {
         final int fTotalHearts = totalHearts;
         final int fFullHearts = fullHearts;
         final boolean fHasHalf = hasHalf;
-        final int light = state.lightCoords;
+        final int fullLight = 0xF000F0;
 
         // 1. Containers
         submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_CONTAINER), (pose, buffer) -> {
             for (int i = 0; i < fTotalHearts; i++) {
                 float hx = fStartX + i * 8;
-                drawQuad(pose, buffer, hx, 10, hx + 9, 19, light);
+                drawQuad(pose, buffer, hx, 1.0f, hx + 9, 10.0f, fullLight);
             }
         });
 
@@ -185,7 +185,7 @@ public class HealthIndicator {
             submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_FULL), (pose, buffer) -> {
                 for (int i = 0; i < fFullHearts; i++) {
                     float hx = fStartX + i * 8;
-                    drawQuad(pose, buffer, hx, 10, hx + 9, 19, light);
+                    drawQuad(pose, buffer, hx, 1.0f, hx + 9, 10.0f, fullLight);
                 }
             });
         }
@@ -195,15 +195,15 @@ public class HealthIndicator {
             final int halfIndex = fullHearts;
             submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_HALF), (pose, buffer) -> {
                 float hx = fStartX + halfIndex * 8;
-                drawQuad(pose, buffer, hx, 10, hx + 9, 19, light);
+                drawQuad(pose, buffer, hx, 1.0f, hx + 9, 10.0f, fullLight);
             });
         }
 
         // 4. Numbers
         float textX = startX + heartsWidth + spacing;
-        float textY = 10.5f;
+        float textY = 1.5f;
         FormattedCharSequence seq = Component.literal(text).getVisualOrderText();
-        submitNodeCollector.submitText(poseStack, textX, textY, seq, true, Font.DisplayMode.SEE_THROUGH, 0xFFFFFFFF, 0x40000000, light, 0);
+        submitNodeCollector.submitText(poseStack, textX, textY, seq, true, Font.DisplayMode.SEE_THROUGH, 0xFFFFFFFF, 0x40000000, fullLight, 0);
 
         poseStack.popPose();
     }
