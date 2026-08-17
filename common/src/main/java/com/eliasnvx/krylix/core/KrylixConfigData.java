@@ -8,5 +8,5 @@ public class KrylixConfigData {
     public int mobStatsMaxEntries = 8;
     public boolean restrictBroadcastToSameDimension = false;
     public boolean healthIndicatorEnabled = true;
-    public HealthBarStyle healthBarStyle = HealthBarStyle.BLOCKS;
+    public HealthBarStyle healthBarStyle = HealthBarStyle.HEARTS;
 }

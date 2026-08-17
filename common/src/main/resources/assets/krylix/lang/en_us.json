@@ -22,6 +22,7 @@
   "krylix.toggle.killfeed": "Kill Feed: %s",
   "krylix.toggle.mobstats": "Mob Stats: %s",
   "krylix.toggle.health_indicator": "Health Indicator: %s",
+  "krylix.health_bar_style.hearts": "Hearts",
   "krylix.health_bar_style.blocks": "Blocks",
   "krylix.health_bar_style.ascii": "ASCII",
   "krylix.health_bar_style.dots": "Dots",

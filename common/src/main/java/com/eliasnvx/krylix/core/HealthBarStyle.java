@@ -3,6 +3,7 @@ package com.eliasnvx.krylix.core;
 import java.util.Locale;
 
 public enum HealthBarStyle {
+    HEARTS,
     BLOCKS,
     ASCII,
     DOTS,

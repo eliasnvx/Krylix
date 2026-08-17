@@ -162,13 +162,14 @@ public class HealthIndicator {
         int empty = BAR_SEGMENTS - filled;
         
         HealthBarStyle style = KrylixConfig.get().healthBarStyle;
-        if (style == null) style = HealthBarStyle.BLOCKS;
+        if (style == null) style = HealthBarStyle.HEARTS;
 
         return switch (style) {
-            case BLOCKS -> "█".repeat(filled) + "░".repeat(empty) + " " + hp + "/" + maxHp + " ❤";
-            case ASCII -> "[" + "|".repeat(filled) + ".".repeat(empty) + "] " + hp + "/" + maxHp + " ❤";
-            case DOTS -> "●".repeat(filled) + "○".repeat(empty) + " " + hp + "/" + maxHp + " ❤";
-            case NUMBER_ONLY -> hp + "/" + maxHp + " ❤";
+            case HEARTS -> "❤".repeat(filled) + "♡".repeat(empty) + " " + hp + "/" + maxHp;
+            case BLOCKS -> "█".repeat(filled) + "░".repeat(empty) + " " + hp + "/" + maxHp;
+            case ASCII -> "[" + "|".repeat(filled) + ".".repeat(empty) + "] " + hp + "/" + maxHp;
+            case DOTS -> "●".repeat(filled) + "○".repeat(empty) + " " + hp + "/" + maxHp;
+            case NUMBER_ONLY -> hp + "/" + maxHp + " HP";
         };
     }
 }

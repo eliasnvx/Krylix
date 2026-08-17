@@ -22,6 +22,7 @@
   "krylix.toggle.killfeed": "Лента убийств: %s",
   "krylix.toggle.mobstats": "Статистика мобов: %s",
   "krylix.toggle.health_indicator": "Индикатор здоровья: %s",
+  "krylix.health_bar_style.hearts": "Сердечки",
   "krylix.health_bar_style.blocks": "Блоки",
   "krylix.health_bar_style.ascii": "ASCII",
   "krylix.health_bar_style.dots": "Точки",
