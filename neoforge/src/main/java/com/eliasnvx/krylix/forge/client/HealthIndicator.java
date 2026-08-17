@@ -129,14 +129,10 @@ public class HealthIndicator {
         updateTarget();
         if (currentTarget == living) {
             EntityRenderState state = event.getEntityRenderState();
-            Component baseName = event.getContent() != null ? event.getContent() : living.getDisplayName();
-            Component healthTag = Component.empty()
-                    .append(baseName)
-                    .append(Component.literal("  ").withStyle(net.minecraft.ChatFormatting.RESET))
-                    .append(createHealthComponent(living));
-
-            event.setContent(healthTag);
-            state.nameTag = healthTag;
+            Component nameComponent = event.getContent() != null ? event.getContent() : living.getDisplayName();
+            event.setContent(nameComponent);
+            state.nameTag = nameComponent;
+            state.scoreText = createHealthComponent(living);
             if (state.nameTagAttachment == null) {
                 state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(event.getPartialTick()));
                 if (state.nameTagAttachment == null) {
@@ -155,10 +151,10 @@ public class HealthIndicator {
         if (style == null) style = HealthBarStyle.BLOCKS;
 
         return switch (style) {
-            case BLOCKS -> "█".repeat(filled) + "░".repeat(empty) + " " + hp + "/" + maxHp;
-            case ASCII -> "[" + "|".repeat(filled) + ".".repeat(empty) + "] " + hp + "/" + maxHp;
-            case DOTS -> "●".repeat(filled) + "○".repeat(empty) + " " + hp + "/" + maxHp;
-            case NUMBER_ONLY -> hp + "/" + maxHp + " HP";
+            case BLOCKS -> "█".repeat(filled) + "░".repeat(empty) + " " + hp + "/" + maxHp + " ❤";
+            case ASCII -> "[" + "|".repeat(filled) + ".".repeat(empty) + "] " + hp + "/" + maxHp + " ❤";
+            case DOTS -> "●".repeat(filled) + "○".repeat(empty) + " " + hp + "/" + maxHp + " ❤";
+            case NUMBER_ONLY -> hp + "/" + maxHp + " ❤";
         };
     }
 }
