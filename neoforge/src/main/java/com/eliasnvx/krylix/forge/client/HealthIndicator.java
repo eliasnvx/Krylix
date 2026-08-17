@@ -135,7 +135,7 @@ public class HealthIndicator {
                     attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
                 }
             }
-            state.nameTagAttachment = attach.add(0, 0.35, 0);
+            state.nameTagAttachment = attach.add(0, 0.75, 0);
             event.setCanRender(net.minecraft.util.TriState.TRUE);
         }
     }
