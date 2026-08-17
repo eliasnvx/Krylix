@@ -2,17 +2,16 @@ package com.eliasnvx.krylix.fabric.client;
 
 import com.eliasnvx.krylix.fabric.config.KrylixConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.objects.AtlasSprite;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,15 +19,15 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 
 import java.util.List;
 
 public class HealthIndicator {
     private static final double MAX_DISTANCE = 48.0;
-    private static final Identifier HEART_CONTAINER = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/container.png");
-    private static final Identifier HEART_FULL = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/full.png");
-    private static final Identifier HEART_HALF = Identifier.fromNamespaceAndPath("minecraft", "textures/gui/sprites/hud/heart/half.png");
+
+    private static final Identifier SPRITE_HEART_FULL = Identifier.withDefaultNamespace("hud/heart/full");
+    private static final Identifier SPRITE_HEART_HALF = Identifier.withDefaultNamespace("hud/heart/half");
+    private static final Identifier SPRITE_HEART_CONTAINER = Identifier.withDefaultNamespace("hud/heart/container");
 
     private static LivingEntity currentTarget = null;
 
@@ -130,6 +129,7 @@ public class HealthIndicator {
                     attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
                 }
             }
+            // Lift the entire panel +0.75 blocks above the mob
             state.nameTagAttachment = attach.add(0, 0.75, 0);
         }
     }
@@ -143,9 +143,6 @@ public class HealthIndicator {
     }
 
     public static void renderTexturedHealth(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, LivingEntity living) {
-        Minecraft mc = Minecraft.getInstance();
-        Font font = mc.font;
-
         float maxHp = Math.max(1f, living.getMaxHealth());
         float hp = Math.max(0f, Math.min(maxHp, living.getHealth()));
         int hpRounded = Math.round(hp);
@@ -155,67 +152,20 @@ public class HealthIndicator {
         float hpPerHeart = maxHp / (float) totalHearts;
         int fullHearts = (int) (hp / hpPerHeart);
         boolean hasHalf = (hp - (fullHearts * hpPerHeart)) >= (hpPerHeart * 0.25f);
+        int emptyHearts = totalHearts - fullHearts - (hasHalf ? 1 : 0);
 
-        int heartsWidth = (totalHearts - 1) * 8 + 9;
-        String text = hpRounded + "/" + maxHpRounded;
-        int textWidth = font.width(text);
-        int spacing = 4;
-        int totalWidth = heartsWidth + spacing + textWidth;
-        float startX = -totalWidth / 2.0f;
-
-        poseStack.pushPose();
-        Vec3 attachment = state.nameTagAttachment;
-        poseStack.translate(attachment.x, attachment.y + 0.5, attachment.z);
-        poseStack.mulPose(cameraRenderState.orientation);
-        poseStack.scale(0.025f, -0.025f, 0.025f);
-
-        final float fStartX = startX;
-        final int fTotalHearts = totalHearts;
-        final int fFullHearts = fullHearts;
-        final boolean fHasHalf = hasHalf;
-
-        // 1. Containers (empty heart frames) using unshaded text render type
-        submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(HEART_CONTAINER), (pose, buffer) -> {
-            for (int i = 0; i < fTotalHearts; i++) {
-                float hx = fStartX + i * 8;
-                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f);
-            }
-        });
-
-        // 2. Full bright red hearts
-        if (fullHearts > 0) {
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(HEART_FULL), (pose, buffer) -> {
-                for (int i = 0; i < fFullHearts; i++) {
-                    float hx = fStartX + i * 8;
-                    drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f);
-                }
-            });
+        MutableComponent healthLine = Component.empty();
+        for (int i = 0; i < fullHearts; i++) {
+            healthLine.append(Component.object(new AtlasSprite(AtlasIds.GUI, SPRITE_HEART_FULL)));
         }
-
-        // 3. Half heart
-        if (hasHalf && fullHearts < totalHearts) {
-            final int halfIndex = fullHearts;
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.text(HEART_HALF), (pose, buffer) -> {
-                float hx = fStartX + halfIndex * 8;
-                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f);
-            });
+        if (hasHalf) {
+            healthLine.append(Component.object(new AtlasSprite(AtlasIds.GUI, SPRITE_HEART_HALF)));
         }
+        for (int i = 0; i < emptyHearts; i++) {
+            healthLine.append(Component.object(new AtlasSprite(AtlasIds.GUI, SPRITE_HEART_CONTAINER)));
+        }
+        healthLine.append(Component.literal(" " + hpRounded + "/" + maxHpRounded).withStyle(ChatFormatting.WHITE));
 
-        // 4. Numbers (8/8)
-        float textX = startX + heartsWidth + spacing;
-        float textY = 10.5f;
-        FormattedCharSequence seq = Component.literal(text).getVisualOrderText();
-        submitNodeCollector.submitText(poseStack, textX, textY, seq, true, Font.DisplayMode.SEE_THROUGH, 0xFFFFFFFF, 0x40000000, LightCoordsUtil.FULL_BRIGHT, 0);
-
-        poseStack.popPose();
-    }
-
-    private static void drawQuad(PoseStack.Pose pose, VertexConsumer buffer, float x1, float y1, float x2, float y2) {
-        Matrix4f mat = pose.pose();
-        int fullLight = LightCoordsUtil.FULL_BRIGHT;
-        buffer.addVertex(mat, x1, y2, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 1.0F).setLight(fullLight);
-        buffer.addVertex(mat, x2, y2, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 1.0F).setLight(fullLight);
-        buffer.addVertex(mat, x2, y1, 0.0F).setColor(255, 255, 255, 255).setUv(1.0F, 0.0F).setLight(fullLight);
-        buffer.addVertex(mat, x1, y1, 0.0F).setColor(255, 255, 255, 255).setUv(0.0F, 0.0F).setLight(fullLight);
+        submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, 10, healthLine, state.isDiscrete, state.lightCoords, state.distanceToCameraSq, cameraRenderState);
     }
 }
