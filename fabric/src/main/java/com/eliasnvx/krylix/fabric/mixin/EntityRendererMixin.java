@@ -19,8 +19,10 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
         HealthIndicator.applyNameplate(entity, state, partialTick);
     }
 
-    @Inject(method = "submitNameDisplay(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("TAIL"))
+    @Inject(method = "submitNameDisplay(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("HEAD"), cancellable = true)
     private void krylix$onSubmitNameDisplay(S state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
-        HealthIndicator.onSubmitNameDisplay(state, poseStack, submitNodeCollector, cameraRenderState);
+        if (HealthIndicator.onSubmitNameDisplay(state, poseStack, submitNodeCollector, cameraRenderState)) {
+            ci.cancel();
+        }
     }
 }

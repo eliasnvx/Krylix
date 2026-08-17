@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.objects.AtlasSprite;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
@@ -129,20 +130,31 @@ public class HealthIndicator {
                     attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
                 }
             }
-            // Lift the entire panel +1.25 blocks above the mob
-            state.nameTagAttachment = attach.add(0, 1.25, 0);
+            state.nameTagAttachment = attach;
         }
     }
 
-    public static void onSubmitNameDisplay(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
-        if (!isIndicatorEnabled()) return;
+    public static boolean onSubmitNameDisplay(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
+        if (!isIndicatorEnabled()) return false;
         LivingEntity living = currentTarget;
-        if (living == null || !living.isAlive() || state.nameTagAttachment == null) return;
+        if (living == null || !living.isAlive() || state.nameTagAttachment == null) return false;
 
-        renderTexturedHealth(state, poseStack, submitNodeCollector, cameraRenderState, living);
+        renderTwoLineHealthNameplate(state, poseStack, submitNodeCollector, cameraRenderState, living);
+        return true;
     }
 
-    public static void renderTexturedHealth(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, LivingEntity living) {
+    public static void renderTwoLineHealthNameplate(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, LivingEntity living) {
+        Vec3 attach = state.nameTagAttachment;
+        if (attach == null) return;
+
+        // Lift both lines by +0.35 blocks above the entity
+        Vec3 liftedAttach = attach.add(0, 0.35, 0);
+
+        // Line 1: Mob Name (at yOffset = 0, full bright, high above mob)
+        Component name = state.nameTag != null ? state.nameTag : living.getDisplayName();
+        submitNodeCollector.submitNameTag(poseStack, liftedAttach, 0, name, !state.isDiscrete, LightCoordsUtil.FULL_BRIGHT, state.distanceToCameraSq, cameraRenderState);
+
+        // Line 2: Hearts + Text (at yOffset = 10, full bright, right below mob name)
         float maxHp = Math.max(1f, living.getMaxHealth());
         float hp = Math.max(0f, Math.min(maxHp, living.getHealth()));
         int hpRounded = Math.round(hp);
@@ -166,7 +178,6 @@ public class HealthIndicator {
         }
         healthLine.append(Component.literal(" " + hpRounded + "/" + maxHpRounded).withStyle(ChatFormatting.WHITE));
 
-        // Submit with FULL_BRIGHT light level so the hearts are never darkened by shadows
-        submitNodeCollector.submitNameTag(poseStack, state.nameTagAttachment, 10, healthLine, state.isDiscrete, net.minecraft.util.LightCoordsUtil.FULL_BRIGHT, state.distanceToCameraSq, cameraRenderState);
+        submitNodeCollector.submitNameTag(poseStack, liftedAttach, 10, healthLine, !state.isDiscrete, LightCoordsUtil.FULL_BRIGHT, state.distanceToCameraSq, cameraRenderState);
     }
 }

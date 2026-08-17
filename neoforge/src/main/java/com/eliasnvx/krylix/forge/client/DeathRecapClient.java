@@ -155,7 +155,7 @@ public class DeathRecapClient {
                 String entityId = MobTextures.guessEntityId(recap.killerName());
                 MobTextures.blitMobFace(guiGraphics, skinTexture, entityId, x, y, size);
             } else {
-                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, skinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, size, size);
+                net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(guiGraphics, skinTexture, x, y, size, true, false, -1);
             }
         } else {
             HudRender.roundedFill(guiGraphics, x, y, size, size, 3, 0x80808080);

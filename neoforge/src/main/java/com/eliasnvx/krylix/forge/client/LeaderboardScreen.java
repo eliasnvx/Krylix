@@ -267,8 +267,7 @@ public class LeaderboardScreen extends Screen {
         Identifier texture = headTextures.get(entry.uuid());
         
         if (texture != null) {
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 8.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 40.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
+            net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(guiGraphics, texture, avatarX, avatarY, avatarSize, true, false, -1);
         } else {
             HudRender.roundedFill(guiGraphics, avatarX, avatarY, avatarSize, avatarSize, 2, 0xFF555555);
         }

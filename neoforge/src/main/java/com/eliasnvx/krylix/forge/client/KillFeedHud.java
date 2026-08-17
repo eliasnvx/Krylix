@@ -207,8 +207,7 @@ public class KillFeedHud {
                 if (isMob) {
                     MobTextures.blitMobFace(guiGraphics, skinTexture, MobTextures.guessEntityId(playerName), x, y, headSize);
                 } else {
-                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, skinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
-                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, skinTexture, x, y, 40.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
+                    net.minecraft.client.gui.components.PlayerFaceExtractor.extractRenderState(guiGraphics, skinTexture, x, y, headSize, true, false, -1);
                 }
             } catch (Exception e) {
                 renderFallbackHead(guiGraphics, playerName, x, y, alpha);
