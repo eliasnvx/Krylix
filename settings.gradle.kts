@@ -23,4 +23,4 @@ plugins {
 include("common")
 include("neoforge")
 include("fabric")
-include("forge")
+// include("forge")

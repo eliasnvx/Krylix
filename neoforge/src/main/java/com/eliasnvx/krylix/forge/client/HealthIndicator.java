@@ -2,30 +2,17 @@ package com.eliasnvx.krylix.forge.client;
 
 import com.eliasnvx.krylix.core.HealthBarStyle;
 import com.eliasnvx.krylix.forge.config.KrylixConfig;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import org.joml.Matrix4f;
 
 import java.util.List;
-
-import java.util.Objects;
 
 public class HealthIndicator {
     private static final double MAX_DISTANCE = 48.0;
@@ -77,7 +64,7 @@ public class HealthIndicator {
         for (Entity entity : entitiesInBoundingBox) {
             Entity lookedEntity = null;
             if (entity.isPickable()) {
-                AABB collisionBox = entity.getBoundingBoxForCulling().inflate(0.5);
+                AABB collisionBox = entity.getBoundingBox().inflate(0.5);
                 java.util.Optional<Vec3> interceptPosition = collisionBox.clip(positionVector, reachVector);
 
                 if (collisionBox.contains(positionVector)) {
@@ -110,9 +97,7 @@ public class HealthIndicator {
         return e.level().clip(new ClipContext(origin, next, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, e));
     }
 
-    @SubscribeEvent
-    public static void onRenderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
+    public static void renderHud(GuiGraphicsExtractor guiGraphics, float partialTick) {
         if (!KrylixConfig.get().healthIndicatorEnabled) return;
 
         updateTarget();
@@ -120,84 +105,36 @@ public class HealthIndicator {
         LivingEntity target = currentTarget;
         if (target == null || !target.isAlive()) return;
 
-        render(event, target);
-    }
-
-    private static void render(RenderLevelStageEvent event, LivingEntity entity) {
         Minecraft minecraft = Minecraft.getInstance();
-        Camera camera = event.getCamera();
-        Vec3 camPos = camera.getPosition();
-
-        float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-        double entityX = Mth.lerp(partialTick, entity.xOld, entity.getX());
-        double entityY = Mth.lerp(partialTick, entity.yOld, entity.getY());
-        double entityZ = Mth.lerp(partialTick, entity.zOld, entity.getZ());
-
-        Vec3 attachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getViewYRot(partialTick));
-        double attachX = attachment != null ? attachment.x : 0.0;
-        double attachY = attachment != null ? attachment.y + 0.5 : entity.getBbHeight() + 0.5;
-        double attachZ = attachment != null ? attachment.z : 0.0;
-
-        PoseStack poseStack = event.getPoseStack();
-        poseStack.pushPose();
-        poseStack.translate(entityX - camPos.x + attachX, entityY - camPos.y + attachY, entityZ - camPos.z + attachZ);
-        poseStack.mulPose(camera.rotation());
-        poseStack.mulPose(Axis.YP.rotationDegrees(180));
-        poseStack.scale(-0.0267f, -0.0267f, 0.0267f);
-
         Font font = minecraft.font;
-        float maxHealth = Math.max(1f, entity.getMaxHealth());
-        float pct = Math.max(0f, Math.min(1f, entity.getHealth() / maxHealth));
 
-        ChatFormatting color;
-        if (pct > 0.6f) color = ChatFormatting.GREEN;
-        else if (pct > 0.3f) color = ChatFormatting.YELLOW;
-        else color = ChatFormatting.RED;
+        int screenWidth = minecraft.getWindow().getGuiScaledWidth();
+        int screenHeight = minecraft.getWindow().getGuiScaledHeight();
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2 + 14;
 
-        int hp = Math.round(entity.getHealth());
+        float maxHealth = Math.max(1f, target.getMaxHealth());
+        float pct = Math.max(0f, Math.min(1f, target.getHealth() / maxHealth));
+
+        int color;
+        if (pct > 0.6f) color = 0x55FF55;
+        else if (pct > 0.3f) color = 0xFFFF55;
+        else color = 0xFF5555;
+
+        int hp = Math.round(target.getHealth());
         int maxHp = Math.round(maxHealth);
-        Component hpText = Component.literal(barText(pct, hp, maxHp)).withStyle(color);
-        Component nameText = entity.getDisplayName();
+        String hpText = barText(pct, hp, maxHp);
+        String nameText = target.getDisplayName().getString();
 
-        boolean showOwnName = !entity.hasCustomName();
+        int textWidth = Math.max(font.width(nameText), font.width(hpText));
+        int bgX = centerX - textWidth / 2 - 4;
+        int bgY = centerY - 2;
+        int bgW = textWidth + 8;
+        int bgH = 22;
 
-        Matrix4f matrix = poseStack.last().pose();
-        int bgAlpha = 0x60000000;
-        MultiBufferSource.BufferSource bufferSource = minecraft.renderBuffers().bufferSource();
-        int packedLight = 0xF000F0;
-
-        if (showOwnName) {
-            float nameWidth = font.width(nameText);
-            font.drawInBatch(
-                    nameText,
-                    -nameWidth / 2f,
-                    -10f,
-                    -1,
-                    false,
-                    matrix,
-                    bufferSource,
-                    Font.DisplayMode.NORMAL,
-                    bgAlpha,
-                    packedLight
-            );
-        }
-
-        float hpWidth = font.width(hpText);
-        font.drawInBatch(
-                hpText,
-                -hpWidth / 2f,
-                0f,
-                -1,
-                false,
-                matrix,
-                bufferSource,
-                Font.DisplayMode.NORMAL,
-                bgAlpha,
-                packedLight
-        );
-
-        bufferSource.endBatch();
-        poseStack.popPose();
+        guiGraphics.fill(bgX, bgY, bgX + bgW, bgY + bgH, 0x80000000);
+        guiGraphics.centeredText(font, nameText, centerX, centerY, 0xFFFFFF);
+        guiGraphics.centeredText(font, hpText, centerX, centerY + 10, color);
     }
 
     private static String barText(float pct, int hp, int maxHp) {

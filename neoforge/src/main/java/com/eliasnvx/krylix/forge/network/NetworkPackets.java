@@ -5,7 +5,7 @@ import com.eliasnvx.krylix.model.KillEntry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -73,7 +73,7 @@ public class NetworkPackets {
         boolean isSmash,
         boolean isCritical
     ) implements CustomPacketPayload {
-        public static final Type<KillNotificationPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "kill_notification"));
+        public static final Type<KillNotificationPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "kill_notification"));
 
         public static final StreamCodec<FriendlyByteBuf, KillNotificationPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {
@@ -135,7 +135,7 @@ public class NetworkPackets {
         boolean isCritical,
         boolean isLongshot
     ) implements CustomPacketPayload {
-        public static final Type<DeathRecapPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "death_recap"));
+        public static final Type<DeathRecapPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "death_recap"));
 
         public static final StreamCodec<FriendlyByteBuf, DeathRecapPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {
@@ -177,7 +177,7 @@ public class NetworkPackets {
     }
 
     public record MobStatsSyncPacket(Map<String, Integer> kills) implements CustomPacketPayload {
-        public static final Type<MobStatsSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "mob_stats_sync"));
+        public static final Type<MobStatsSyncPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "mob_stats_sync"));
 
         public static final StreamCodec<FriendlyByteBuf, MobStatsSyncPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {
@@ -208,7 +208,7 @@ public class NetworkPackets {
     public record PlayerStatEntry(String uuid, String name, int kills, int deaths, int mobKills) {}
 
     public record PlayerStatsSyncPacket(List<PlayerStatEntry> entries) implements CustomPacketPayload {
-        public static final Type<PlayerStatsSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "player_stats_sync"));
+        public static final Type<PlayerStatsSyncPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "player_stats_sync"));
 
         public static final StreamCodec<FriendlyByteBuf, PlayerStatsSyncPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {

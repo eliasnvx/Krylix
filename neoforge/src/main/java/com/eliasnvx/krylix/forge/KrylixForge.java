@@ -42,12 +42,9 @@ public class KrylixForge {
             Krylix.LOGGER.warn("Failed to register config: " + e.getMessage());
         }
 
-        if (FMLEnvironment.dist.isClient()) {
+        if (FMLEnvironment.getDist().isClient()) {
+            modEventBus.addListener(com.eliasnvx.krylix.forge.client.KrylixKeyBindings::onRegisterKeyMappings);
             com.eliasnvx.krylix.forge.client.KrylixClient.registerClientEvents();
-            container.registerExtensionPoint(
-                IConfigScreenFactory.class,
-                (mc, screen) -> AutoConfig.getConfigScreen(ModConfig.class, screen).get()
-            );
         }
 
         NeoForge.EVENT_BUS.register(this);
@@ -73,7 +70,7 @@ public class KrylixForge {
         long now = System.currentTimeMillis();
         Map<String, CombatDamage> targetMap = combatDamageMap.computeIfAbsent(attackerId, k -> new HashMap<>());
         CombatDamage prev = targetMap.get(targetId);
-        float total = (prev != null && now - prev.timestamp < 20_000) ? prev.totalDamage + event.getNewDamage() : event.getNewDamage();
+        float total = (prev != null && now - prev.timestamp < 20_000) ? prev.totalDamage + event.getOriginalDamage() : event.getOriginalDamage();
         targetMap.put(targetId, new CombatDamage(now, total));
     }
 

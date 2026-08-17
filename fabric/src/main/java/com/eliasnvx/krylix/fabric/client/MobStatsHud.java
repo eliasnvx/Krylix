@@ -3,8 +3,8 @@ package com.eliasnvx.krylix.fabric.client;
 import com.eliasnvx.krylix.fabric.config.KrylixConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 
 import java.util.Comparator;
 import java.util.List;
@@ -20,7 +20,7 @@ public class MobStatsHud {
         KrylixConfig.save();
     }
 
-    public static void render(GuiGraphics guiGraphics, float partialTick) {
+    public static void render(GuiGraphicsExtractor guiGraphics, float partialTick) {
         if (!isStatsEnabled()) return;
 
         Minecraft minecraft = Minecraft.getInstance();
@@ -49,7 +49,7 @@ public class MobStatsHud {
             Map.Entry<String, Integer> entry = sorted.get(i);
             int y = startY + (i * rowHeight);
 
-            ResourceLocation texture = MobTextures.byEntityId(entry.getKey());
+            Identifier texture = MobTextures.byEntityId(entry.getKey());
             if (texture != null) {
                 MobTextures.blitMobFace(guiGraphics, texture, entry.getKey(), startX, y + 2, iconSize);
             } else {
@@ -57,7 +57,7 @@ public class MobStatsHud {
             }
 
             String countStr = String.valueOf(entry.getValue());
-            guiGraphics.drawString(font, countStr, startX + iconSize + padding, y + 4, 0xFFFFFF);
+            guiGraphics.text(font, countStr, startX + iconSize + padding, y + 4, 0xFFFFFF);
         }
     }
 }

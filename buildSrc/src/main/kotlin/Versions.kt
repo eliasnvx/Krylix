@@ -1,32 +1,32 @@
 // Common
-const val jvmTarget = "21"
+const val jvmTarget = "25"
 
 // Minecraft
-const val minecraftVersion = "1.21.1"
+const val minecraftVersion = "26.1.2"
 
 // Mod
 const val modId = "krylix"
 const val modGroup = "com.eliasnvx"
-const val coreVersion = "1.2.0"
+const val coreVersion = "1.3.0"
 
 // NeoForge
-const val neoForgeVersion = "21.1.77" // https://projects.neoforged.net/neoforged/neoforge
-const val neoModDevPlugin = "2.0.78" // https://projects.neoforged.net/neoforged/moddevgradle
-const val neoForgeModVersion = "1.2.0-MC$minecraftVersion"
+const val neoForgeVersion = "26.1.2.95" // https://projects.neoforged.net/neoforged/neoforge
+const val neoModDevPlugin = "2.0.144" // https://projects.neoforged.net/neoforged/moddevgradle
+const val neoForgeModVersion = "$coreVersion-MC$minecraftVersion"
 const val neoForgeModArchive = "$modId-$neoForgeModVersion-neoforge"
 
 // Fabric
-const val fabricLoomVersion = "1.9.2"
-const val fabricLoaderVersion = "0.16.5"
-const val fabricApiVersion = "0.104.0+1.21.1"
-const val fabricModVersion = "1.2.0-MC$minecraftVersion"
+const val fabricLoomVersion = "1.17.12"
+const val fabricLoaderVersion = "0.19.3"
+const val fabricApiVersion = "0.155.2+26.1.2"
+const val fabricModVersion = "$coreVersion-MC$minecraftVersion"
 const val fabricModArchive = "$modId-$fabricModVersion-fabric"
 
 // Forge
 const val forgeGradleVersion = "6.0.54"
-const val forgeVersion = "52.1.0"
-const val forgeModVersion = "1.2.0-MC$minecraftVersion"
+const val forgeVersion = "26.1.2"
+const val forgeModVersion = "$coreVersion-MC$minecraftVersion"
 const val forgeModArchive = "$modId-$forgeModVersion-forge"
 
 // External dependencies
-const val clothConfigVersion = "15.0.140" // https://linkie.shedaniel.dev/dependencies
+const val clothConfigVersion = "26.1.154" // https://linkie.shedaniel.dev/dependencies

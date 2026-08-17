@@ -19,7 +19,7 @@ public class KillFeedManager {
     private static boolean isEnabled = true;
 
     public static void handleDeath(LivingEntity entity, DamageSource source) {
-        if (!isEnabled || entity.level().isClientSide) return;
+        if (!isEnabled || entity.level().isClientSide()) return;
 
         String victimName = entity.getName().getString();
         String victimUUIDString = null;

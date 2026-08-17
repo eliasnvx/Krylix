@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -20,15 +20,15 @@ import java.util.Map;
 public class FabricNetworkPackets {
 
     public static void registerPayloads() {
-        PayloadTypeRegistry.playS2C().register(KillNotificationPacket.TYPE, KillNotificationPacket.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(MobStatsSyncPacket.TYPE, MobStatsSyncPacket.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(PlayerStatsSyncPacket.TYPE, PlayerStatsSyncPacket.STREAM_CODEC);
-        PayloadTypeRegistry.playS2C().register(DeathRecapPacket.TYPE, DeathRecapPacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(KillNotificationPacket.TYPE, KillNotificationPacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(MobStatsSyncPacket.TYPE, MobStatsSyncPacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PlayerStatsSyncPacket.TYPE, PlayerStatsSyncPacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(DeathRecapPacket.TYPE, DeathRecapPacket.STREAM_CODEC);
     }
 
     public static void sendToAll(ServerLevel level, CustomPacketPayload packet) {
         if (level == null || level.getServer() == null) return;
-        for (ServerPlayer player : PlayerLookup.all(level.getServer())) {
+        for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
             ServerPlayNetworking.send(player, packet);
         }
     }
@@ -38,7 +38,8 @@ public class FabricNetworkPackets {
     }
 
     public static void sendToDimension(ServerLevel dimension, CustomPacketPayload packet) {
-        for (ServerPlayer player : PlayerLookup.world(dimension)) {
+        if (dimension == null) return;
+        for (ServerPlayer player : dimension.players()) {
             ServerPlayNetworking.send(player, packet);
         }
     }
@@ -58,7 +59,7 @@ public class FabricNetworkPackets {
         boolean isSmash,
         boolean isCritical
     ) implements CustomPacketPayload {
-        public static final Type<KillNotificationPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "kill_notification"));
+        public static final Type<KillNotificationPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "kill_notification"));
 
         public static final StreamCodec<FriendlyByteBuf, KillNotificationPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {
@@ -120,7 +121,7 @@ public class FabricNetworkPackets {
         boolean isCritical,
         boolean isLongshot
     ) implements CustomPacketPayload {
-        public static final Type<DeathRecapPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "death_recap"));
+        public static final Type<DeathRecapPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "death_recap"));
 
         public static final StreamCodec<FriendlyByteBuf, DeathRecapPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {
@@ -162,7 +163,7 @@ public class FabricNetworkPackets {
     }
 
     public record MobStatsSyncPacket(Map<String, Integer> kills) implements CustomPacketPayload {
-        public static final Type<MobStatsSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "mob_stats_sync"));
+        public static final Type<MobStatsSyncPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "mob_stats_sync"));
 
         public static final StreamCodec<FriendlyByteBuf, MobStatsSyncPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {
@@ -193,7 +194,7 @@ public class FabricNetworkPackets {
     public record PlayerStatEntry(String uuid, String name, int kills, int deaths, int mobKills) {}
 
     public record PlayerStatsSyncPacket(List<PlayerStatEntry> entries) implements CustomPacketPayload {
-        public static final Type<PlayerStatsSyncPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Krylix.MOD_ID, "player_stats_sync"));
+        public static final Type<PlayerStatsSyncPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "player_stats_sync"));
 
         public static final StreamCodec<FriendlyByteBuf, PlayerStatsSyncPacket> STREAM_CODEC = StreamCodec.of(
             (buf, packet) -> {

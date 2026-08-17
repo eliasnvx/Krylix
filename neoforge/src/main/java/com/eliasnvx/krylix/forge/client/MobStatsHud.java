@@ -3,8 +3,8 @@ package com.eliasnvx.krylix.forge.client;
 import com.eliasnvx.krylix.forge.config.KrylixConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +24,7 @@ public class MobStatsHud {
         return KrylixConfig.get().mobStatsEnabled;
     }
 
-    public static void render(GuiGraphics guiGraphics, float partialTick) {
+    public static void render(GuiGraphicsExtractor guiGraphics, float partialTick) {
         if (!KrylixConfig.get().mobStatsEnabled) return;
 
         List<Map.Entry<String, Integer>> topEntries = MobStatsClient.sortedByCount();
@@ -40,7 +40,7 @@ public class MobStatsHud {
         for (Map.Entry<String, Integer> entry : topEntries) {
             String entityId = entry.getKey();
             int count = entry.getValue();
-            ResourceLocation texture = MobTextures.byEntityId(entityId);
+            Identifier texture = MobTextures.byEntityId(entityId);
             
             final int finalY = y;
             HudRender.rounded(guiGraphics, x, finalY, iconSize, iconCornerCut, () -> {
@@ -51,7 +51,7 @@ public class MobStatsHud {
                 }
             });
             
-            guiGraphics.drawString(font, MobStatsClient.displayName(entityId) + ": " + count, x + iconSize + padding, finalY + 2, 0xFFFFFF);
+            guiGraphics.text(font, MobStatsClient.displayName(entityId) + ": " + count, x + iconSize + padding, finalY + 2, 0xFFFFFF);
             y += rowHeight;
         }
     }

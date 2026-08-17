@@ -3,7 +3,7 @@ import java.util.Date
 
 plugins {
     java
-    id("fabric-loom") version fabricLoomVersion
+    id("net.fabricmc.fabric-loom") version fabricLoomVersion
 }
 
 group = "$modGroup.fabric"
@@ -16,13 +16,11 @@ repositories {
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")
-    mappings(loom.officialMojangMappings())
 
-    modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
-    modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
-    modImplementation("me.shedaniel.cloth:cloth-config-fabric:$clothConfigVersion") {
-        exclude(group = "net.fabricmc.fabric-api")
-    }
+    implementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
+    implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
+    implementation("net.fabricmc.fabric-api:fabric-command-api-v2:3.0.5+e2bdee784c")
+    implementation("me.shedaniel.cloth:cloth-config-fabric:$clothConfigVersion")
 
     implementation(project(":common"))
 }
@@ -40,7 +38,7 @@ sourceSets {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion.set(JavaLanguageVersion.of(jvmTarget.toInt()))
     }
 }
 
@@ -65,9 +63,5 @@ tasks {
                 ),
             )
         }
-    }
-
-    remapJar {
-        archiveBaseName.set(modId)
     }
 }

@@ -2,12 +2,9 @@ package com.eliasnvx.krylix.fabric.client;
 
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.fabric.network.FabricNetworkPackets.PlayerStatEntry;
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.commands.CommandBuildContext;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
@@ -18,80 +15,77 @@ import java.util.UUID;
 public class KrylixClientCommands {
 
     public static void register() {
-        ClientCommandRegistrationCallback.EVENT.register(KrylixClientCommands::onRegisterCommands);
-    }
-
-    private static void onRegisterCommands(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
-        dispatcher.register(
-            ClientCommandManager.literal("krylixclient")
-                .then(
-                    ClientCommandManager.literal("hud")
-                        .then(
-                            ClientCommandManager.literal("toggle")
-                                .executes(context -> {
-                                    KillFeedHud.setEnabled(!KillFeedHud.isHudEnabled());
-                                    Component state = Component.translatable(KillFeedHud.isHudEnabled() ? "krylix.toggle.on" : "krylix.toggle.off");
-                                    context.getSource().sendFeedback(
-                                        Component.translatable("krylix.command.hud_state", state)
-                                    );
-                                    return 1;
-                                })
-                        )
-                        .then(
-                            ClientCommandManager.literal("clear")
-                                .executes(context -> {
-                                    KillFeedHud.clearNotifications();
-                                    context.getSource().sendFeedback(
-                                        Component.translatable("krylix.command.hud_cleared")
-                                    );
-                                    return 1;
-                                })
-                        )
-                        .then(
-                            ClientCommandManager.literal("count")
-                                .executes(context -> {
-                                    context.getSource().sendFeedback(
-                                        Component.translatable("krylix.command.hud_count", KillFeedHud.getNotificationCount())
-                                    );
-                                    return 1;
-                                })
-                        )
-                )
-                .then(
-                    ClientCommandManager.literal("leaderboard")
-                        .then(
-                            ClientCommandManager.literal("testfill")
-                                .executes(context -> {
-                                    int count = fillTestLeaderboard(60);
-                                    context.getSource().sendFeedback(
-                                        Component.translatable("krylix.command.leaderboard_filled", count)
-                                    );
-                                    return 1;
-                                })
-                                .then(
-                                    ClientCommandManager.argument("count", IntegerArgumentType.integer(1, 500))
-                                        .executes(context -> {
-                                            int requested = IntegerArgumentType.getInteger(context, "count");
-                                            int count = fillTestLeaderboard(requested);
-                                            context.getSource().sendFeedback(
-                                                Component.translatable("krylix.command.leaderboard_filled", count)
-                                            );
-                                            return 1;
-                                        })
-                                )
-                        )
-                        .then(
-                            ClientCommandManager.literal("clear")
-                                .executes(context -> {
-                                    PlayerStatsClient.updateStats(new ArrayList<>());
-                                    context.getSource().sendFeedback(
-                                        Component.translatable("krylix.command.leaderboard_cleared")
-                                    );
-                                    return 1;
-                                })
-                        )
-                )
-        );
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+            dispatcher.register(
+                ClientCommands.literal("krylixclient")
+                    .then(
+                        ClientCommands.literal("hud")
+                            .then(
+                                ClientCommands.literal("toggle")
+                                    .executes(context -> {
+                                        boolean enabled = !KillFeedHud.isHudEnabled();
+                                        KillFeedHud.setEnabled(enabled);
+                                        context.getSource().sendFeedback(
+                                            Component.translatable("krylix.toggle.killfeed",
+                                                Component.translatable(enabled ? "krylix.toggle.on" : "krylix.toggle.off"))
+                                        );
+                                        return 1;
+                                    })
+                            )
+                            .then(
+                                ClientCommands.literal("clear")
+                                    .executes(context -> {
+                                        KillFeedHud.clearNotifications();
+                                        context.getSource().sendFeedback(Component.translatable("krylix.command.hud_cleared"));
+                                        return 1;
+                                    })
+                            )
+                            .then(
+                                ClientCommands.literal("count")
+                                    .executes(context -> {
+                                        context.getSource().sendFeedback(
+                                            Component.translatable("krylix.command.hud_count", KillFeedHud.getNotificationCount())
+                                        );
+                                        return 1;
+                                    })
+                            )
+                    )
+                    .then(
+                        ClientCommands.literal("leaderboard")
+                            .then(
+                                ClientCommands.literal("testfill")
+                                    .executes(context -> {
+                                        int count = fillTestLeaderboard(60);
+                                        context.getSource().sendFeedback(
+                                            Component.translatable("krylix.command.leaderboard_filled", count)
+                                        );
+                                        return 1;
+                                    })
+                                    .then(
+                                        ClientCommands.argument("count", IntegerArgumentType.integer(1, 500))
+                                            .executes(context -> {
+                                                int requested = IntegerArgumentType.getInteger(context, "count");
+                                                int count = fillTestLeaderboard(requested);
+                                                context.getSource().sendFeedback(
+                                                    Component.translatable("krylix.command.leaderboard_filled", count)
+                                                );
+                                                return 1;
+                                            })
+                                    )
+                            )
+                            .then(
+                                ClientCommands.literal("clear")
+                                    .executes(context -> {
+                                        PlayerStatsClient.updateStats(new ArrayList<>());
+                                        context.getSource().sendFeedback(
+                                            Component.translatable("krylix.command.leaderboard_cleared")
+                                        );
+                                        return 1;
+                                    })
+                            )
+                    )
+            );
+        });
 
         Krylix.LOGGER.debug("Krylix client commands registered");
     }

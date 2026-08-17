@@ -9,6 +9,9 @@ allprojects {
         maven("https://maven.shedaniel.me/") {
             name = "Shedaniel"
         }
+        maven("https://api.modrinth.com/maven") {
+            name = "Modrinth"
+        }
         mavenCentral()
     }
 }

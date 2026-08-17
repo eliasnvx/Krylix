@@ -47,7 +47,7 @@ public class KrylixFabric implements ModInitializer {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayer player = handler.getPlayer();
-            ServerLevel level = player.serverLevel();
+            ServerLevel level = (ServerLevel) player.level();
             FabricNetworkPackets.sendToPlayer(player, new FabricNetworkPackets.MobStatsSyncPacket(MobKillStatsData.get(server).kills));
 
             PlayerKillStatsData playerStats = PlayerKillStatsData.get(server);
@@ -59,7 +59,7 @@ public class KrylixFabric implements ModInitializer {
         });
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
-            if (entity.level().isClientSide) return;
+            if (entity.level().isClientSide()) return;
 
             if (entity instanceof ServerPlayer sp) {
                 sendDeathRecap(sp, source);

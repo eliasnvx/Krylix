@@ -2,7 +2,7 @@ package com.eliasnvx.krylix.forge.client;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class MobStatsClient {
     }
 
     public static String displayName(String entityId) {
-        ResourceLocation id = ResourceLocation.tryParse(entityId);
+        Identifier id = Identifier.tryParse(entityId);
         if (id == null) return entityId;
         Optional<EntityType<?>> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(id);
         if (entityType.isEmpty()) return entityId;

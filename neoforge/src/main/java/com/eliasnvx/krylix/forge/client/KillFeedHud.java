@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.forge.client;
 
+import net.minecraft.client.renderer.RenderPipelines;
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.forge.config.KrylixConfig;
 import com.eliasnvx.krylix.model.KillEntry;
@@ -7,10 +8,10 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -27,7 +28,7 @@ import java.util.UUID;
 
 public class KillFeedHud {
     private static final List<KillEntry> activeNotifications = new ArrayList<>();
-    private static final Map<String, ResourceLocation> offlineSkinCache = new HashMap<>();
+    private static final Map<String, Identifier> offlineSkinCache = new HashMap<>();
 
     private static int getMaxEntries() { return KrylixConfig.get().maxEntries; }
     private static int getDisplaySeconds() { return KrylixConfig.get().displaySeconds; }
@@ -66,13 +67,13 @@ public class KillFeedHud {
 
     private static ItemStack parseWeaponItem(String weaponId) {
         if (weaponId == null) return Items.IRON_SWORD.getDefaultInstance();
-        ResourceLocation id = ResourceLocation.tryParse(weaponId);
+        Identifier id = Identifier.tryParse(weaponId);
         if (id == null) return Items.IRON_SWORD.getDefaultInstance();
-        Item item = BuiltInRegistries.ITEM.get(id);
+        Item item = BuiltInRegistries.ITEM.getValue(id);
         return item == Items.AIR ? Items.IRON_SWORD.getDefaultInstance() : item.getDefaultInstance();
     }
 
-    public static void render(GuiGraphics guiGraphics, float partialTick) {
+    public static void render(GuiGraphicsExtractor guiGraphics, float partialTick) {
         if (!isHudEnabled() || activeNotifications.isEmpty()) return;
 
         Minecraft minecraft = Minecraft.getInstance();
@@ -91,7 +92,7 @@ public class KillFeedHud {
         }
     }
 
-    private static void renderEntry(GuiGraphics guiGraphics, Font font, KillEntry entry, int screenWidth, int y) {
+    private static void renderEntry(GuiGraphicsExtractor guiGraphics, Font font, KillEntry entry, int screenWidth, int y) {
         float alpha = entry.getAlpha(getDisplaySeconds());
 
         if (entry.isEnvironmentalDeath() || entry.isSuicide()) {
@@ -124,21 +125,21 @@ public class KillFeedHud {
         renderPlayerHead(guiGraphics, killerUUID, entry.getKillerName(), currentX, y, alpha);
         currentX += headSize + padding;
 
-        guiGraphics.drawString(font, entry.getKillerName(), currentX, y + 4, getAlphaColor(killerColor, alpha));
+        guiGraphics.text(font, entry.getKillerName(), currentX, y + 4, getAlphaColor(killerColor, alpha));
         currentX += killerNameWidth + padding;
 
         ItemStack weaponItem = parseWeaponItem(entry.getWeaponName());
         int animationOffset = getWeaponAnimationOffset(entry.getTimestamp());
-        guiGraphics.renderItem(weaponItem, currentX, y + animationOffset);
+        guiGraphics.item(weaponItem, currentX, y + animationOffset);
         currentX += weaponSize + padding;
 
         renderPlayerHead(guiGraphics, victimUUID, entry.getVictimName(), currentX, y, alpha);
         currentX += headSize + padding;
 
-        guiGraphics.drawString(font, entry.getVictimName(), currentX, y + 4, getAlphaColor(victimColor, alpha));
+        guiGraphics.text(font, entry.getVictimName(), currentX, y + 4, getAlphaColor(victimColor, alpha));
         currentX += victimNameWidth + padding;
 
-        guiGraphics.drawString(font, hpText, currentX, y + 4, getAlphaColor(hpColor, alpha));
+        guiGraphics.text(font, hpText, currentX, y + 4, getAlphaColor(hpColor, alpha));
         renderHeartIcon(guiGraphics, currentX + font.width(hpText) + 2, y + 1, alpha);
         currentX += hpWidth;
 
@@ -149,11 +150,11 @@ public class KillFeedHud {
             else if (entry.isCritical()) badgeColor = new Color(255, 215, 0).getRGB();
             else badgeColor = new Color(180, 180, 180).getRGB();
             
-            guiGraphics.drawString(font, badgeText, currentX + padding, y + 4, getAlphaColor(badgeColor, alpha));
+            guiGraphics.text(font, badgeText, currentX + padding, y + 4, getAlphaColor(badgeColor, alpha));
         }
     }
 
-    private static void renderSelfKillEntry(GuiGraphics guiGraphics, Font font, KillEntry entry, int screenWidth, int y, float alpha) {
+    private static void renderSelfKillEntry(GuiGraphicsExtractor guiGraphics, Font font, KillEntry entry, int screenWidth, int y, float alpha) {
         UUID victimUUID = entry.getVictimUUIDString() != null ? UUID.fromString(entry.getVictimUUIDString()) : null;
         int victimNameWidth = font.width(entry.getVictimName());
         int totalWidth = headSize + padding + victimNameWidth + padding + weaponSize;
@@ -164,28 +165,30 @@ public class KillFeedHud {
         renderPlayerHead(guiGraphics, victimUUID, entry.getVictimName(), currentX, y, alpha);
         currentX += headSize + padding;
 
-        guiGraphics.drawString(font, entry.getVictimName(), currentX, y + 4, getAlphaColor(victimColor, alpha));
+        guiGraphics.text(font, entry.getVictimName(), currentX, y + 4, getAlphaColor(victimColor, alpha));
         currentX += victimNameWidth + padding;
 
         ItemStack weaponItem = parseWeaponItem(entry.getWeaponName());
         int animationOffset = getWeaponAnimationOffset(entry.getTimestamp());
-        guiGraphics.renderItem(weaponItem, currentX, y + animationOffset);
+        guiGraphics.item(weaponItem, currentX, y + animationOffset);
     }
 
-    private static void renderPlayerHead(GuiGraphics guiGraphics, UUID playerUUID, String playerName, int x, int y, float alpha) {
+    private static void renderPlayerHead(GuiGraphicsExtractor guiGraphics, UUID playerUUID, String playerName, int x, int y, float alpha) {
         Minecraft minecraft = Minecraft.getInstance();
-        ResourceLocation skinTexture = null;
+        Identifier skinTexture = null;
         boolean isMob = false;
 
         if (playerUUID != null && minecraft.getConnection() != null) {
             PlayerInfo playerInfo = minecraft.getConnection().getPlayerInfo(playerUUID);
-            if (playerInfo != null) skinTexture = playerInfo.getSkin().texture();
+            if (playerInfo != null && playerInfo.getSkin() != null) skinTexture = playerInfo.getSkin().body().texturePath();
         }
 
         if (skinTexture == null && playerName != null && minecraft.getConnection() != null) {
             for (PlayerInfo playerInfo : minecraft.getConnection().getOnlinePlayers()) {
-                if (playerInfo.getProfile().getName().equalsIgnoreCase(playerName)) {
-                    skinTexture = playerInfo.getSkin().texture();
+                if (playerInfo.getProfile().name().equalsIgnoreCase(playerName)) {
+                    if (playerInfo.getSkin() != null) {
+                        skinTexture = playerInfo.getSkin().body().texturePath();
+                    }
                     break;
                 }
             }
@@ -194,33 +197,23 @@ public class KillFeedHud {
                 if (skinTexture != null) {
                     isMob = true;
                 } else if (playerUUID != null) {
-                    skinTexture = offlineSkinCache.computeIfAbsent(playerUUID.toString(), k -> {
-                        try {
-                            return minecraft.getSkinManager().getInsecureSkin(new GameProfile(playerUUID, playerName)).texture();
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    });
+                    skinTexture = net.minecraft.client.resources.DefaultPlayerSkin.get(playerUUID).body().texturePath();
                 }
             }
         }
 
         if (skinTexture != null) {
             try {
-                RenderSystem.setShaderTexture(0, skinTexture);
-                RenderSystem.enableBlend();
-
                 boolean finalIsMob = isMob;
-                ResourceLocation finalSkinTexture = skinTexture;
+                Identifier finalSkinTexture = skinTexture;
                 HudRender.rounded(guiGraphics, x, y, headSize, avatarCornerCut, () -> {
                     if (finalIsMob) {
                         MobTextures.blitMobFace(guiGraphics, finalSkinTexture, MobTextures.guessEntityId(playerName), x, y, headSize);
                     } else {
-                        guiGraphics.blit(finalSkinTexture, x, y, headSize, headSize, 8.0f, 8.0f, 8, 8, 64, 64);
-                        guiGraphics.blit(finalSkinTexture, x, y, headSize, headSize, 40.0f, 8.0f, 8, 8, 64, 64);
+                        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, finalSkinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
+                        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, finalSkinTexture, x, y, 40.0f, 8.0f, 8, 8, 64, 64, headSize, headSize);
                     }
                 });
-                RenderSystem.disableBlend();
             } catch (Exception e) {
                 renderFallbackHead(guiGraphics, playerName, x, y, alpha);
             }
@@ -229,7 +222,7 @@ public class KillFeedHud {
         }
     }
 
-    private static void renderFallbackHead(GuiGraphics guiGraphics, String playerName, int x, int y, float alpha) {
+    private static void renderFallbackHead(GuiGraphicsExtractor guiGraphics, String playerName, int x, int y, float alpha) {
         String name = playerName != null ? playerName : "Unknown";
         int color = name.toLowerCase().contains("1") ? killerColor : victimColor;
         HudRender.rounded(guiGraphics, x, y, headSize, avatarCornerCut, () -> {
@@ -237,10 +230,8 @@ public class KillFeedHud {
         });
     }
 
-    private static void renderHeartIcon(GuiGraphics guiGraphics, int x, int y, float alpha) {
-        RenderSystem.setShaderColor(1f, 1f, 1f, alpha);
-        guiGraphics.blitSprite(ResourceLocation.fromNamespaceAndPath("minecraft", "hud/heart/full"), x, y, heartSize, heartSize);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+    private static void renderHeartIcon(GuiGraphicsExtractor guiGraphics, int x, int y, float alpha) {
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, Identifier.fromNamespaceAndPath("minecraft", "hud/heart/full"), x, y, heartSize, heartSize);
     }
 
     private static int getAlphaColor(int baseColor, float alpha) {

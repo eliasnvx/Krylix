@@ -1,16 +1,17 @@
 package com.eliasnvx.krylix.fabric.client;
 
+import net.minecraft.client.renderer.RenderPipelines;
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.fabric.network.FabricNetworkPackets.DeathRecapPacket;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -23,7 +24,7 @@ public class DeathRecapClient {
     private static DeathRecapPacket activeRecap = null;
     private static long recapTimestamp = 0;
 
-    private static final Map<String, ResourceLocation> skinCache = new HashMap<>();
+    private static final Map<String, Identifier> skinCache = new HashMap<>();
 
     public static void setRecap(DeathRecapPacket recap) {
         activeRecap = recap;
@@ -35,7 +36,7 @@ public class DeathRecapClient {
         return activeRecap != null && (System.currentTimeMillis() - recapTimestamp <= 300_000);
     }
 
-    public static void render(GuiGraphics guiGraphics, int screenWidth, int screenHeight) {
+    public static void render(GuiGraphicsExtractor guiGraphics, int screenWidth, int screenHeight) {
         DeathRecapPacket recap = activeRecap;
         if (recap == null || !hasActiveRecap()) return;
         Minecraft minecraft = Minecraft.getInstance();
@@ -51,7 +52,7 @@ public class DeathRecapClient {
         });
 
         String titleText = Component.translatable("krylix.deathrecap.title").getString();
-        guiGraphics.drawCenteredString(font, titleText, cardX + cardWidth / 2, cardY + 8, 0xFF5555);
+        guiGraphics.centeredText(font, titleText, cardX + cardWidth / 2, cardY + 8, 0xFF5555);
 
         int avatarSize = 28;
         int nameWidth = font.width(recap.killerName());
@@ -67,15 +68,14 @@ public class DeathRecapClient {
         renderKillerAvatar(guiGraphics, recap, avatarX, avatarY, avatarSize);
 
         int textX = avatarX + avatarSize + 12;
-        guiGraphics.drawString(font, recap.killerName(), textX, avatarY + 2, 0xFFFFFF);
+        guiGraphics.text(font, recap.killerName(), textX, avatarY + 2, 0xFFFFFF);
 
         ItemStack weaponItem = parseWeaponItem(recap.weaponName());
-        guiGraphics.renderItem(weaponItem, textX + nameWidth + 6, avatarY - 3);
+        guiGraphics.item(weaponItem, textX + nameWidth + 6, avatarY - 3);
 
-        guiGraphics.drawString(font, hpText, textX, avatarY + 16, 0xFFFFFF);
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-        guiGraphics.blitSprite(
-                ResourceLocation.fromNamespaceAndPath("minecraft", "hud/heart/full"),
+        guiGraphics.text(font, hpText, textX, avatarY + 16, 0xFFFFFF);
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, 
+                Identifier.fromNamespaceAndPath("minecraft", "hud/heart/full"),
                 textX + font.width(hpText) + 3,
                 avatarY + 15,
                 9,
@@ -91,10 +91,10 @@ public class DeathRecapClient {
         }
 
         int bottomStartX = cardX + (cardWidth - fullBottomWidth) / 2;
-        guiGraphics.drawString(font, damageDealtText, bottomStartX, cardY + cardHeight - 14, 0xFFAA00);
+        guiGraphics.text(font, damageDealtText, bottomStartX, cardY + cardHeight - 14, 0xFFAA00);
 
         if (!distText.isEmpty()) {
-            guiGraphics.drawString(font, distText, bottomStartX + font.width(damageDealtText), cardY + cardHeight - 14, 0xAAAAAA);
+            guiGraphics.text(font, distText, bottomStartX + font.width(damageDealtText), cardY + cardHeight - 14, 0xAAAAAA);
         }
 
         String badgeText = "";
@@ -112,11 +112,11 @@ public class DeathRecapClient {
 
         if (!badgeText.isEmpty()) {
             int bWidth = font.width(badgeText);
-            guiGraphics.drawString(font, badgeText, cardX + cardWidth - bWidth - 12, cardY + 8, badgeColor);
+            guiGraphics.text(font, badgeText, cardX + cardWidth - bWidth - 12, cardY + 8, badgeColor);
         }
     }
 
-    private static void renderKillerAvatar(GuiGraphics guiGraphics, DeathRecapPacket recap, int x, int y, int size) {
+    private static void renderKillerAvatar(GuiGraphicsExtractor guiGraphics, DeathRecapPacket recap, int x, int y, int size) {
         Minecraft minecraft = Minecraft.getInstance();
         UUID uuid = null;
         if (recap.killerUUIDString() != null) {
@@ -125,29 +125,22 @@ public class DeathRecapClient {
             } catch (Exception ignored) {}
         }
         
-        ResourceLocation skinTexture = null;
+        Identifier skinTexture = null;
         boolean isMob = false;
 
         if (uuid != null && minecraft.getConnection() != null) {
             PlayerInfo playerInfo = minecraft.getConnection().getPlayerInfo(uuid);
-            if (playerInfo != null) skinTexture = playerInfo.getSkin().texture();
+            if (playerInfo != null) skinTexture = playerInfo.getSkin().body().texturePath();
             
             if (skinTexture == null) {
-                UUID finalUuid = uuid;
-                skinTexture = skinCache.computeIfAbsent(uuid.toString(), k -> {
-                    try {
-                        return minecraft.getSkinManager().getInsecureSkin(new GameProfile(finalUuid, recap.killerName())).texture();
-                    } catch (Exception e) {
-                        return null;
-                    }
-                });
+                skinTexture = net.minecraft.client.resources.DefaultPlayerSkin.get(uuid).body().texturePath();
             }
         } else {
             skinTexture = MobTextures.byDisplayName(recap.killerName());
             if (skinTexture != null) isMob = true;
         }
 
-        ResourceLocation finalSkinTexture = skinTexture;
+        Identifier finalSkinTexture = skinTexture;
         boolean finalIsMob = isMob;
         HudRender.rounded(guiGraphics, x, y, size, 3, () -> {
             if (finalSkinTexture != null) {
@@ -155,7 +148,7 @@ public class DeathRecapClient {
                     String entityId = MobTextures.guessEntityId(recap.killerName());
                     MobTextures.blitMobFace(guiGraphics, finalSkinTexture, entityId, x, y, size);
                 } else {
-                    guiGraphics.blit(finalSkinTexture, x, y, size, size, 8.0f, 8.0f, 8, 8, 64, 64);
+                    guiGraphics.blit(RenderPipelines.GUI_TEXTURED, finalSkinTexture, x, y, 8.0f, 8.0f, 8, 8, 64, 64, size, size);
                 }
             } else {
                 guiGraphics.fill(x, y, x + size, y + size, 0x80808080);
@@ -166,9 +159,9 @@ public class DeathRecapClient {
     private static ItemStack parseWeaponItem(String weaponId) {
         if (weaponId == null || weaponId.equals("minecraft:air")) return new ItemStack(Items.AIR);
         try {
-            ResourceLocation location = ResourceLocation.parse(weaponId);
-            Item item = BuiltInRegistries.ITEM.get(location);
-            if (item != Items.AIR) return new ItemStack(item);
+            Identifier location = Identifier.parse(weaponId);
+            Item item = BuiltInRegistries.ITEM.getValue(location);
+            if (item != null && item != Items.AIR) return new ItemStack(item);
             return new ItemStack(Items.IRON_SWORD);
         } catch (Exception e) {
             return new ItemStack(Items.IRON_SWORD);

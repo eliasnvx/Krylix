@@ -24,7 +24,6 @@ public class KrylixClient {
         KrylixClient instance = new KrylixClient();
         NeoForge.EVENT_BUS.addListener(instance::onRenderGui);
         NeoForge.EVENT_BUS.addListener(instance::onClientTick);
-        NeoForge.EVENT_BUS.addListener(HealthIndicator::onRenderLevelStage);
         NeoForge.EVENT_BUS.addListener(DeathRecapClient::onScreenRender);
 
         Krylix.LOGGER.info("Krylix client events registered successfully");
@@ -38,6 +37,7 @@ public class KrylixClient {
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         KillFeedHud.render(event.getGuiGraphics(), partialTick);
         MobStatsHud.render(event.getGuiGraphics(), partialTick);
+        HealthIndicator.renderHud(event.getGuiGraphics(), partialTick);
     }
 
     @SubscribeEvent
@@ -71,7 +71,7 @@ public class KrylixClient {
         Minecraft minecraft = Minecraft.getInstance();
         Component stateText = Component.translatable(enabled ? "krylix.toggle.on" : "krylix.toggle.off");
         if (minecraft.player != null) {
-            minecraft.player.displayClientMessage(Component.translatable(translationKey, stateText), true);
+            minecraft.player.sendSystemMessage(Component.translatable(translationKey, stateText));
         }
         minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f));
     }

@@ -1,7 +1,7 @@
 package com.eliasnvx.krylix.fabric.mixin;
 
 import com.eliasnvx.krylix.fabric.client.DeathRecapClient;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -16,8 +16,8 @@ public abstract class DeathScreenMixin extends Screen {
         super(title);
     }
 
-    @Inject(method = "render", at = @At("TAIL"))
-    private void krylix$onRenderDeathScreen(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
+    @Inject(method = "extractRenderState", at = @At("TAIL"))
+    private void krylix$onRenderDeathScreen(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         if (DeathRecapClient.hasActiveRecap()) {
             DeathRecapClient.render(guiGraphics, this.width, this.height);
         }

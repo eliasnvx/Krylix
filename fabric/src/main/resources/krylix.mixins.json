@@ -2,11 +2,12 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.eliasnvx.krylix.fabric.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
   ],
   "client": [
-    "DeathScreenMixin"
+    "DeathScreenMixin",
+    "GuiMixin"
   ],
   "injectors": {
     "defaultRequire": 1

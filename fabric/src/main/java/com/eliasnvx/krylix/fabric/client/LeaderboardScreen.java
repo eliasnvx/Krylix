@@ -1,13 +1,14 @@
 package com.eliasnvx.krylix.fabric.client;
 
+import net.minecraft.client.renderer.RenderPipelines;
 import com.eliasnvx.krylix.fabric.network.FabricNetworkPackets.PlayerStatEntry;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +39,7 @@ public class LeaderboardScreen extends Screen {
 
     private final List<PlayerStatEntry> playerEntries = PlayerStatsClient.sortedByKills();
     private final List<PlayerStatEntry> mobKillEntries = PlayerStatsClient.sortedByMobKills();
-    private final Map<String, ResourceLocation> headTextures = new HashMap<>();
+    private final Map<String, Identifier> headTextures = new HashMap<>();
 
     public LeaderboardScreen() {
         super(Component.translatable("screen.krylix.leaderboard"));
@@ -54,15 +55,15 @@ public class LeaderboardScreen extends Screen {
         }
     }
 
-    private ResourceLocation resolveSkin(PlayerStatEntry entry) {
+    private Identifier resolveSkin(PlayerStatEntry entry) {
         try {
             UUID uuid = UUID.fromString(entry.uuid());
             if (minecraft != null && minecraft.getConnection() != null) {
                 PlayerInfo info = minecraft.getConnection().getPlayerInfo(uuid);
                 if (info != null && info.getSkin() != null) {
-                    return info.getSkin().texture();
+                    return info.getSkin().body().texturePath();
                 }
-                return minecraft.getSkinManager().getInsecureSkin(new GameProfile(uuid, entry.name())).texture();
+                return net.minecraft.client.resources.DefaultPlayerSkin.get(uuid).body().texturePath();
             }
         } catch (Exception ignored) { }
         return null;
@@ -98,8 +99,8 @@ public class LeaderboardScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         int px = panelX();
         int py = panelY();
@@ -108,12 +109,12 @@ public class LeaderboardScreen extends Screen {
             guiGraphics.fill(px, py, px + panelWidth, py + panelHeight, 0xE6101014);
         });
 
-        guiGraphics.drawCenteredString(font, title, px + panelWidth / 2, py + 8, 0xFFFFFF);
+        guiGraphics.centeredText(font, title, px + panelWidth / 2, py + 8, 0xFFFFFF);
 
         int closeX = px + panelWidth - 18;
         int closeY = py + 7;
         boolean closeHovered = mouseX >= closeX && mouseX <= closeX + 12 && mouseY >= closeY && mouseY <= closeY + 12;
-        guiGraphics.drawString(font, "x", closeX + 3, closeY + 2, closeHovered ? 0xFFFFFF : 0x999999);
+        guiGraphics.text(font, "x", closeX + 3, closeY + 2, closeHovered ? 0xFFFFFF : 0x999999);
 
         renderTabs(guiGraphics, mouseX, mouseY, px, py);
 
@@ -123,22 +124,22 @@ public class LeaderboardScreen extends Screen {
                 Component.translatable("krylix.leaderboard.tab_mob_kills").getString();
         String rankHeaderText = Component.translatable("krylix.leaderboard.header_rank").getString();
         
-        guiGraphics.drawString(font, rankHeaderText, px + 12, headerY, 0x888888);
-        guiGraphics.drawString(font, Component.translatable("krylix.leaderboard.header_player").getString(), px + avatarColumnX, headerY, 0x888888);
+        guiGraphics.text(font, rankHeaderText, px + 12, headerY, 0x888888);
+        guiGraphics.text(font, Component.translatable("krylix.leaderboard.header_player").getString(), px + avatarColumnX, headerY, 0x888888);
         int statsHeaderWidth = font.width(statsHeaderText);
-        guiGraphics.drawString(font, statsHeaderText, px + panelWidth - statsHeaderWidth - 12, headerY, 0x888888);
+        guiGraphics.text(font, statsHeaderText, px + panelWidth - statsHeaderWidth - 12, headerY, 0x888888);
         guiGraphics.fill(px + 8, py + headerHeight - 4, px + panelWidth - 8, py + headerHeight - 3, 0x40FFFFFF);
 
         if (fullEntries().isEmpty()) {
             String emptyKey = mode == Mode.PLAYERS ? "screen.krylix.leaderboard.empty_players" : "screen.krylix.leaderboard.empty_mob_kills";
             String emptyText = Component.translatable(emptyKey).getString();
-            guiGraphics.drawCenteredString(font, emptyText, px + panelWidth / 2, listTop() + listHeight() / 2 - 4, 0xAAAAAA);
+            guiGraphics.centeredText(font, emptyText, px + panelWidth / 2, listTop() + listHeight() / 2 - 4, 0xAAAAAA);
         } else {
             renderRows(guiGraphics, mouseX, mouseY);
         }
 
         String footerText = Component.translatable("krylix.leaderboard.footer", fullEntries().size()).getString();
-        guiGraphics.drawCenteredString(font, footerText, px + panelWidth / 2, py + panelHeight - 14, 0x777777);
+        guiGraphics.centeredText(font, footerText, px + panelWidth / 2, py + panelHeight - 14, 0x777777);
     }
 
     private int[] tabRect(int index, int px, int py) {
@@ -151,12 +152,12 @@ public class LeaderboardScreen extends Screen {
         return new int[]{x, y, tabWidth, tabHeight};
     }
 
-    private void renderTabs(GuiGraphics guiGraphics, int mouseX, int mouseY, int px, int py) {
+    private void renderTabs(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int px, int py) {
         renderTab(guiGraphics, mouseX, mouseY, tabRect(0, px, py), Component.translatable("krylix.leaderboard.tab_pvp").getString(), Mode.PLAYERS);
         renderTab(guiGraphics, mouseX, mouseY, tabRect(1, px, py), Component.translatable("krylix.leaderboard.tab_mob_kills").getString(), Mode.MOB_KILLS);
     }
 
-    private void renderTab(GuiGraphics guiGraphics, int mouseX, int mouseY, int[] rect, String label, Mode tabMode) {
+    private void renderTab(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int[] rect, String label, Mode tabMode) {
         int x = rect[0], y = rect[1], w = rect[2], h = rect[3];
         boolean active = mode == tabMode;
         boolean hovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
@@ -168,10 +169,10 @@ public class LeaderboardScreen extends Screen {
         
         int textColor = active ? 0xFFFFFF : 0xAAAAAA;
         int textWidth = font.width(label);
-        guiGraphics.drawString(font, label, x + (w - textWidth) / 2, y + (h - 8) / 2, textColor);
+        guiGraphics.text(font, label, x + (w - textWidth) / 2, y + (h - 8) / 2, textColor);
     }
 
-    private void renderRows(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    private void renderRows(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
         int px = panelX();
         int top = listTop();
         int bottom = listBottom();
@@ -209,7 +210,7 @@ public class LeaderboardScreen extends Screen {
         });
     }
 
-    private void renderPaginationRow(GuiGraphics guiGraphics, int mouseX, int mouseY, int px, int y) {
+    private void renderPaginationRow(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int px, int y) {
         int btnSize = 16;
         int gap = 8;
         String pageText = Component.translatable("krylix.leaderboard.page", page + 1, totalPages()).getString();
@@ -226,10 +227,10 @@ public class LeaderboardScreen extends Screen {
 
         renderPageButton(guiGraphics, mouseX, mouseY, prevButtonRect, false, hasPrev);
         renderPageButton(guiGraphics, mouseX, mouseY, nextButtonRect, true, hasNext);
-        guiGraphics.drawString(font, pageText, startX + btnSize + gap, y + (rowHeight - 8) / 2, 0xCCCCCC);
+        guiGraphics.text(font, pageText, startX + btnSize + gap, y + (rowHeight - 8) / 2, 0xCCCCCC);
     }
 
-    private void renderPageButton(GuiGraphics guiGraphics, int mouseX, int mouseY, int[] rect, boolean pointRight, boolean enabled) {
+    private void renderPageButton(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int[] rect, boolean pointRight, boolean enabled) {
         int x = rect[0], y = rect[1], w = rect[2], h = rect[3];
         boolean hovered = enabled && mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
         
@@ -242,7 +243,7 @@ public class LeaderboardScreen extends Screen {
         renderArrow(guiGraphics, x, y, w, h, pointRight, color);
     }
 
-    private void renderArrow(GuiGraphics guiGraphics, int x, int y, int w, int h, boolean pointRight, int color) {
+    private void renderArrow(GuiGraphicsExtractor guiGraphics, int x, int y, int w, int h, boolean pointRight, int color) {
         int arrowW = 4;
         int arrowH = 7;
         int originX = x + (w - arrowW) / 2;
@@ -260,30 +261,27 @@ public class LeaderboardScreen extends Screen {
         }
     }
 
-    private void renderRow(GuiGraphics guiGraphics, PlayerStatEntry entry, int rank, int px, int y) {
+    private void renderRow(GuiGraphicsExtractor guiGraphics, PlayerStatEntry entry, int rank, int px, int y) {
         int textY = y + (rowHeight - 8) / 2;
         int avatarY = y + (rowHeight - avatarSize) / 2;
 
         String rankText = "#" + (rank + 1);
         int rankX = px + rankColumnEnd - font.width(rankText);
-        guiGraphics.drawString(font, rankText, rankX, textY, 0xAAAAAA);
+        guiGraphics.text(font, rankText, rankX, textY, 0xAAAAAA);
 
         int avatarX = px + avatarColumnX;
-        ResourceLocation texture = headTextures.get(entry.uuid());
+        Identifier texture = headTextures.get(entry.uuid());
         
         HudRender.rounded(guiGraphics, avatarX, avatarY, avatarSize, 2, () -> {
             if (texture != null) {
-                RenderSystem.setShaderTexture(0, texture);
-                RenderSystem.enableBlend();
-                guiGraphics.blit(texture, avatarX, avatarY, avatarSize, avatarSize, 8.0f, 8.0f, 8, 8, 64, 64);
-                guiGraphics.blit(texture, avatarX, avatarY, avatarSize, avatarSize, 40.0f, 8.0f, 8, 8, 64, 64);
-                RenderSystem.disableBlend();
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 8.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, avatarX, avatarY, 40.0f, 8.0f, 8, 8, 64, 64, avatarSize, avatarSize);
             } else {
                 guiGraphics.fill(avatarX, avatarY, avatarX + avatarSize, avatarY + avatarSize, 0xFF555555);
             }
         });
 
-        guiGraphics.drawString(font, entry.name(), avatarX + avatarSize + 6, textY, 0xFFFFFF);
+        guiGraphics.text(font, entry.name(), avatarX + avatarSize + 6, textY, 0xFFFFFF);
 
         String statsText;
         if (mode == Mode.PLAYERS) {
@@ -293,7 +291,7 @@ public class LeaderboardScreen extends Screen {
             statsText = Component.translatable("krylix.leaderboard.mob_kills_count", entry.mobKills()).getString();
         }
         int statsWidth = font.width(statsText);
-        guiGraphics.drawString(font, statsText, px + panelWidth - statsWidth - 12, textY, 0xCCCCCC);
+        guiGraphics.text(font, statsText, px + panelWidth - statsWidth - 12, textY, 0xCCCCCC);
     }
 
     @Override
@@ -303,7 +301,9 @@ public class LeaderboardScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
         int px = panelX();
         int py = panelY();
         int closeX = px + panelWidth - 18;
@@ -347,7 +347,7 @@ public class LeaderboardScreen extends Screen {
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override

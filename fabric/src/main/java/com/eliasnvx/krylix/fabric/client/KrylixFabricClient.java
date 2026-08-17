@@ -5,8 +5,6 @@ import com.eliasnvx.krylix.fabric.network.FabricNetworkPackets;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
@@ -39,14 +37,6 @@ public class KrylixFabricClient implements ClientModInitializer {
             (payload, context) -> context.client().execute(payload::handleOnClient)
         );
 
-        HudRenderCallback.EVENT.register((guiGraphics, tickCounter) -> {
-            float partialTick = tickCounter.getGameTimeDeltaPartialTick(false);
-            KillFeedHud.render(guiGraphics, partialTick);
-            MobStatsHud.render(guiGraphics, partialTick);
-        });
-
-        WorldRenderEvents.AFTER_ENTITIES.register(HealthIndicator::onRenderWorld);
-
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (KrylixKeyBindings.toggleKillFeed.consumeClick()) {
                 boolean newState = !KillFeedHud.isHudEnabled();
@@ -77,9 +67,8 @@ public class KrylixFabricClient implements ClientModInitializer {
     private void sendToggleMessage(Minecraft client, String translationKey, boolean state) {
         if (client.player != null) {
             Component stateComp = Component.translatable(state ? "krylix.toggle.on" : "krylix.toggle.off");
-            client.player.displayClientMessage(
-                Component.translatable(translationKey, stateComp),
-                true
+            client.player.sendSystemMessage(
+                Component.translatable(translationKey, stateComp)
             );
         }
     }
