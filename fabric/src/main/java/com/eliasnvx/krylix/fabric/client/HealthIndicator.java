@@ -122,12 +122,14 @@ public class HealthIndicator {
             if (state.nameTag == null) {
                 state.nameTag = living.getDisplayName();
             }
-            if (state.nameTagAttachment == null) {
-                state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTick));
-                if (state.nameTagAttachment == null) {
-                    state.nameTagAttachment = new Vec3(0, entity.getBbHeight() + 0.65, 0);
+            Vec3 attach = state.nameTagAttachment;
+            if (attach == null) {
+                attach = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTick));
+                if (attach == null) {
+                    attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
                 }
             }
+            state.nameTagAttachment = new Vec3(attach.x, attach.y + 0.35, attach.z);
         }
     }
 
@@ -162,7 +164,7 @@ public class HealthIndicator {
 
         poseStack.pushPose();
         Vec3 attachment = state.nameTagAttachment;
-        poseStack.translate(attachment.x, attachment.y + 0.65, attachment.z);
+        poseStack.translate(attachment.x, attachment.y + 0.5, attachment.z);
         poseStack.mulPose(cameraRenderState.orientation);
         poseStack.scale(0.025f, -0.025f, 0.025f);
 
@@ -172,20 +174,20 @@ public class HealthIndicator {
         final boolean fHasHalf = hasHalf;
         final int fullLight = 0xF000F0;
 
-        // 1. Containers
-        submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_CONTAINER), (pose, buffer) -> {
+        // 1. Containers (empty heart frames) - Emissive unshadowed render
+        submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(HEART_CONTAINER), (pose, buffer) -> {
             for (int i = 0; i < fTotalHearts; i++) {
                 float hx = fStartX + i * 8;
-                drawQuad(pose, buffer, hx, 1.0f, hx + 9, 10.0f, fullLight);
+                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f, fullLight);
             }
         });
 
-        // 2. Full hearts
+        // 2. Full bright red hearts
         if (fullHearts > 0) {
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_FULL), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(HEART_FULL), (pose, buffer) -> {
                 for (int i = 0; i < fFullHearts; i++) {
                     float hx = fStartX + i * 8;
-                    drawQuad(pose, buffer, hx, 1.0f, hx + 9, 10.0f, fullLight);
+                    drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f, fullLight);
                 }
             });
         }
@@ -193,15 +195,15 @@ public class HealthIndicator {
         // 3. Half heart
         if (hasHalf && fullHearts < totalHearts) {
             final int halfIndex = fullHearts;
-            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucent(HEART_HALF), (pose, buffer) -> {
+            submitNodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityTranslucentEmissive(HEART_HALF), (pose, buffer) -> {
                 float hx = fStartX + halfIndex * 8;
-                drawQuad(pose, buffer, hx, 1.0f, hx + 9, 10.0f, fullLight);
+                drawQuad(pose, buffer, hx, 10.0f, hx + 9, 19.0f, fullLight);
             });
         }
 
-        // 4. Numbers
+        // 4. Numbers (8/8)
         float textX = startX + heartsWidth + spacing;
-        float textY = 1.5f;
+        float textY = 10.5f;
         FormattedCharSequence seq = Component.literal(text).getVisualOrderText();
         submitNodeCollector.submitText(poseStack, textX, textY, seq, true, Font.DisplayMode.SEE_THROUGH, 0xFFFFFFFF, 0x40000000, fullLight, 0);
 
