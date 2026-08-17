@@ -124,16 +124,19 @@ public class HealthIndicator {
 
         updateTarget();
         if (currentTarget == living) {
-            if (state.nameTag == null) {
-                state.nameTag = living.getDisplayName();
-            }
+            Component baseName = state.nameTag != null ? state.nameTag : living.getDisplayName();
+            Component healthTag = Component.empty()
+                    .append(baseName)
+                    .append(Component.literal("  ").withStyle(net.minecraft.ChatFormatting.RESET))
+                    .append(createHealthComponent(living));
+
+            state.nameTag = healthTag;
             if (state.nameTagAttachment == null) {
                 state.nameTagAttachment = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(partialTick));
                 if (state.nameTagAttachment == null) {
                     state.nameTagAttachment = new Vec3(0, entity.getBbHeight() + 0.5, 0);
                 }
             }
-            state.scoreText = createHealthComponent(living);
         }
     }
 
