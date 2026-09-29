@@ -1,13 +1,13 @@
 <div align="center">
 
-![Krylix](docs/images/banner.png)
+![Krylix](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/banner.png)
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-26.1.2-62B47A?style=for-the-badge&logo=minecraft&logoColor=white)](https://www.minecraft.net/)
 [![Fabric](https://img.shields.io/badge/Fabric-0.19+-DBD0B4?style=for-the-badge)](https://fabricmc.net/)
 [![NeoForge](https://img.shields.io/badge/NeoForge-26.1.2.95+-E68A00?style=for-the-badge)](https://neoforged.net/)
 [![Java](https://img.shields.io/badge/Java-25-B07219?style=for-the-badge)](https://adoptium.net/)
-[![License](https://img.shields.io/badge/License-MIT-D6303C?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.3.1-FFC440?style=for-the-badge)](CHANGELOG.md)
+[![License](https://img.shields.io/badge/License-MIT-D6303C?style=for-the-badge)](https://github.com/eliasnvx/Krylix/blob/26.1-dev/LICENSE)
+[![Version](https://img.shields.io/badge/Version-1.3.1-FFC440?style=for-the-badge)](https://github.com/eliasnvx/Krylix/blob/26.1-dev/CHANGELOG.md)
 
 [![Modrinth](https://img.shields.io/badge/Modrinth-Download-1BD96A?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/krylix)
 [![CurseForge](https://img.shields.io/badge/CurseForge-Download-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/krylix)
@@ -28,11 +28,11 @@ Everything is one key away and stays out of the way when you don't need it.
 
 **Languages:** English, Русский, Беларуская, Українська, Polski, Deutsch, Nederlands, Svenska, Español, Português (Brasil), Français, 简体中文, 繁體中文
 
-![On your HUD](docs/images/hud.png)
+![On your HUD](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/hud.png)
 
 ---
 
-![Kill Feed](docs/images/header_killfeed.png)
+![Kill Feed](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_killfeed.png)
 
 ## Kill Feed
 
@@ -47,17 +47,17 @@ Every player death on the server appears in the top-right corner for a few secon
 
 ---
 
-![Health Plates](docs/images/header_health.png)
+![Health Plates](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_health.png)
 
 ## Health Plates
 
-![Health plates](docs/images/health.png)
+![Health plates](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/health.png)
 
 Aim at any living entity — up to 48 blocks away — and a plate appears over its head: its name, the game's own **heart sprites** and the exact **HP / max HP**. Plates are drawn full-bright, so they stay readable in caves, under trees and at night. They follow the game's rules: no plate for invisible players or when a team hides its nametags, so nothing leaks in PvP. Press **H** to hide them.
 
 ---
 
-![Mob Stats](docs/images/header_mobstats.png)
+![Mob Stats](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_mobstats.png)
 
 ## Mob Stats
 
@@ -65,11 +65,11 @@ A compact panel in the top-left corner counts the hostile mobs you have killed *
 
 ---
 
-![Leaderboard](docs/images/header_leaderboard.png)
+![Leaderboard](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_leaderboard.png)
 
 ## Leaderboard
 
-![Leaderboard](docs/images/leaderboard.png)
+![Leaderboard](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/leaderboard.png)
 
 Press **O** for the leaderboard — a proper screen, not a wall of chat:
 
@@ -80,17 +80,17 @@ Press **O** for the leaderboard — a proper screen, not a wall of chat:
 
 ---
 
-![Death Recap](docs/images/header_recap.png)
+![Death Recap](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_recap.png)
 
 ## Death Recap
 
-![Death recap](docs/images/recap.png)
+![Death recap](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/recap.png)
 
 When you die, a card under the Respawn button shows **who killed you**, their face, how much **health they had left**, the **damage you dealt them** in the fight, and the same crit / smash / long-shot badges as the feed.
 
 ---
 
-![Config & Keys](docs/images/header_config.png)
+![Config & Keys](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_config.png)
 
 ## Config & Keys
 
@@ -121,7 +121,7 @@ All keys can be rebound in *Options → Controls*. Settings are in game — *Mod
 
 ---
 
-![Languages](docs/images/header_languages.png)
+![Languages](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_languages.png)
 
 ## Languages
 
@@ -129,7 +129,7 @@ Krylix is fully translated into **13 languages**: English, Russian, Belarusian, 
 
 ---
 
-![Servers & Addons](docs/images/header_server.png)
+![Servers & Addons](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_server.png)
 
 ## Servers & Addons
 
@@ -139,7 +139,7 @@ Krylix is fully translated into **13 languages**: English, Russian, Belarusian, 
 
 ---
 
-![Installation](docs/images/header_install.png)
+![Installation](https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/docs/images/header_install.png)
 
 ## Installation
 
@@ -166,7 +166,7 @@ KRYLIX_DOCS_SHOTS=1 ./gradlew :fabric:runClientGameTest # README screenshots, ta
 python3 tools/docs/make_readme_images.py               # banner, headers and galleries in docs/images
 ```
 
-Multi-loader: `common` / `fabric` / `neoforge`, Java 25, Mojang names. Changes: [`CHANGELOG.md`](CHANGELOG.md).
+Multi-loader: `common` / `fabric` / `neoforge`, Java 25, Mojang names. Changes: [`CHANGELOG.md`](https://github.com/eliasnvx/Krylix/blob/26.1-dev/CHANGELOG.md).
 
 The pictures on this page are real in-game screenshots taken by a client GameTest (`fabric/src/gametest`); the banner, headers and frames are drawn by `tools/docs/make_readme_images.py`.
 
@@ -177,7 +177,7 @@ The pictures on this page are real in-game screenshots taken by a client GameTes
 - **Author:** [eliasnvx](https://github.com/eliasnvx)
 - **Built with:** [Cloth Config](https://github.com/shedaniel/cloth-config)
 
-[MIT](LICENSE) © eliasnvx
+[MIT](https://github.com/eliasnvx/Krylix/blob/26.1-dev/LICENSE) © eliasnvx
 
 <div align="center">
 

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "krylix-test",
+  "version": "0.0.0",
+  "name": "Krylix GameTests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "com.eliasnvx.krylix.fabric.gametest.HealthPlateClientTest",
+      "com.eliasnvx.krylix.fabric.gametest.DocsShotsClientTest"
+    ]
+  },
+  "depends": {
+    "krylix": "*"
+  }
+}
