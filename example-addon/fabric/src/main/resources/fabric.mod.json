@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "krylix_example",
+  "version": "${version}",
+  "name": "Krylix Example Addon",
+  "description": "Shows the Krylix addon API. Not published.",
+  "authors": ["eliasnvx"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "krylix": ["com.eliasnvx.krylixexample.ExampleKrylixAddon"]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": "*"
+  },
+  "suggests": {
+    "krylix": "*"
+  }
+}

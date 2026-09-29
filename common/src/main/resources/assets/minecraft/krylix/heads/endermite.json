@@ -1,0 +1,12 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/endermite/endermite.png",
+      "u": 2,
+      "v": 2,
+      "width": 4,
+      "height": 3,
+      "texture_height": 32
+    }
+  ]
+}

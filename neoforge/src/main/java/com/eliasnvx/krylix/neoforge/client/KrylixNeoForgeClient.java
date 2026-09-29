@@ -3,8 +3,10 @@ package com.eliasnvx.krylix.neoforge.client;
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.client.HealthIndicator;
 import com.eliasnvx.krylix.client.KrylixClient;
+import com.eliasnvx.krylix.client.KrylixClientApiImpl;
 import com.eliasnvx.krylix.client.KrylixClientCommands;
 import com.eliasnvx.krylix.client.KrylixKeyBindings;
+import com.eliasnvx.krylix.client.MobHeads;
 import com.eliasnvx.krylix.config.ModConfig;
 import me.shedaniel.autoconfig.AutoConfigClient;
 import net.minecraft.client.KeyMapping;
@@ -17,6 +19,8 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
@@ -43,6 +47,10 @@ public final class KrylixNeoForgeClient {
         // Under the chat, so chat lines stay readable over the feed
         modBus.addListener((RegisterGuiLayersEvent event) -> event.registerBelow(VanillaGuiLayers.CHAT,
             Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "hud"), (graphics, deltaTracker) -> KrylixClient.renderHud(graphics)));
+
+        modBus.addListener((AddClientReloadListenersEvent event) -> event.addListener(MobHeads.RELOAD_LISTENER_ID, new MobHeads.Loader()));
+        // Client setup: after every mod's constructor, so the common addon init (in Krylix's) has run
+        modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(KrylixClientApiImpl::init));
 
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> KrylixClient.onTick(Minecraft.getInstance()));
         NeoForge.EVENT_BUS.addListener((ClientPlayerNetworkEvent.LoggingOut event) -> KrylixClient.onDisconnect());

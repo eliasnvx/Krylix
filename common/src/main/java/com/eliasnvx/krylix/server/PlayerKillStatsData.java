@@ -1,6 +1,8 @@
 package com.eliasnvx.krylix.server;
 
 import com.eliasnvx.krylix.Krylix;
+import com.eliasnvx.krylix.api.stats.KrylixStats;
+import com.eliasnvx.krylix.api.stats.PlayerStats;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resources.Identifier;
@@ -9,8 +11,11 @@ import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -78,14 +83,18 @@ public class PlayerKillStatsData extends SavedData {
         return stat;
     }
 
-    public void recordKill(UUID uuid, String name) {
-        stat(uuid, name).kills++;
+    /** Returns the player's new kill total. */
+    public int recordKill(UUID uuid, String name) {
+        int kills = ++stat(uuid, name).kills;
         setDirty();
+        return kills;
     }
 
-    public void recordDeath(UUID uuid, String name) {
-        stat(uuid, name).deaths++;
+    /** Returns the player's new death total. */
+    public int recordDeath(UUID uuid, String name) {
+        int deaths = ++stat(uuid, name).deaths;
         setDirty();
+        return deaths;
     }
 
     /** Returns the player's new total for this entity type. */
@@ -95,6 +104,41 @@ public class PlayerKillStatsData extends SavedData {
         int count = stat.mobKillsByType.merge(entityType, 1, Integer::sum);
         setDirty();
         return count;
+    }
+
+    /** Read-only snapshots for the addon API. */
+    public KrylixStats view() {
+        return new KrylixStats() {
+            @Override
+            public Optional<PlayerStats> get(UUID player) {
+                PlayerStat stat = stats.get(player.toString());
+                return stat != null ? Optional.of(snapshot(player, stat)) : Optional.empty();
+            }
+
+            @Override
+            public List<PlayerStats> all() {
+                List<PlayerStats> all = new ArrayList<>(stats.size());
+                for (Map.Entry<String, PlayerStat> entry : stats.entrySet()) {
+                    try {
+                        all.add(snapshot(UUID.fromString(entry.getKey()), entry.getValue()));
+                    } catch (IllegalArgumentException ignored) {
+                        // not a UUID: skip, like the leaderboard does
+                    }
+                }
+                return all;
+            }
+        };
+    }
+
+    private static PlayerStats snapshot(UUID uuid, PlayerStat stat) {
+        Map<Identifier, Integer> byType = new HashMap<>();
+        stat.mobKillsByType.forEach((type, count) -> {
+            Identifier id = Identifier.tryParse(type);
+            if (id != null) {
+                byType.put(id, count);
+            }
+        });
+        return new PlayerStats(uuid, stat.lastName, stat.kills, stat.deaths, stat.mobKills, byType);
     }
 
     public Map<String, Integer> mobKillsOf(UUID uuid) {

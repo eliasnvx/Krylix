@@ -1,0 +1,11 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/horse/horse_zombie.png",
+      "u": 0,
+      "v": 20,
+      "width": 7,
+      "height": 5
+    }
+  ]
+}

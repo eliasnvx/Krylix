@@ -1,0 +1,12 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/silverfish/silverfish.png",
+      "u": 2,
+      "v": 2,
+      "width": 3,
+      "height": 2,
+      "texture_height": 32
+    }
+  ]
+}

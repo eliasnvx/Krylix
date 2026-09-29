@@ -1,0 +1,16 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/enderman/enderman.png",
+      "u": 8,
+      "v": 8,
+      "texture_height": 32
+    },
+    {
+      "texture": "minecraft:textures/entity/enderman/enderman_eyes.png",
+      "u": 8,
+      "v": 8,
+      "texture_height": 32
+    }
+  ]
+}

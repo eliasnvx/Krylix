@@ -1,0 +1,10 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/slime/slime.png",
+      "u": 8,
+      "v": 8,
+      "texture_height": 32
+    }
+  ]
+}

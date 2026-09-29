@@ -1,6 +1,7 @@
 package com.eliasnvx.krylix.fabric;
 
 import com.eliasnvx.krylix.Krylix;
+import com.eliasnvx.krylix.addon.KrylixApiImpl;
 import com.eliasnvx.krylix.config.KrylixConfig;
 import com.eliasnvx.krylix.network.KrylixPayloads;
 import com.eliasnvx.krylix.platform.KrylixPlatform;
@@ -39,6 +40,7 @@ public final class KrylixFabric implements ModInitializer {
         });
         ServerLivingEntityEvents.AFTER_DEATH.register(KrylixServer::onDeath);
 
+        KrylixApiImpl.init(); // last: addons see a fully set up Krylix
         Krylix.LOGGER.info("Krylix initialized on Fabric");
     }
 

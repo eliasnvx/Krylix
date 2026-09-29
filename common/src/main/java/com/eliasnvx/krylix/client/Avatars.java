@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.client;
 
+import com.eliasnvx.krylix.api.client.MobHead;
 import com.eliasnvx.krylix.network.KrylixPayloads.Combatant;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -36,9 +37,9 @@ public final class Avatars {
             PlayerFaceExtractor.extractRenderState(graphics, skinOf(player), x, y, size, true, false, -1);
             return;
         }
-        Identifier texture = entityType != null ? MobTextures.byEntityId(entityType) : null;
-        if (texture != null) {
-            MobTextures.blitMobFace(graphics, texture, entityType, x, y, size);
+        MobHead head = entityType != null ? MobHeads.get(entityType) : null;
+        if (head != null) {
+            MobHeads.draw(graphics, head, x, y, size);
         } else {
             HudRender.roundedFill(graphics, x, y, size, size, Math.max(1, size / 6), FALLBACK_COLOR);
         }

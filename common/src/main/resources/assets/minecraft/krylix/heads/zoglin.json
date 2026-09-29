@@ -1,0 +1,12 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/hoglin/zoglin.png",
+      "u": 80,
+      "v": 5,
+      "width": 14,
+      "height": 14,
+      "texture_width": 128
+    }
+  ]
+}

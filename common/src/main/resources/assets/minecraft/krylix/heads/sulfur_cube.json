@@ -1,0 +1,13 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/sulfur_cube/sulfur_cube_outer.png",
+      "u": 18,
+      "v": 18,
+      "width": 18,
+      "height": 18,
+      "texture_width": 128,
+      "texture_height": 128
+    }
+  ]
+}

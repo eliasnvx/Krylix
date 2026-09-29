@@ -1,7 +1,9 @@
 package com.eliasnvx.krylix.server;
 
-import com.eliasnvx.krylix.network.KrylixPayloads;
+import com.eliasnvx.krylix.addon.KrylixApiImpl;
+import com.eliasnvx.krylix.api.event.KillCreditEvent;
 import com.eliasnvx.krylix.network.KrylixPayloads.Combatant;
+import com.eliasnvx.krylix.network.KrylixPayloads;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -9,9 +11,11 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.SpawnEggItem;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -25,21 +29,32 @@ public record KillAnalysis(@Nullable LivingEntity killer, LivingEntity victim, S
     private static final double LONGSHOT_BLOCKS = 30.0;
 
     public static KillAnalysis of(LivingEntity victim, DamageSource source) {
-        LivingEntity killer = source.getEntity() instanceof LivingEntity living ? living : null;
-        boolean credited = false;
-        if (killer == null) {
-            // Knocked off a cliff, into lava or into the void by someone: vanilla credits them ("doomed to fall by")
-            killer = victim.getKillCredit();
-            credited = killer != null;
+        LivingEntity attacker = source.getEntity() instanceof LivingEntity living ? living : null;
+        // Knocked off a cliff, into lava or into the void by someone: vanilla credits them ("doomed to fall by")
+        LivingEntity killer = attacker != null ? attacker : victim.getKillCredit();
+        // A tamed pet's kill is its owner's; the feed shows the pet's spawn egg as the weapon
+        String petEgg = null;
+        if (killer instanceof OwnableEntity pet && pet.getRootOwner() instanceof LivingEntity owner && killer != victim) {
+            petEgg = SpawnEggItem.byId(killer.getType())
+                .map(egg -> BuiltInRegistries.ITEM.getKey(egg.value()).toString())
+                .orElse(null);
+            killer = owner;
+        }
+        if (KrylixApiImpl.EVENTS.hasListeners(KillCreditEvent.class)) {
+            killer = KrylixApiImpl.EVENTS.post(new KillCreditEvent(victim, source, killer)).killer();
         }
         if (killer == victim) {
             killer = null;
         }
+        // Credited to someone who didn't deal the blow: the cause (or the pet) stands in for the weapon
+        boolean credited = killer != null && killer != attacker;
 
         ItemStack weaponStack = credited ? ItemStack.EMPTY : source.getWeaponItem();
         String weapon;
         if (weaponStack != null && !weaponStack.isEmpty()) {
             weapon = BuiltInRegistries.ITEM.getKey(weaponStack.getItem()).toString();
+        } else if (petEgg != null) {
+            weapon = petEgg;
         } else {
             weapon = causeItem(source);
         }

@@ -29,7 +29,6 @@ public final class KrylixPayloads {
     public static final int FLAG_CRITICAL = 1;
     public static final int FLAG_SMASH = 1 << 1;
     public static final int FLAG_LONGSHOT = 1 << 2;
-    public static final int FLAG_HEADSHOT = 1 << 3;
 
     private KrylixPayloads() {
     }

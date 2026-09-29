@@ -1,0 +1,9 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/snow_golem/snow_golem.png",
+      "u": 8,
+      "v": 8
+    }
+  ]
+}

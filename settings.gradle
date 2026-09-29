@@ -15,3 +15,9 @@ rootProject.name = "krylix"
 
 include("api", "common", "fabric", "neoforge")
 
+// Example addon: dogfoods the public API, never published
+include("example-addon-common", "example-addon-fabric", "example-addon-neoforge")
+project(":example-addon-common").projectDir = file("example-addon/common")
+project(":example-addon-fabric").projectDir = file("example-addon/fabric")
+project(":example-addon-neoforge").projectDir = file("example-addon/neoforge")
+

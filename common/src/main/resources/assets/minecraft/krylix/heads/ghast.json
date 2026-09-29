@@ -1,0 +1,12 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/ghast/ghast.png",
+      "u": 16,
+      "v": 16,
+      "width": 16,
+      "height": 16,
+      "texture_width": 128
+    }
+  ]
+}

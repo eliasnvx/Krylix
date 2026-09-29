@@ -1,7 +1,10 @@
 package com.eliasnvx.krylix.platform;
 
+import com.eliasnvx.krylix.addon.AddonLoader;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+
+import java.util.List;
 
 /**
  * The few things common code needs from the loader. Each loader installs its implementation first thing in its
@@ -22,6 +25,9 @@ public interface KrylixPlatform {
 
     /** Client side: sends a payload to the server; check {@link #canSendToServer} first. */
     void sendToServer(CustomPacketPayload payload);
+
+    /** Krylix addons of every loaded mod (Fabric entrypoint "krylix" / NeoForge {@code @RegisterKrylixAddon}). */
+    List<AddonLoader.DiscoveredAddon> discoverAddons();
 
     static KrylixPlatform get() {
         KrylixPlatform platform = Holder.instance;

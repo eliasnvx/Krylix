@@ -93,7 +93,15 @@ example-addon/  рабочий пример аддона для обоих за�
 - Одинаковые корни команд на обоих загрузчиках (сейчас `/krylixclient` на Fabric и `/krylix` на NeoForge, где клиентский корень ещё и конфликтует с серверным).
 - Удалить: `forge/`, `neoforge/bin`, `System.out.println`, неиспользуемые импорты, мёртвый `HealthBarStyle` (или вернуть ему смысл — стили таблички), старый `updates.json` с `{githubUser}`.
 
-## 6. Addon API
+## 6. Addon API — ✅ API 1.0.0 сделан
+
+Сделано в 1.4.0 (руководство — [`docs/api/README.md`](api/README.md), пример — `example-addon/`): `KrylixAddon` +
+entrypoint `krylix` / `@RegisterKrylixAddon`, шина событий (`KillCreditEvent`, `KillEvent`, `StatRecordedEvent`,
+`FeedEntryEvent`), чтение статистики, головы мобов из JSON в ресурс-паках и из кода, провайдеры здоровья, артефакт
+`com.eliasnvx:krylix-api`. Проверка — юнит-тесты в `common` и `AddonApiClientTest` в настоящей игре.
+Ещё не сделано из плана ниже: вкладки лидерборда (`LeaderboardTabs` + `StatProvider`), иконки оружия/причин смерти
+через реестр, цвета команд — это следующие минорные версии API.
+
 
 **Подключение аддона** — как у Jade/JEI:
 

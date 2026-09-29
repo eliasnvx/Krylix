@@ -1,0 +1,9 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/slime/magmacube.png",
+      "u": 8,
+      "v": 8
+    }
+  ]
+}

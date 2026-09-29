@@ -1,0 +1,10 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/skeleton/wither_skeleton.png",
+      "u": 8,
+      "v": 8,
+      "texture_height": 32
+    }
+  ]
+}

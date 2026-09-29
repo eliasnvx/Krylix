@@ -1,0 +1,31 @@
+loom {
+    mods {
+        krylix {
+            sourceSet project(":neoforge").sourceSets.main
+        }
+    }
+}
+
+architectury {
+    platformSetupLoomIde()
+    neoForge()
+}
+
+configurations {
+    common
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentNeoForge.extendsFrom common
+}
+
+dependencies {
+    neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
+    implementation "me.shedaniel.cloth:cloth-config-neoforge:${rootProject.cloth_config_version}"
+
+    // Krylix itself, so `runClient` here starts Krylix + the addon
+    implementation(project(path: ":neoforge")) { transitive false }
+    // Krylix's common code is injected by the Architectury transformer only if listed here
+    common(project(path: ":api")) { transitive false }
+    common(project(path: ":common")) { transitive false }
+    common(project(path: ":example-addon-common")) { transitive false }
+}

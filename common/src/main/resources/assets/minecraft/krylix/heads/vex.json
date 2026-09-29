@@ -1,0 +1,11 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/illager/vex.png",
+      "u": 4,
+      "v": 4,
+      "texture_width": 32,
+      "texture_height": 32
+    }
+  ]
+}

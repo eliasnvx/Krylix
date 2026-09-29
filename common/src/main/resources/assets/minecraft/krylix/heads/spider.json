@@ -1,0 +1,10 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/spider/spider.png",
+      "u": 40,
+      "v": 12,
+      "texture_height": 32
+    }
+  ]
+}

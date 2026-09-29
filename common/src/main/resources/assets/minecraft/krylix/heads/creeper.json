@@ -1,0 +1,10 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/creeper/creeper.png",
+      "u": 8,
+      "v": 8,
+      "texture_height": 32
+    }
+  ]
+}

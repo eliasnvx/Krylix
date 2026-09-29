@@ -1,0 +1,13 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/warden/warden.png",
+      "u": 10,
+      "v": 42,
+      "width": 16,
+      "height": 16,
+      "texture_width": 128,
+      "texture_height": 128
+    }
+  ]
+}

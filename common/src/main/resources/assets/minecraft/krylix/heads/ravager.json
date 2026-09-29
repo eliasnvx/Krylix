@@ -1,0 +1,13 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/illager/ravager.png",
+      "u": 16,
+      "v": 16,
+      "width": 16,
+      "height": 20,
+      "texture_width": 128,
+      "texture_height": 128
+    }
+  ]
+}

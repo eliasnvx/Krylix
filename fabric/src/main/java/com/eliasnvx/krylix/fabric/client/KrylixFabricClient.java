@@ -2,8 +2,10 @@ package com.eliasnvx.krylix.fabric.client;
 
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.client.KrylixClient;
+import com.eliasnvx.krylix.client.KrylixClientApiImpl;
 import com.eliasnvx.krylix.client.KrylixClientCommands;
 import com.eliasnvx.krylix.client.KrylixKeyBindings;
+import com.eliasnvx.krylix.client.MobHeads;
 import com.eliasnvx.krylix.network.KrylixPayloads;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -15,10 +17,12 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.PackType;
 
 public final class KrylixFabricClient implements ClientModInitializer {
     @Override
@@ -37,6 +41,8 @@ public final class KrylixFabricClient implements ClientModInitializer {
         // Under the chat, so chat lines stay readable over the feed
         HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "hud"),
             (graphics, deltaTracker) -> KrylixClient.renderHud(graphics));
+        ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(MobHeads.RELOAD_LISTENER_ID, new MobHeads.Loader());
+        KrylixClientApiImpl.init();
         ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
             if (screen instanceof DeathScreen) {
                 ScreenEvents.afterExtract(screen).register((s, graphics, mouseX, mouseY, partialTick) ->

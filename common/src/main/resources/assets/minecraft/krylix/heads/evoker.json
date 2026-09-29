@@ -1,0 +1,10 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/illager/evoker.png",
+      "u": 8,
+      "v": 8,
+      "height": 10
+    }
+  ]
+}

@@ -15,6 +15,15 @@ kill feed, stats and HUD code, so they behave the same.
 - **Cause icons from damage types.** Freezing, the void, the Warden's sonic boom, fireworks, anvils, dripstone,
   cactus, suffocation and more get a fitting icon instead of a blank. The weapon is the item that actually dealt the
   blow (a thrown trident, the bow that shot the arrow).
+- **Pets' kills count for their owner.** A tamed wolf's (or an evoker's vex's) kill is credited to the owner, with the
+  pet's spawn egg as the weapon.
+- **Mob faces for the newer mobs:** Creaking, Parched, Illusioner, Sulfur Cube, Silverfish and Endermite.
+- **Mob faces from resource packs.** Every face is a small JSON file (`assets/<namespace>/krylix/heads/<mob>.json`), so
+  resource packs and modpacks can restyle the vanilla ones and add faces for modded mobs without any code.
+- **Addon API** (`krylix-api` 1.0.0): addons can change who gets a kill, hide kills from the feed or keep them out of
+  the statistics, change the weapon and badge, react to every recorded stat, read the saved statistics, hide feed rows
+  on the client, add mob faces and supply health numbers for the health plate. Guide:
+  [`docs/api/README.md`](docs/api/README.md), with a working [example addon](example-addon) for both loaders.
 - **Own key binding category** "Krylix" in Controls.
 
 ### Changed

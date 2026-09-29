@@ -1,6 +1,11 @@
 package com.eliasnvx.krylix.server;
 
+import com.eliasnvx.krylix.addon.KrylixApiImpl;
+import com.eliasnvx.krylix.api.event.KillEvent;
+import com.eliasnvx.krylix.api.event.StatRecordedEvent;
+import com.eliasnvx.krylix.api.stats.StatType;
 import com.eliasnvx.krylix.config.KrylixConfig;
+import com.eliasnvx.krylix.model.KillFlags;
 import com.eliasnvx.krylix.network.KrylixNetwork;
 import com.eliasnvx.krylix.network.KrylixPayloads.DeathRecapPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads.KillFeedPayload;
@@ -8,6 +13,7 @@ import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardRow;
 import com.eliasnvx.krylix.network.KrylixPayloads.MobKillsPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -60,19 +67,50 @@ public final class KrylixServer {
         }
         MinecraftServer server = level.getServer();
         KillAnalysis kill = KillAnalysis.of(victim, source);
+        boolean playerDied = victim instanceof ServerPlayer;
+        boolean mobKill = !playerDied && victim.getType().getCategory() == MobCategory.MONSTER && kill.killer() instanceof ServerPlayer;
+        if (!playerDied && !mobKill) {
+            return;
+        }
 
+        boolean broadcast = true;
+        boolean recordStats = true;
+        if (KrylixApiImpl.EVENTS.hasListeners(KillEvent.class)) {
+            KillEvent event = KrylixApiImpl.EVENTS.post(new KillEvent(victim, kill.killer(), source,
+                Identifier.parse(kill.weapon()), kill.distance(), KillFlags.fromBits(kill.flags())));
+            if (event.isCancelled()) {
+                return;
+            }
+            broadcast = event.broadcast();
+            recordStats = event.recordStats();
+            kill = new KillAnalysis(kill.killer(), victim, event.weapon().toString(), kill.distance(), KillFlags.toBits(event.flags()));
+        }
+
+        PlayerKillStatsData stats = PlayerKillStatsData.get(server);
         if (victim instanceof ServerPlayer player) {
             sendDeathRecap(player, source, kill);
-            PlayerKillStatsData stats = PlayerKillStatsData.get(server);
-            stats.recordDeath(player.getUUID(), player.getName().getString());
-            if (kill.killer() instanceof Player killer) {
-                stats.recordKill(killer.getUUID(), killer.getName().getString());
+            if (recordStats) {
+                int deaths = stats.recordDeath(player.getUUID(), player.getName().getString());
+                statRecorded(player, StatType.DEATH, null, deaths);
+                if (kill.killer() instanceof Player killer) {
+                    int kills = stats.recordKill(killer.getUUID(), killer.getName().getString());
+                    statRecorded(killer, StatType.KILL, null, kills);
+                }
             }
-            broadcastFeed(level, kill);
-        } else if (victim.getType().getCategory() == MobCategory.MONSTER && kill.killer() instanceof ServerPlayer killer) {
-            String type = EntityType.getKey(victim.getType()).toString();
-            int count = PlayerKillStatsData.get(server).recordMobKill(killer.getUUID(), killer.getName().getString(), type);
-            KrylixNetwork.toPlayer(killer, new MobKillsPayload(false, Map.of(type, count)));
+            if (broadcast) {
+                broadcastFeed(level, kill);
+            }
+        } else if (recordStats && kill.killer() instanceof ServerPlayer killer) {
+            Identifier type = EntityType.getKey(victim.getType());
+            int count = stats.recordMobKill(killer.getUUID(), killer.getName().getString(), type.toString());
+            KrylixNetwork.toPlayer(killer, new MobKillsPayload(false, Map.of(type.toString(), count)));
+            statRecorded(killer, StatType.MOB_KILL, type, count);
+        }
+    }
+
+    private static void statRecorded(Player player, StatType type, @Nullable Identifier entityType, int total) {
+        if (KrylixApiImpl.EVENTS.hasListeners(StatRecordedEvent.class)) {
+            KrylixApiImpl.EVENTS.post(new StatRecordedEvent(player.getUUID(), player.getName().getString(), type, entityType, total));
         }
     }
 

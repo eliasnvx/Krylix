@@ -1,0 +1,17 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mods]]
+modId = "krylix_example"
+version = "${version}"
+displayName = "Krylix Example Addon"
+description = "Shows the Krylix addon API. Not published."
+authors = "eliasnvx"
+
+[[dependencies.krylix_example]]
+modId = "krylix"
+type = "optional"
+versionRange = "[1.4.0,)"
+ordering = "AFTER"
+side = "BOTH"

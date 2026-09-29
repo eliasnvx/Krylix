@@ -1,6 +1,10 @@
 package com.eliasnvx.krylix.client;
 
+import com.eliasnvx.krylix.addon.KrylixApiImpl;
+import com.eliasnvx.krylix.api.event.client.FeedEntryEvent;
 import com.eliasnvx.krylix.model.KillEntry;
+import com.eliasnvx.krylix.model.KillFlags;
+import com.eliasnvx.krylix.network.KrylixPayloads.Combatant;
 import com.eliasnvx.krylix.network.KrylixPayloads.DeathRecapPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads.KillFeedPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardPayload;
@@ -13,6 +17,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 
 /** Client-side Krylix: the loaders forward their events here. Client thread only. */
@@ -76,13 +81,37 @@ public final class KrylixClient {
     /** A Krylix payload from the server, on the client thread. */
     public static void handle(CustomPacketPayload payload) {
         switch (payload) {
-            case KillFeedPayload p -> KillFeedHud.add(KillEntry.of(p, System.currentTimeMillis()));
+            case KillFeedPayload p -> {
+                KillEntry entry = KillEntry.of(p, System.currentTimeMillis());
+                if (!isHiddenByAddon(entry)) {
+                    KillFeedHud.add(entry);
+                }
+            }
             case DeathRecapPayload p -> DeathRecapClient.set(p);
             case MobKillsPayload p -> MobStatsClient.apply(p);
             case LeaderboardPayload p -> LeaderboardClient.apply(p);
             default -> {
             }
         }
+    }
+
+    private static boolean isHiddenByAddon(KillEntry entry) {
+        if (!KrylixApiImpl.EVENTS.hasListeners(FeedEntryEvent.class)) {
+            return false;
+        }
+        Identifier weapon = Identifier.tryParse(entry.weapon());
+        FeedEntryEvent event = new FeedEntryEvent(
+            entry.killer() != null ? participant(entry.killer()) : null,
+            participant(entry.victim()),
+            weapon != null ? weapon : Identifier.withDefaultNamespace("air"),
+            entry.distance(),
+            KillFlags.fromBits(entry.flags()));
+        return KrylixApiImpl.EVENTS.post(event).isCancelled();
+    }
+
+    private static FeedEntryEvent.Participant participant(Combatant who) {
+        return new FeedEntryEvent.Participant(who.name(), who.uuid(),
+            who.entityType() != null ? Identifier.tryParse(who.entityType()) : null);
     }
 
     /** A click and an action-bar line, so a key press is never silent. */

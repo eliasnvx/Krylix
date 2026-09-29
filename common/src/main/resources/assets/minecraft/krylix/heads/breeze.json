@@ -1,0 +1,18 @@
+{
+  "layers": [
+    {
+      "texture": "minecraft:textures/entity/breeze/breeze.png",
+      "u": 4,
+      "v": 4,
+      "texture_width": 32,
+      "texture_height": 32
+    },
+    {
+      "texture": "minecraft:textures/entity/breeze/breeze_eyes.png",
+      "u": 4,
+      "v": 4,
+      "texture_width": 32,
+      "texture_height": 32
+    }
+  ]
+}

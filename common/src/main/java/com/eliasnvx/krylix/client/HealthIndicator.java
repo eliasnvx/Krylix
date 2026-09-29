@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.client;
 
+import com.eliasnvx.krylix.api.client.HealthProvider;
 import com.eliasnvx.krylix.config.KrylixConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
@@ -199,8 +200,9 @@ public final class HealthIndicator {
         submitNodeCollector.submitNameTag(poseStack, liftedAttach, 0, name, !state.isDiscrete, LightCoordsUtil.FULL_BRIGHT, cameraRenderState);
 
         // Line 2: Hearts + Text (at yOffset = 10, full bright, right below mob name)
-        float maxHp = Math.max(1f, living.getMaxHealth());
-        float hp = Math.max(0f, Math.min(maxHp, living.getHealth()));
+        HealthProvider.Health health = KrylixClientApiImpl.healthOf(living);
+        float maxHp = Math.max(1f, health.max());
+        float hp = Math.max(0f, Math.min(maxHp, health.current()));
         int hpRounded = Math.round(hp);
         int maxHpRounded = Math.round(maxHp);
 

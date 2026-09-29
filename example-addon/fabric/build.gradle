@@ -1,0 +1,23 @@
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+configurations {
+    common
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+}
+
+dependencies {
+    implementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    implementation "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
+
+    // Krylix itself, so `runClient` here starts Krylix + the addon
+    implementation project(path: ":fabric")
+    common(project(path: ":api")) { transitive false }
+    common(project(path: ":common")) { transitive false }
+    common(project(path: ":example-addon-common")) { transitive false }
+}
