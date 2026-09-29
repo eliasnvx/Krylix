@@ -13,7 +13,7 @@ on:
 
 jobs:
   release-mod:
-    name: 📦 Release Mod (NeoForge + Fabric + Forge)
+    name: 📦 Release Mod (NeoForge + Fabric)
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -51,23 +51,29 @@ jobs:
             VERSION=${GITHUB_REF#refs/tags/v}
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           fi
+          echo "MC_VERSION=$(grep '^minecraft_version=' gradle.properties | cut -d= -f2)" >> $GITHUB_OUTPUT
 
       - name: 📋 Generate changelog
         id: changelog
         run: |
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
           if [ -f CHANGELOG.md ]; then
-            sed -n '/^## \[${{ steps.version.outputs.VERSION }}\]/,/^## \[/p' CHANGELOG.md | sed '$d' >> $GITHUB_OUTPUT
+            # The version's section: from its "## [x.y.z]" header up to (not including) the next one
+            awk -v v="${{ steps.version.outputs.VERSION }}" '
+              index($0, "## [" v "]") == 1 { on = 1; next }
+              on && /^## \[/ { exit }
+              on { print }
+            ' CHANGELOG.md >> $GITHUB_OUTPUT
           else
             echo "Release ${{ steps.version.outputs.VERSION }}" >> $GITHUB_OUTPUT
           fi
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 🎉 Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}
-          name: Krylix v${{ steps.version.outputs.VERSION }}
+          name: Krylix v${{ steps.version.outputs.VERSION }} for Minecraft ${{ steps.version.outputs.MC_VERSION }}
           body: |
             ## 🎮 Krylix v${{ steps.version.outputs.VERSION }}
 
@@ -77,16 +83,15 @@ jobs:
 
             ### 📥 Downloads
             - Download the NeoForge or Fabric JAR files below
-            - Requires Minecraft 26.1.x (Java 25)
+            - Requires Minecraft ${{ steps.version.outputs.MC_VERSION }} (Java 25)
 
             ### 🔗 Links
             - [CurseForge](https://curseforge.com/minecraft/mc-mods/krylix)
             - [Modrinth](https://modrinth.com/mod/krylix)
             - [GitHub](https://github.com/eliasnvx/Krylix)
           files: |
-            fabric/build/libs/*.jar
-            neoforge/build/libs/*.jar
-            forge/build/libs/*.jar
+            fabric/build/libs/krylix-*-fabric.jar
+            neoforge/build/libs/krylix-*-neoforge.jar
           draft: false
           prerelease: false
         env:

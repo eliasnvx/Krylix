@@ -1,38 +1,37 @@
 modLoader = "javafml"
-
 loaderVersion = "[4,)"
 license = "MIT"
 issueTrackerURL = "https://github.com/eliasnvx/Krylix/issues"
 
 [[mods]]
-modId = "krylix"
+modId = "${mod_id}"
 version = "${version}"
-displayName = "Krylix"
+displayName = "${mod_name}"
 authors = "eliasnvx"
 description = '''
-A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft NeoForge, with a full configuration GUI and localization into 13 languages.
+A kill feed, health plates over whatever you aim at, per-player mob stats and an all-time PvP leaderboard, with a public API for addons.
 '''
-updateJSONURL="https://raw.githubusercontent.com/eliasnvx/Krylix/26.1-dev/updates.json"
-logoFile="icon.png"
+iconFile = "icon.png"
+displayURL = "https://modrinth.com/mod/krylix"
 
-[[dependencies.krylix]]
+[[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "required"
-versionRange = "[26.1.2.95,26.2)"
+versionRange = "[${neoforge_version},)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.krylix]]
+[[dependencies.${mod_id}]]
 modId = "minecraft"
 type = "required"
-# A 26.1 jar must not try to load on 26.2+: the rendering and input APIs it uses are gone there
-versionRange = "[26.1,26.2)"
+# One jar per Minecraft version: rendering and input APIs change between them
+versionRange = "[${minecraft_version},26.4)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.krylix]]
+[[dependencies.${mod_id}]]
 modId = "cloth_config"
 type = "required"
-versionRange = "[26.1,)"
+versionRange = "[${cloth_config_version},)"
 ordering = "NONE"
 side = "BOTH"

@@ -2,7 +2,7 @@
 """README / mod page images for Krylix: banner, section headers and screenshot galleries.
 
 Backgrounds, the pixel font, icons' frames and chips are drawn here; item icons come from the vanilla client jar
-of the Minecraft version in buildSrc/Versions.kt; the pictures are real in-game screenshots taken by
+of the Minecraft version in gradle.properties; the pictures are real in-game screenshots taken by
 DocsShotsClientTest (never AI-generated).
 
     KRYLIX_DOCS_SHOTS=1 ./gradlew :fabric:runClientGameTest     # takes the docs_* screenshots
@@ -37,13 +37,15 @@ WHITE = (255, 255, 255)
 
 
 def versions():
-    """minecraftVersion / coreVersion from buildSrc, so the chips follow the build."""
-    text = open(os.path.join(ROOT, "buildSrc", "src", "main", "kotlin", "Versions.kt"), encoding="utf-8").read()
-
-    def const(name):
-        m = re.search(r'const val %s\s*=\s*"([^"]+)"' % name, text)
-        return m.group(1) if m else "?"
-    return const("minecraftVersion"), const("coreVersion")
+    """minecraft_version / mod_version from gradle.properties, so the chips follow the build."""
+    props = {}
+    with open(os.path.join(ROOT, "gradle.properties"), encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                key, value = line.split("=", 1)
+                props[key.strip()] = value.strip()
+    return props.get("minecraft_version", "?"), props.get("mod_version", "?")
 
 
 MC_VERSION, MOD_VERSION = versions()

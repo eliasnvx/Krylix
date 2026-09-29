@@ -1,7 +1,7 @@
 package com.eliasnvx.krylix.fabric.gametest;
 
-import com.eliasnvx.krylix.fabric.client.HealthIndicator;
-import com.eliasnvx.krylix.fabric.config.ModConfig;
+import com.eliasnvx.krylix.client.HealthIndicator;
+import com.eliasnvx.krylix.config.ModConfig;
 import me.shedaniel.autoconfig.AutoConfigClient;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
@@ -25,7 +25,7 @@ public final class HealthPlateClientTest implements FabricClientGameTest {
             mc.options.guiScale().set(2);
         });
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
-            world.getClientLevel().waitForChunksRender();
+            world.getConnection().waitForChunksRender();
             cmd(world, "gamerule spawn_mobs false");
             cmd(world, "time set 6000");
             // Target in front, a named pig beside it whose own nametag must stay its own

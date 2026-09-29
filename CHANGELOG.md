@@ -2,6 +2,39 @@
 
 All notable changes to Krylix are documented here.
 
+## [1.4.0]
+
+Krylix for Minecraft 26.3 (Fabric and NeoForge, Java 25). Rebuilt on a shared codebase: both loaders now run the same
+kill feed, stats and HUD code, so they behave the same.
+
+### Added
+- **Per-player mob kills.** The mob panel and the leaderboard's Mob Kills tab count each player's own kills. Old worlds
+  are migrated: single-player mob stats move to the only player who has stats.
+- **Knock-off kills are credited.** Pushing someone into the void, lava or off a cliff counts as your kill, with the
+  cause (fall, lava, fire, drowning, explosion, Wither, lightning...) shown as the feed icon.
+- **Cause icons from damage types.** Freezing, the void, the Warden's sonic boom, fireworks, anvils, dripstone,
+  cactus, suffocation and more get a fitting icon instead of a blank. The weapon is the item that actually dealt the
+  blow (a thrown trident, the bow that shot the arrow).
+- **Own key binding category** "Krylix" in Controls.
+
+### Changed
+- **The leaderboard is sent when you open it,** not to every player after every mob kill. Much less network traffic on
+  busy servers. It shows a loading line until the server answers.
+- **Leaderboard columns:** Kills, Deaths and K/D each have their own column.
+- **Mob icons come from the entity type,** not from its English name, so they are right in every language and for
+  renamed mobs.
+- **Players without Krylix can join** a Krylix server on both loaders (the mod's network channels are optional).
+- **NeoForge client commands moved to `/krylixclient`,** the same as on Fabric; `/krylix` is only the server command
+  (`toggle`, `status`) now, so the two no longer clash.
+- Feed timings use your own clock, so rows fade correctly even when the server's clock is off.
+
+### Fixed
+- The kill feed, mob panel, death recap and leaderboard no longer carry over from one world or server to the next.
+- Malformed or oversized Krylix packets are rejected instead of allocating huge lists.
+- NeoForge: the mod icon uses `iconFile` instead of the deprecated `logoFile`.
+
+---
+
 ## [1.3.1]
 
 A bugfix release for Minecraft 26.1.2 (Fabric and NeoForge).

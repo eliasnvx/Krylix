@@ -37,3 +37,6 @@ remappedTest/
 
 # Misc
 *.class
+
+# Python
+__pycache__/

@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories {
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://maven.architectury.dev/" }
+        maven { url "https://maven.neoforged.net/releases/" }
+        gradlePluginPortal()
+    }
+}
+
+if (JavaVersion.current().ordinal() + 1 < 25) {
+    throw new IllegalStateException("Please run Gradle with Java 25+")
+}
+
+rootProject.name = "krylix"
+
+include("api", "common", "fabric", "neoforge")
+

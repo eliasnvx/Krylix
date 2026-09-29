@@ -1,6 +1,6 @@
 package com.eliasnvx.krylix.fabric.mixin;
 
-import com.eliasnvx.krylix.fabric.client.HealthIndicator;
+import com.eliasnvx.krylix.client.HealthIndicator;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRenderer;

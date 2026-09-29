@@ -1,14 +1,12 @@
 {
   "schemaVersion": 1,
-  "id": "krylix",
+  "id": "${mod_id}",
   "version": "${version}",
-  "name": "Krylix",
-  "description": "A modern kill feed, mob-kill tracker, crosshair health indicator, and player leaderboard for Minecraft Fabric, with a full configuration GUI and localization into 13 languages.",
-  "authors": [
-    "eliasnvx"
-  ],
+  "name": "${mod_name}",
+  "description": "A kill feed, health plates over whatever you aim at, per-player mob stats and an all-time PvP leaderboard, with a public API for addons.",
+  "authors": ["eliasnvx"],
   "contact": {
-    "homepage": "https://github.com/eliasnvx/Krylix",
+    "homepage": "https://modrinth.com/mod/krylix",
     "sources": "https://github.com/eliasnvx/Krylix",
     "issues": "https://github.com/eliasnvx/Krylix/issues"
   },
@@ -16,25 +14,17 @@
   "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
-    "main": [
-      "com.eliasnvx.krylix.fabric.KrylixFabric"
-    ],
-    "client": [
-      "com.eliasnvx.krylix.fabric.client.KrylixFabricClient"
-    ],
-    "modmenu": [
-      "com.eliasnvx.krylix.fabric.client.KrylixModMenu"
-    ]
+    "main": ["com.eliasnvx.krylix.fabric.KrylixFabric"],
+    "client": ["com.eliasnvx.krylix.fabric.client.KrylixFabricClient"],
+    "modmenu": ["com.eliasnvx.krylix.fabric.client.KrylixModMenu"]
   },
-  "mixins": [
-    "krylix.mixins.json"
-  ],
+  "mixins": ["krylix.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": "~26.1",
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": "~${minecraft_version}",
     "java": ">=25",
-    "fabric-api": "*",
-    "cloth-config": "*"
+    "fabric-api": ">=${fabric_api_version}",
+    "cloth-config": ">=${cloth_config_version}"
   },
   "suggests": {
     "modmenu": "*"

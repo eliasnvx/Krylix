@@ -1,0 +1,15 @@
+architectury {
+    common(rootProject.platforms.split(","))
+}
+
+dependencies {
+    // Only for @Environment-style annotations; do NOT use other Fabric Loader classes in common
+    compileOnly "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+
+    api project(":api")
+    // Config screen and file (AutoConfig); each loader ships its own Cloth Config build
+    compileOnly "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}"
+}
+
+// The Architectury transformer reads :api classes; make sure the api jar is complete first (parallel builds).
+tasks.matching { it.name.startsWith("transformProduction") }.configureEach { dependsOn(":api:jar") }

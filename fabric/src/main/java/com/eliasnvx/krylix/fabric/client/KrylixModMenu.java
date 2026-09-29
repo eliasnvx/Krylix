@@ -1,6 +1,6 @@
 package com.eliasnvx.krylix.fabric.client;
 
-import com.eliasnvx.krylix.fabric.config.ModConfig;
+import com.eliasnvx.krylix.config.ModConfig;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 import me.shedaniel.autoconfig.AutoConfigClient;

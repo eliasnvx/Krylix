@@ -1,11 +1,12 @@
 package com.eliasnvx.krylix.fabric.gametest;
 
-import com.eliasnvx.krylix.fabric.client.KillFeedHud;
-import com.eliasnvx.krylix.fabric.client.LeaderboardScreen;
-import com.eliasnvx.krylix.fabric.client.PlayerStatsClient;
-import com.eliasnvx.krylix.fabric.network.FabricNetworkPackets.PlayerStatEntry;
+import com.eliasnvx.krylix.client.KillFeedHud;
+import com.eliasnvx.krylix.client.LeaderboardClient;
+import com.eliasnvx.krylix.client.LeaderboardScreen;
 import com.eliasnvx.krylix.model.KillEntry;
-import java.lang.reflect.Field;
+import com.eliasnvx.krylix.network.KrylixPayloads;
+import com.eliasnvx.krylix.network.KrylixPayloads.Combatant;
+import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardRow;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public final class DocsShotsClientTest implements FabricClientGameTest {
         });
 
         try (TestSingleplayerContext world = context.worldBuilder().create()) {
-            world.getClientLevel().waitForChunksRender();
+            world.getConnection().waitForChunksRender();
             cmd(world, "difficulty normal");
             cmd(world, "gamerule spawn_mobs false");
             cmd(world, "gamerule advance_time false");
@@ -78,7 +79,7 @@ public final class DocsShotsClientTest implements FabricClientGameTest {
 
             // Health plate close-up on a vindicator
             gone(world, "@e[tag=hero]");
-            context.runOnClient(mc -> KillFeedHud.clearNotifications()); // the plate is big up close
+            context.runOnClient(mc -> KillFeedHud.clear()); // the plate is big up close
             cmd(world, "summon minecraft:vindicator ~-0.3 ~ ~2.4 {NoAI:1b,PersistenceRequired:1b,Tags:[\"plate\"],Rotation:[180f,0f],"
                     + "equipment:{mainhand:{id:\"minecraft:iron_axe\",count:1}}}");
             cmd(world, "damage @e[tag=plate,sort=nearest,limit=1] 9 minecraft:generic");
@@ -99,20 +100,24 @@ public final class DocsShotsClientTest implements FabricClientGameTest {
             context.takeScreenshot("docs_recap");
             context.runOnClient(mc -> {
                 mc.player.respawn();
-                mc.setScreen(null);
+                mc.gui.setScreen(null);
             });
             context.waitTicks(SETTLE);
             gone(world, "@e[tag=killer]");
-            context.runOnClient(mc -> mc.gui.getChat().clearMessages(false));
+            context.runOnClient(mc -> mc.gui.hud.getChat().clearMessages(false));
 
-            // Leaderboard: our real row plus a server full of other players
-            context.runOnClient(mc -> PlayerStatsClient.updateStats(leaderboard(mc.player.getUUID().toString(), mc.player.getName().getString())));
+            // Leaderboard: our real row plus a server full of other players. The screen asks the server for the table
+            // when it opens, so the made-up rows go in after that reply has arrived.
             context.setScreen(LeaderboardScreen::new);
             context.waitTicks(SETTLE / 2);
+            context.runOnClient(mc -> {
+                List<LeaderboardRow> rows = leaderboard(mc.player.getUUID(), mc.player.getName().getString());
+                LeaderboardClient.set(rows, rows.size());
+            });
             context.getInput().setCursorPos(8, 8); // opening a screen centers the cursor: move it off the rows
             context.waitTicks(SETTLE / 2);
             context.takeScreenshot("docs_leaderboard_pvp");
-            context.runOnClient(mc -> mobKillsTab(mc.screen));
+            context.runOnClient(mc -> ((LeaderboardScreen) mc.gui.screen()).showMobKills());
             context.waitTicks(SETTLE / 2);
             context.takeScreenshot("docs_leaderboard_mobs");
             context.setScreen(() -> null);
@@ -169,8 +174,8 @@ public final class DocsShotsClientTest implements FabricClientGameTest {
 
     private static void shot(ClientGameTestContext context, TestSingleplayerContext world, String name) {
         context.runOnClient(mc -> {
-            mc.getToastManager().clear();
-            mc.gui.getChat().clearMessages(false);
+            mc.gui.toastManager().clear();
+            mc.gui.hud.getChat().clearMessages(false);
         });
         context.waitTicks(SETTLE / 2);
         context.takeScreenshot(name);
@@ -178,56 +183,40 @@ public final class DocsShotsClientTest implements FabricClientGameTest {
 
     // ------------------------------------------------------------------------------------------------ fed data
 
-    private static String offline(String name) {
-        return UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8)).toString();
+    private static UUID offline(String name) {
+        return UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(StandardCharsets.UTF_8));
     }
 
-    /** Four rows of a busy PvP server: a crit, a long bow shot, a mob kill and a mace smash. */
+    private static Combatant player(String name) {
+        return new Combatant(name, offline(name), "minecraft:player");
+    }
+
+    /** Four rows of a busy PvP server: a long bow shot, a mob kill, a mace smash and a crit. */
     private static void feed(ClientGameTestContext context) {
         context.runOnClient(mc -> {
-            KillFeedHud.clearNotifications();
+            KillFeedHud.clear();
             long now = System.currentTimeMillis();
-            String me = mc.player.getName().getString();
-            String myId = mc.player.getUUID().toString();
-            KillFeedHud.addEntry(new KillEntry("NightOwl", offline("NightOwl"), "Pixel_Knight", offline("Pixel_Knight"),
-                    12f, "minecraft:bow", 42.0, now, false, false, false));
-            KillFeedHud.addEntry(new KillEntry("Skeleton", null, "Vortex_", offline("Vortex_"),
-                    20f, "minecraft:bow", 17.0, now, false, false, false));
-            KillFeedHud.addEntry(new KillEntry("Kira", offline("Kira"), "NightOwl", offline("NightOwl"),
-                    6f, "minecraft:mace", 2.0, now, false, true, false));
-            KillFeedHud.addEntry(new KillEntry(me, myId, "Vortex_", offline("Vortex_"),
-                    17f, "minecraft:netherite_sword", 3.0, now, false, false, true));
+            Combatant me = new Combatant(mc.player.getName().getString(), mc.player.getUUID(), "minecraft:player");
+            KillFeedHud.add(new KillEntry(player("NightOwl"), player("Pixel_Knight"), 12f, "minecraft:bow", 42f, KrylixPayloads.FLAG_LONGSHOT, now));
+            KillFeedHud.add(new KillEntry(new Combatant("Skeleton", null, "minecraft:skeleton"), player("Vortex_"), 20f, "minecraft:bow", 17f, 0, now));
+            KillFeedHud.add(new KillEntry(player("Kira"), player("NightOwl"), 6f, "minecraft:mace", 2f, KrylixPayloads.FLAG_SMASH, now));
+            KillFeedHud.add(new KillEntry(me, player("Vortex_"), 17f, "minecraft:netherite_sword", 3f, KrylixPayloads.FLAG_CRITICAL, now));
         });
     }
 
-    private static List<PlayerStatEntry> leaderboard(String myId, String me) {
+    private static List<LeaderboardRow> leaderboard(UUID myId, String me) {
         Object[][] rows = {
                 {"Vortex_", 48, 21, 212}, {"NightOwl", 41, 17, 164}, {"Pixel_Knight", 33, 25, 301},
                 {"Kira", 29, 9, 97}, {"RedstoneRaven", 22, 30, 140}, {"Mossy", 18, 14, 256},
                 {"Blaze_Runner", 15, 19, 88}, {"SnowFox", 11, 7, 73}, {"TNT_Tim", 9, 22, 41},
                 {"Lumen", 6, 4, 190}, {"QuietStep", 3, 11, 35},
         };
-        List<PlayerStatEntry> list = new ArrayList<>();
+        List<LeaderboardRow> list = new ArrayList<>();
         for (Object[] r : rows) {
-            list.add(new PlayerStatEntry(offline((String) r[0]), (String) r[0], (int) r[1], (int) r[2], (int) r[3]));
+            list.add(new LeaderboardRow(offline((String) r[0]), (String) r[0], (int) r[1], (int) r[2], (int) r[3]));
         }
         // Our own row: the 39 real mob kills from this run, PvP numbers to sit mid-table
-        list.add(new PlayerStatEntry(myId, me, 37, 12, 39));
+        list.add(new LeaderboardRow(myId, me, 37, 12, 39));
         return list;
-    }
-
-    /** The leaderboard has no widget for its tabs; switch the private mode field like a click would. */
-    private static void mobKillsTab(Object screen) {
-        try {
-            Field mode = screen.getClass().getDeclaredField("mode");
-            mode.setAccessible(true);
-            for (Object constant : mode.getType().getEnumConstants()) {
-                if (constant.toString().equals("MOB_KILLS")) {
-                    mode.set(screen, constant);
-                }
-            }
-        } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("LeaderboardScreen.mode moved", e);
-        }
     }
 }

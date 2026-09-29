@@ -1,0 +1,58 @@
+apply plugin: "com.gradleup.shadow"
+
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+configurations {
+    common
+    shadowBundle
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+}
+
+dependencies {
+    implementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
+    implementation "me.shedaniel.cloth:cloth-config-fabric:${rootProject.cloth_config_version}"
+    // Optional: the Config button in Mod Menu (fabric.mod.json "suggests")
+    compileOnly("com.terraformersmc:modmenu:${rootProject.modmenu_version}") { transitive false }
+
+    common(project(path: ":api")) { transitive false }
+    common(project(path: ":common")) { transitive false }
+    shadowBundle(project(path: ":api", configuration: "transformProductionFabric")) { transitive false }
+    shadowBundle(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
+}
+
+// Client GameTests open a real window and are run by hand:
+//   ./gradlew :fabric:runClientGameTest                             (health plate checks)
+//   KRYLIX_DOCS_SHOTS=1 ./gradlew :fabric:runClientGameTest         (README screenshots, see tools/docs)
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "krylix-test"
+        enableGameTests = false
+        enableClientGameTests = true
+        username = "eliasnvx"
+    }
+}
+
+jar {
+    archiveClassifier = "raw"
+}
+
+shadowJar {
+    dependsOn jar
+    mainSpec.sourcePaths.clear()
+    from(zipTree(jar.archiveFile))
+    configurations = [project.configurations.shadowBundle]
+    archiveBaseName = rootProject.archives_base_name
+    archiveClassifier = null
+    archiveVersion = "${project.version}+${rootProject.minecraft_version}-fabric"
+    exclude "architectury.common.json"
+    from rootProject.file("LICENSE")
+}
+
+assemble.dependsOn shadowJar

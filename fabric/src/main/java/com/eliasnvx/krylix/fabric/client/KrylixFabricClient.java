@@ -1,77 +1,52 @@
 package com.eliasnvx.krylix.fabric.client;
 
 import com.eliasnvx.krylix.Krylix;
-import com.eliasnvx.krylix.fabric.network.FabricNetworkPackets;
+import com.eliasnvx.krylix.client.KrylixClient;
+import com.eliasnvx.krylix.client.KrylixClientCommands;
+import com.eliasnvx.krylix.client.KrylixKeyBindings;
+import com.eliasnvx.krylix.network.KrylixPayloads;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.gui.screens.DeathScreen;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
 
-public class KrylixFabricClient implements ClientModInitializer {
-
+public final class KrylixFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        Krylix.LOGGER.info("Initializing Krylix Fabric Client");
+        for (KrylixPayloads.Entry<?> entry : KrylixPayloads.CLIENTBOUND) {
+            registerReceiver(entry.type());
+        }
+        for (KeyMapping key : KrylixKeyBindings.ALL) {
+            KeyMappingHelper.registerKeyMapping(key);
+        }
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registries) ->
+            dispatcher.register(KrylixClientCommands.<FabricClientCommandSource>build(FabricClientCommandSource::sendFeedback)));
 
-        KrylixKeyBindings.register();
-        KrylixClientCommands.register();
-
-        ClientPlayNetworking.registerGlobalReceiver(
-            FabricNetworkPackets.KillNotificationPacket.TYPE,
-            (payload, context) -> context.client().execute(payload::handleOnClient)
-        );
-
-        ClientPlayNetworking.registerGlobalReceiver(
-            FabricNetworkPackets.MobStatsSyncPacket.TYPE,
-            (payload, context) -> context.client().execute(payload::handleOnClient)
-        );
-
-        ClientPlayNetworking.registerGlobalReceiver(
-            FabricNetworkPackets.PlayerStatsSyncPacket.TYPE,
-            (payload, context) -> context.client().execute(payload::handleOnClient)
-        );
-
-        ClientPlayNetworking.registerGlobalReceiver(
-            FabricNetworkPackets.DeathRecapPacket.TYPE,
-            (payload, context) -> context.client().execute(payload::handleOnClient)
-        );
-
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            while (KrylixKeyBindings.toggleKillFeed.consumeClick()) {
-                boolean newState = !KillFeedHud.isHudEnabled();
-                KillFeedHud.setEnabled(newState);
-                sendToggleMessage(client, "krylix.toggle.killfeed", newState);
+        ClientTickEvents.END_CLIENT_TICK.register(KrylixClient::onTick);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> KrylixClient.onDisconnect());
+        // Under the chat, so chat lines stay readable over the feed
+        HudElementRegistry.attachElementBefore(VanillaHudElements.CHAT, Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "hud"),
+            (graphics, deltaTracker) -> KrylixClient.renderHud(graphics));
+        ScreenEvents.AFTER_INIT.register((client, screen, width, height) -> {
+            if (screen instanceof DeathScreen) {
+                ScreenEvents.afterExtract(screen).register((s, graphics, mouseX, mouseY, partialTick) ->
+                    KrylixClient.renderDeathScreen(graphics, s.width, s.height));
             }
-
-            while (KrylixKeyBindings.toggleMobStats.consumeClick()) {
-                boolean newState = !MobStatsHud.isStatsEnabled();
-                MobStatsHud.setEnabled(newState);
-                sendToggleMessage(client, "krylix.toggle.mobstats", newState);
-            }
-
-            while (KrylixKeyBindings.openLeaderboard.consumeClick()) {
-                client.setScreen(new LeaderboardScreen());
-            }
-
-            while (KrylixKeyBindings.toggleHealthIndicator.consumeClick()) {
-                boolean newState = !HealthIndicator.isIndicatorEnabled();
-                HealthIndicator.setEnabled(newState);
-                sendToggleMessage(client, "krylix.toggle.health_indicator", newState);
-            }
-
-            HealthIndicator.updateTarget();
         });
-
-        Krylix.LOGGER.info("Krylix Fabric Client initialized successfully");
     }
 
-    private void sendToggleMessage(Minecraft client, String translationKey, boolean state) {
-        if (client.player != null) {
-            Component stateComp = Component.translatable(state ? "krylix.toggle.on" : "krylix.toggle.off");
-            client.player.sendSystemMessage(
-                Component.translatable(translationKey, stateComp)
-            );
-        }
+    /** Fabric runs play payload handlers on the client thread. */
+    private static <T extends CustomPacketPayload> void registerReceiver(CustomPacketPayload.Type<T> type) {
+        ClientPlayNetworking.registerGlobalReceiver(type, (payload, context) -> KrylixClient.handle(payload));
     }
 }

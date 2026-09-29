@@ -1,0 +1,20 @@
+// Public API for addons: interfaces, records and events. Depends on vanilla Minecraft only — never on :common.
+architectury {
+    common(rootProject.platforms.split(","))
+}
+
+version = rootProject.api_version
+
+dependencies {
+    // Addons compile against these annotations (@ApiStatus); exported as compile-only
+    compileOnlyApi "org.jetbrains:annotations:${rootProject.jetbrains_annotations_version}"
+}
+
+java {
+    withJavadocJar()
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+    options.addBooleanOption("Xdoclint:all,-missing", true)
+}
