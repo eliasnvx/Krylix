@@ -40,5 +40,8 @@
   "krylix.command.hud_cleared": "HUD del feed de bajas vaciado",
   "krylix.command.hud_count": "Notificaciones activas: %s",
   "krylix.command.leaderboard_filled": "Clasificación rellenada con %s jugadores de prueba (solo cliente, no se guarda)",
-  "krylix.command.leaderboard_cleared": "Datos de prueba de la clasificación borrados"
+  "krylix.command.leaderboard_cleared": "Datos de prueba de la clasificación borrados",
+  "krylix.deathrecap.title": "RESUMEN DE MUERTE",
+  "krylix.deathrecap.damage_dealt": "Daño infligido: %s ⚔",
+  "krylix.health_bar_style.hearts": "Corazones"
 }

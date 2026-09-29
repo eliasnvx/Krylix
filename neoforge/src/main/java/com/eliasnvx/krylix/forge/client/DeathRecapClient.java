@@ -56,7 +56,14 @@ public class DeathRecapClient {
         int cardWidth = 240;
         int cardHeight = 72;
         int cardX = (screenWidth - cardWidth) / 2;
-        int cardY = (screenHeight / 4) - 20;
+        // Under vanilla's Respawn / Title Screen buttons (height/4 + 72 and + 96, 20 tall): above them are "You Died!",
+        // the death message and the score. Where the window is too short for the whole card, it shrinks from its top edge.
+        int cardY = screenHeight / 4 + 124;
+        float scale = Math.max(0.5f, Math.min(1f, (screenHeight - cardY - 6) / (float) cardHeight));
+        guiGraphics.pose().pushMatrix();
+        guiGraphics.pose().translate(screenWidth / 2f, cardY);
+        guiGraphics.pose().scale(scale, scale);
+        guiGraphics.pose().translate(-screenWidth / 2f, -cardY);
 
         HudRender.roundedFill(guiGraphics, cardX, cardY, cardWidth, cardHeight, 6, 0xCC111116);
 
@@ -124,6 +131,8 @@ public class DeathRecapClient {
             int bWidth = font.width(badgeText);
             guiGraphics.text(font, badgeText, cardX + cardWidth - bWidth - 12, cardY + 8, badgeColor);
         }
+
+        guiGraphics.pose().popMatrix();
     }
 
     private static void renderKillerAvatar(GuiGraphicsExtractor guiGraphics, DeathRecapPacket recap, int x, int y, int size) {

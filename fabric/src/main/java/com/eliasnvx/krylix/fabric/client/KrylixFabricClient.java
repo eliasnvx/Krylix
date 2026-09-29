@@ -59,6 +59,8 @@ public class KrylixFabricClient implements ClientModInitializer {
                 HealthIndicator.setEnabled(newState);
                 sendToggleMessage(client, "krylix.toggle.health_indicator", newState);
             }
+
+            HealthIndicator.updateTarget();
         });
 
         Krylix.LOGGER.info("Krylix Fabric Client initialized successfully");

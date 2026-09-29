@@ -4,6 +4,7 @@ import com.eliasnvx.krylix.forge.config.KrylixConfig;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.Team;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 
 import java.util.List;
@@ -32,6 +34,8 @@ public class HealthIndicator {
     private static final Identifier SPRITE_HEART_CONTAINER = Identifier.withDefaultNamespace("hud/heart/container");
 
     private static LivingEntity currentTarget = null;
+    /** Render state extracted for {@link #currentTarget} this frame: only that nametag gets the health plate. */
+    private static EntityRenderState targetState = null;
 
     public static void setEnabled(boolean enabled) {
         KrylixConfig.get().healthIndicatorEnabled = enabled;
@@ -54,13 +58,35 @@ public class HealthIndicator {
         }
 
         Entity looked = getEntityLookedAt(mc.player);
-        if (looked instanceof LivingEntity living && living.isAlive()) {
-            currentTarget = living;
-        } else if (mc.crosshairPickEntity instanceof LivingEntity le && le.isAlive()) {
-            currentTarget = le;
-        } else {
-            currentTarget = null;
+        if (!(looked instanceof LivingEntity) && mc.crosshairPickEntity instanceof LivingEntity) {
+            looked = mc.crosshairPickEntity;
         }
+        currentTarget = looked instanceof LivingEntity living && living.isAlive() && canShowPlate(living, mc.player) ? living : null;
+        if (currentTarget == null) {
+            targetState = null;
+        }
+    }
+
+    /**
+     * Mirrors vanilla LivingEntityRenderer.shouldShowName: no plate for spectators, for entities invisible to us, or
+     * when a scoreboard team hides its nametags from us — the plate must not reveal what the game hides in PvP.
+     */
+    private static boolean canShowPlate(LivingEntity entity, LocalPlayer viewer) {
+        if (entity.isSpectator()) {
+            return false;
+        }
+        boolean visible = !entity.isInvisibleTo(viewer);
+        Team team = entity.getTeam();
+        if (team == null) {
+            return visible;
+        }
+        Team mine = viewer.getTeam();
+        return switch (team.getNameTagVisibility()) {
+            case ALWAYS -> visible;
+            case NEVER -> false;
+            case HIDE_FOR_OTHER_TEAMS -> mine == null ? visible : team.isAlliedTo(mine) && (team.canSeeFriendlyInvisibles() || visible);
+            case HIDE_FOR_OWN_TEAM -> mine == null ? visible : !team.isAlliedTo(mine) && visible;
+        };
     }
 
     private static Entity getEntityLookedAt(Entity e) {
@@ -74,7 +100,7 @@ public class HealthIndicator {
         Vec3 lookVector = e.getLookAngle();
         Vec3 reachVector = positionVector.add(lookVector.x * finalDistance, lookVector.y * finalDistance, lookVector.z * finalDistance);
 
-        AABB searchBox = e.getBoundingBox().inflate(lookVector.x * finalDistance, lookVector.y * finalDistance, lookVector.z * finalDistance).inflate(1.0);
+        AABB searchBox = e.getBoundingBox().expandTowards(lookVector.scale(finalDistance)).inflate(1.0);
         List<Entity> entitiesInBoundingBox = e.level().getEntities(e, searchBox);
         double minDistance = distance;
 
@@ -122,22 +148,27 @@ public class HealthIndicator {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || entity == mc.player) return;
 
-        updateTarget();
-        if (currentTarget == living) {
-            EntityRenderState state = event.getEntityRenderState();
-            if (event.getContent() == null) {
-                event.setContent(living.getDisplayName());
+        // The target is picked once per client tick (KrylixClient.onClientTick), not for every entity every frame
+        EntityRenderState state = event.getEntityRenderState();
+        if (currentTarget != living) {
+            if (targetState == state) {
+                targetState = null;
             }
-            Vec3 attach = state.nameTagAttachment;
-            if (attach == null) {
-                attach = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(event.getPartialTick()));
-                if (attach == null) {
-                    attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
-                }
-            }
-            state.nameTagAttachment = attach;
-            event.setCanRender(net.minecraft.util.TriState.TRUE);
+            return;
         }
+        targetState = state;
+        if (event.getContent() == null) {
+            event.setContent(living.getDisplayName());
+        }
+        Vec3 attach = state.nameTagAttachment;
+        if (attach == null) {
+            attach = entity.getAttachments().getNullable(EntityAttachment.NAME_TAG, 0, entity.getYRot(event.getPartialTick()));
+            if (attach == null) {
+                attach = new Vec3(0, entity.getBbHeight() + 0.5, 0);
+            }
+        }
+        state.nameTagAttachment = attach;
+        event.setCanRender(net.minecraft.util.TriState.TRUE);
     }
 
     public static void onDoRenderNameTag(RenderNameTagEvent.DoRender event) {
@@ -145,7 +176,8 @@ public class HealthIndicator {
         LivingEntity living = currentTarget;
         if (living == null || !living.isAlive()) return;
         EntityRenderState state = event.getEntityRenderState();
-        if (state.nameTagAttachment == null) return;
+        // Only the target's own nametag: every other name (players, named mobs) is left to vanilla
+        if (state != targetState || state.nameTagAttachment == null) return;
 
         // Cancel vanilla's default single-line name rendering so we can draw the elevated 2-line nameplate
         event.setCanceled(true);

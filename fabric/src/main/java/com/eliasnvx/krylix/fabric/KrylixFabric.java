@@ -31,6 +31,16 @@ public class KrylixFabric implements ModInitializer {
         CombatDamage(long ts, float dmg) { this.timestamp = ts; this.totalDamage = dmg; }
     }
 
+    /** Adds to the attacker's running total on the target; totals older than 20 s are dropped so the map stays small. */
+    private void recordCombatDamage(Player attacker, LivingEntity target, float damage) {
+        long now = System.currentTimeMillis();
+        Map<String, CombatDamage> targetMap = combatDamageMap.computeIfAbsent(attacker.getUUID().toString(), k -> new HashMap<>());
+        targetMap.values().removeIf(cd -> now - cd.timestamp >= 20_000);
+        String targetId = target.getUUID().toString();
+        CombatDamage prev = targetMap.get(targetId);
+        targetMap.put(targetId, new CombatDamage(now, prev != null ? prev.totalDamage + damage : damage));
+    }
+
     @Override
     public void onInitialize() {
         Krylix.LOGGER.info("Initializing Krylix Fabric mod");
@@ -56,6 +66,13 @@ public class KrylixFabric implements ModInitializer {
                 entries.add(new FabricNetworkPackets.PlayerStatEntry(e.getKey(), e.getValue().lastName, e.getValue().kills, e.getValue().deaths, e.getValue().mobKills));
             }
             FabricNetworkPackets.sendToPlayer(player, new FabricNetworkPackets.PlayerStatsSyncPacket(entries));
+        });
+
+        // Damage players deal, per attacker and target, for the death recap's "damage dealt" (NeoForge: LivingDamageEvent.Post)
+        ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, baseDamageTaken, damageTaken, blocked) -> {
+            if (!blocked && source.getEntity() instanceof Player attacker) {
+                recordCombatDamage(attacker, entity, baseDamageTaken);
+            }
         });
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {

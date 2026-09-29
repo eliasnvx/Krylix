@@ -40,5 +40,8 @@
   "krylix.command.hud_cleared": "Killfeed-HUD geleegd",
   "krylix.command.hud_count": "Actieve meldingen: %s",
   "krylix.command.leaderboard_filled": "Ranglijst gevuld met %s testspelers (alleen client, niet opgeslagen)",
-  "krylix.command.leaderboard_cleared": "Testgegevens ranglijst gewist"
+  "krylix.command.leaderboard_cleared": "Testgegevens ranglijst gewist",
+  "krylix.deathrecap.title": "DOODSOVERZICHT",
+  "krylix.deathrecap.damage_dealt": "Toegebrachte schade: %s ⚔",
+  "krylix.health_bar_style.hearts": "Hartjes"
 }

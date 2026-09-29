@@ -29,6 +29,7 @@ public class MobTextures {
         register("minecraft:wither_skeleton", "skeleton/wither_skeleton", "Wither Skeleton");
         register("minecraft:drowned", "zombie/drowned", "Drowned");
         register("minecraft:husk", "zombie/husk", "Husk");
+        register("minecraft:zombie_villager", "zombie_villager/zombie_villager", "Zombie Villager");
         register("minecraft:stray", "skeleton/stray", "Stray");
         register("minecraft:phantom", "phantom/phantom", "Phantom");
         register("minecraft:pillager", "illager/pillager", "Pillager");
@@ -71,10 +72,17 @@ public class MobTextures {
         String lower = displayName.toLowerCase().trim();
         String id = entityIdByDisplayName.get(lower);
         if (id != null) return id;
+        // Custom names ("Angry Cave Spider"): the longest known name inside wins, so Cave Spider beats Spider and
+        // Wither Skeleton beats Wither whatever the map's iteration order
+        String best = null;
+        int bestLength = 0;
         for (Map.Entry<String, String> entry : entityIdByDisplayName.entrySet()) {
-            if (lower.contains(entry.getKey())) return entry.getValue();
+            if (entry.getKey().length() > bestLength && lower.contains(entry.getKey())) {
+                best = entry.getValue();
+                bestLength = entry.getKey().length();
+            }
         }
-        return null;
+        return best;
     }
 
     public static Identifier byDisplayName(String mobName) {

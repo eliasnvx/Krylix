@@ -21,6 +21,7 @@ dependencies {
     implementation("net.fabricmc.fabric-api:fabric-api:$fabricApiVersion")
     implementation("net.fabricmc.fabric-api:fabric-command-api-v2:3.0.5+e2bdee784c")
     implementation("me.shedaniel.cloth:cloth-config-fabric:$clothConfigVersion")
+    compileOnly("com.terraformersmc:modmenu:$modMenuVersion") // optional at runtime: see fabric.mod.json "suggests"
 
     implementation(project(":common"))
 }
@@ -33,6 +34,18 @@ sourceSets {
         resources {
             srcDir(project(":common").sourceSets.main.get().resources)
         }
+    }
+}
+
+// Client GameTests open a real window and are run by hand:
+//   KRYLIX_DOCS_SHOTS=1 ./gradlew :fabric:runClientGameTest   (README / mod page screenshots, see tools/docs)
+fabricApi {
+    configureTests {
+        createSourceSet.set(true)
+        modId.set("krylix-test")
+        enableGameTests.set(false)
+        enableClientGameTests.set(true)
+        username.set("eliasnvx")
     }
 }
 

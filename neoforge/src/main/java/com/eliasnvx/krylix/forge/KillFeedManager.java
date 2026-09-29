@@ -30,10 +30,10 @@ public class KillFeedManager {
         LivingEntity killerEntity = source.getEntity() instanceof LivingEntity ? (LivingEntity) source.getEntity() : null;
         String killerName = killerEntity != null ? killerEntity.getName().getString() : null;
         String killerUUIDString = null;
-        float killerHealth = 20.0f;
+        // Mobs have health too: it used to read 20 for every mob killer
+        float killerHealth = killerEntity != null ? killerEntity.getHealth() : 20.0f;
         if (killerEntity instanceof Player player) {
             killerUUIDString = player.getUUID().toString();
-            killerHealth = player.getHealth();
         }
 
         String weaponId = getWeaponId(source);

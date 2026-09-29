@@ -40,5 +40,8 @@
   "krylix.command.hud_cleared": "HUD do feed de abates limpo",
   "krylix.command.hud_count": "Notificações ativas: %s",
   "krylix.command.leaderboard_filled": "Ranking preenchido com %s jogadores de teste (somente cliente, não salvo)",
-  "krylix.command.leaderboard_cleared": "Dados de teste do ranking limpos"
+  "krylix.command.leaderboard_cleared": "Dados de teste do ranking limpos",
+  "krylix.deathrecap.title": "RESUMO DA MORTE",
+  "krylix.deathrecap.damage_dealt": "Dano causado: %s ⚔",
+  "krylix.health_bar_style.hearts": "Corações"
 }

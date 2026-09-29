@@ -17,6 +17,7 @@ public class KrylixServerCommands {
             Commands.literal("krylix")
                 .then(
                     Commands.literal("toggle")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .executes(context -> {
                             KillFeedManager.setEnabled(!KillFeedManager.isEnabled());
                             Component state = Component.translatable(KillFeedManager.isEnabled() ? "krylix.toggle.on" : "krylix.toggle.off");
@@ -29,6 +30,7 @@ public class KrylixServerCommands {
                 )
                 .then(
                     Commands.literal("status")
+                        .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .executes(context -> {
                             Component serverStatus = Component.translatable(KillFeedManager.isEnabled() ? "krylix.toggle.on" : "krylix.toggle.off");
                             int count = KillFeedManager.getActiveNotifications().size();

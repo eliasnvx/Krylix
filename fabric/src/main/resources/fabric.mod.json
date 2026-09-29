@@ -21,6 +21,9 @@
     ],
     "client": [
       "com.eliasnvx.krylix.fabric.client.KrylixFabricClient"
+    ],
+    "modmenu": [
+      "com.eliasnvx.krylix.fabric.client.KrylixModMenu"
     ]
   },
   "mixins": [
@@ -28,9 +31,12 @@
   ],
   "depends": {
     "fabricloader": ">=0.16.0",
-    "minecraft": ">=26.1",
+    "minecraft": "~26.1",
     "java": ">=25",
     "fabric-api": "*",
     "cloth-config": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
   }
 }

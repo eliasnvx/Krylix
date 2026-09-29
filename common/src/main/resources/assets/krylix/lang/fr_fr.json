@@ -40,5 +40,8 @@
   "krylix.command.hud_cleared": "HUD du fil des éliminations effacé",
   "krylix.command.hud_count": "Notifications actives : %s",
   "krylix.command.leaderboard_filled": "Classement rempli avec %s joueurs de test (client uniquement, non sauvegardé)",
-  "krylix.command.leaderboard_cleared": "Données de test du classement effacées"
+  "krylix.command.leaderboard_cleared": "Données de test du classement effacées",
+  "krylix.deathrecap.title": "RÉCAPITULATIF DE MORT",
+  "krylix.deathrecap.damage_dealt": "Dégâts infligés : %s ⚔",
+  "krylix.health_bar_style.hearts": "Cœurs"
 }

@@ -7,7 +7,7 @@ const val minecraftVersion = "26.1.2"
 // Mod
 const val modId = "krylix"
 const val modGroup = "com.eliasnvx"
-const val coreVersion = "1.3.0"
+const val coreVersion = "1.3.1"
 
 // NeoForge
 const val neoForgeVersion = "26.1.2.95" // https://projects.neoforged.net/neoforged/neoforge
@@ -30,3 +30,4 @@ const val forgeModArchive = "$modId-$forgeModVersion-forge"
 
 // External dependencies
 const val clothConfigVersion = "26.1.154" // https://linkie.shedaniel.dev/dependencies
+const val modMenuVersion = "18.0.2" // https://modrinth.com/mod/modmenu (optional: the Config button on Fabric)

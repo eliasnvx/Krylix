@@ -40,5 +40,8 @@
   "krylix.command.hud_cleared": "Wyczyszczono HUD kanału zabójstw",
   "krylix.command.hud_count": "Aktywnych powiadomień: %s",
   "krylix.command.leaderboard_filled": "Wypełniono ranking %s testowymi graczami (tylko po stronie klienta, niezapisywane)",
-  "krylix.command.leaderboard_cleared": "Wyczyszczono testowe dane rankingu"
+  "krylix.command.leaderboard_cleared": "Wyczyszczono testowe dane rankingu",
+  "krylix.deathrecap.title": "PODSUMOWANIE ŚMIERCI",
+  "krylix.deathrecap.damage_dealt": "Zadane obrażenia: %s ⚔",
+  "krylix.health_bar_style.hearts": "Serca"
 }

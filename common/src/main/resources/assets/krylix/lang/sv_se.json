@@ -40,5 +40,8 @@
   "krylix.command.hud_cleared": "Dödsflödes-HUD rensat",
   "krylix.command.hud_count": "Aktiva aviseringar: %s",
   "krylix.command.leaderboard_filled": "Topplistan fylld med %s testspelare (endast klient, sparas ej)",
-  "krylix.command.leaderboard_cleared": "Testdata för topplista rensad"
+  "krylix.command.leaderboard_cleared": "Testdata för topplista rensad",
+  "krylix.deathrecap.title": "DÖDSSAMMANFATTNING",
+  "krylix.deathrecap.damage_dealt": "Utdelad skada: %s ⚔",
+  "krylix.health_bar_style.hearts": "Hjärtan"
 }

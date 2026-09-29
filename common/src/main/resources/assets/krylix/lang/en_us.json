@@ -42,5 +42,6 @@
   "krylix.command.leaderboard_filled": "Filled leaderboard with %s test players (client-only, not saved)",
   "krylix.command.leaderboard_cleared": "Cleared test leaderboard data",
   "krylix.deathrecap.title": "DEATH RECAP",
-  "krylix.deathrecap.damage_dealt": "Damage Dealt: %s ⚔"
+  "krylix.deathrecap.damage_dealt": "Damage Dealt: %s ⚔",
+  "krylix.command.hud_count": "Active notifications: %s"
 }

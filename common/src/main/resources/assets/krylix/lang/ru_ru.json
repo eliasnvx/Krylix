@@ -42,5 +42,6 @@
   "krylix.command.leaderboard_filled": "Рейтинг заполнен %s тестовыми игроками (только на клиенте, не сохраняется)",
   "krylix.command.leaderboard_cleared": "Тестовые данные рейтинга очищены",
   "krylix.deathrecap.title": "СВОДКА СМЕРТИ",
-  "krylix.deathrecap.damage_dealt": "Ответный урон: %s ⚔"
+  "krylix.deathrecap.damage_dealt": "Ответный урон: %s ⚔",
+  "krylix.command.hud_count": "Активных уведомлений: %s"
 }

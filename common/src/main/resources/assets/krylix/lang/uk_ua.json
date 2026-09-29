@@ -40,5 +40,8 @@
   "krylix.command.hud_cleared": "HUD стрічки вбивств очищено",
   "krylix.command.hud_count": "Активних сповіщень: %s",
   "krylix.command.leaderboard_filled": "Рейтинг заповнено %s тестовими гравцями (лише на клієнті, не зберігається)",
-  "krylix.command.leaderboard_cleared": "Тестові дані рейтингу очищено"
+  "krylix.command.leaderboard_cleared": "Тестові дані рейтингу очищено",
+  "krylix.deathrecap.title": "ЗВЕДЕННЯ СМЕРТІ",
+  "krylix.deathrecap.damage_dealt": "Відповідна шкода: %s ⚔",
+  "krylix.health_bar_style.hearts": "Сердечка"
 }

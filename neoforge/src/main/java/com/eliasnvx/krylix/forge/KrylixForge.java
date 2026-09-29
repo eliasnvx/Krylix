@@ -17,7 +17,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -45,6 +44,7 @@ public class KrylixForge {
         if (FMLEnvironment.getDist().isClient()) {
             modEventBus.addListener(com.eliasnvx.krylix.forge.client.KrylixKeyBindings::onRegisterKeyMappings);
             com.eliasnvx.krylix.forge.client.KrylixClient.registerClientEvents();
+            com.eliasnvx.krylix.forge.client.KrylixClient.registerConfigScreen(container);
         }
 
         NeoForge.EVENT_BUS.register(this);
@@ -69,6 +69,7 @@ public class KrylixForge {
 
         long now = System.currentTimeMillis();
         Map<String, CombatDamage> targetMap = combatDamageMap.computeIfAbsent(attackerId, k -> new HashMap<>());
+        targetMap.values().removeIf(cd -> now - cd.timestamp >= 20_000); // keeps the map small: only recent fights matter
         CombatDamage prev = targetMap.get(targetId);
         float total = (prev != null && now - prev.timestamp < 20_000) ? prev.totalDamage + event.getOriginalDamage() : event.getOriginalDamage();
         targetMap.put(targetId, new CombatDamage(now, total));

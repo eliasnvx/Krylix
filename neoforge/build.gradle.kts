@@ -66,6 +66,10 @@ java {
 tasks {
     processResources {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        inputs.property("version", coreVersion)
+        filesMatching("META-INF/neoforge.mods.toml") {
+            expand("version" to coreVersion)
+        }
     }
 
     jar {
