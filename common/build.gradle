@@ -9,9 +9,6 @@ dependencies {
     compileOnly "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
     api project(":api")
-    // The Architectury transformer rebuilds stack frames and needs the API's class hierarchy; it can't read the
-    // project dependency's classes directory, so it also gets the API jar
-    compileOnly files(rootProject.project(":api").tasks.named("jar").flatMap { it.archiveFile })
     // Config screen and file (AutoConfig); each loader ships its own Cloth Config build
     compileOnly "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}"
 }

@@ -11,6 +11,7 @@ import com.eliasnvx.krylix.api.event.KrylixEventBus;
 import com.eliasnvx.krylix.api.internal.KrylixApiHolder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -64,21 +65,30 @@ public final class KrylixClientApiImpl implements KrylixClientApi {
     /** The first addon answer, else vanilla health. */
     public static HealthProvider.Health healthOf(LivingEntity entity) {
         for (HealthProvider provider : HEALTH_PROVIDERS.values()) {
-            if (BROKEN_PROVIDERS.contains(provider)) {
-                continue;
-            }
-            try {
-                HealthProvider.Health health = provider.health(entity);
-                if (health != null && health.max() > 0) {
-                    return health;
-                }
-            } catch (Throwable t) {
-                // Asked every frame: log once and stop asking, instead of a stack trace per frame
-                BROKEN_PROVIDERS.add(provider);
-                Krylix.LOGGER.error("Krylix health provider {} failed and is disabled",
-                    HEALTH_PROVIDERS.ids().stream().filter(id -> HEALTH_PROVIDERS.get(id).orElse(null) == provider).findFirst().orElse(null), t);
+            HealthProvider.Health health = ask(provider, entity);
+            if (health != null) {
+                return health;
             }
         }
         return new HealthProvider.Health(entity.getHealth(), entity.getMaxHealth());
+    }
+
+    /**
+     * One provider's answer, or null. Its own method on purpose: the try/catch stays out of the loop, so no stack frame
+     * mixes an API type with Throwable (the Architectury transformer can't resolve API classes when merging frames).
+     */
+    private static HealthProvider.@Nullable Health ask(HealthProvider provider, LivingEntity entity) {
+        if (BROKEN_PROVIDERS.contains(provider)) {
+            return null;
+        }
+        try {
+            HealthProvider.Health health = provider.health(entity);
+            return health != null && health.max() > 0 ? health : null;
+        } catch (Throwable t) {
+            // Asked every frame: log once and stop asking, instead of a stack trace per frame
+            BROKEN_PROVIDERS.add(provider);
+            Krylix.LOGGER.error("A Krylix health provider ({}) failed and is disabled", provider.getClass().getName(), t);
+            return null;
+        }
     }
 }
