@@ -33,7 +33,6 @@
   "krylix.leaderboard.page": "Seite %s / %s",
   "krylix.command.killfeed_state": "Kill-Feed: %s",
   "krylix.command.status": "Kill-Feed: %s, erfasste Spieler: %s",
-  "krylix.command.hud_state": "Kill-Feed-HUD: %s",
   "krylix.command.hud_cleared": "Kill-Feed-HUD geleert",
   "krylix.command.hud_count": "Aktive Benachrichtigungen: %s",
   "krylix.command.leaderboard_filled": "Rangliste mit %s Testspielern gefüllt (nur Client, wird nicht gespeichert)",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Tode",
   "krylix.leaderboard.header_kd_ratio": "K/D",
   "screen.krylix.leaderboard.loading": "Wird geladen…",
-  "screen.krylix.leaderboard.unavailable": "Dieser Server hat kein Krylix"
+  "screen.krylix.leaderboard.unavailable": "Dieser Server hat kein Krylix",
+  "krylix.deathrecap.badge.smash": "ZERSCHMETTERT",
+  "krylix.deathrecap.badge.longshot": "WEITSCHUSS",
+  "krylix.deathrecap.badge.crit": "KRIT"
 }

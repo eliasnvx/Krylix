@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.neoforge;
 
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.addon.KrylixApiImpl;
 import com.eliasnvx.krylix.config.KrylixConfig;
@@ -11,6 +12,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -30,8 +32,10 @@ public final class KrylixNeoForge {
 
         modBus.addListener(KrylixNeoForge::registerPayloads);
         NeoForge.EVENT_BUS.addListener((RegisterCommandsEvent event) -> KrylixServerCommands.register(event.getDispatcher()));
+        // Health actually lost (after armor, enchantments and absorption), like Fabric's combat tracker hook
         NeoForge.EVENT_BUS.addListener((LivingDamageEvent.Post event) ->
             KrylixServer.onDamage(event.getEntity(), event.getSource(), event.getHealthDamage()));
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent event) -> KrylixServer.onServerStopped());
         // Last, so a mod that cancels the death (a totem-like item) has had its say
         NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, (LivingDeathEvent event) -> {
             if (!event.isCanceled()) {
@@ -48,7 +52,8 @@ public final class KrylixNeoForge {
                 KrylixServer.onLeave(player);
             }
         });
-        KrylixApiImpl.init(); // last: addons see a fully set up Krylix
+        // Addons: in common setup, after every mod's constructor (constructors run in parallel), on the main thread
+        modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(KrylixApiImpl::init));
         Krylix.LOGGER.info("Krylix initialized on NeoForge");
     }
 

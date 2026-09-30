@@ -33,7 +33,6 @@
   "krylix.leaderboard.page": "Pagina %s / %s",
   "krylix.command.killfeed_state": "Killfeed: %s",
   "krylix.command.status": "Killfeed: %s, bijgehouden spelers: %s",
-  "krylix.command.hud_state": "Killfeed-HUD: %s",
   "krylix.command.hud_cleared": "Killfeed-HUD geleegd",
   "krylix.command.hud_count": "Actieve meldingen: %s",
   "krylix.command.leaderboard_filled": "Ranglijst gevuld met %s testspelers (alleen client, niet opgeslagen)",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Doden",
   "krylix.leaderboard.header_kd_ratio": "K/D",
   "screen.krylix.leaderboard.loading": "Laden…",
-  "screen.krylix.leaderboard.unavailable": "Deze server heeft geen Krylix"
+  "screen.krylix.leaderboard.unavailable": "Deze server heeft geen Krylix",
+  "krylix.deathrecap.badge.smash": "VERPLETTERD",
+  "krylix.deathrecap.badge.longshot": "VERRE SCHOT",
+  "krylix.deathrecap.badge.crit": "KRIT"
 }

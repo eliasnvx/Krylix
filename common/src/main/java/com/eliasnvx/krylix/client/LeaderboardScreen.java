@@ -3,41 +3,61 @@ package com.eliasnvx.krylix.client;
 import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardRow;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** The all-time leaderboard (key O): PvP and mob-kill tabs, fetched from the server when it opens. */
+/** The all-time leaderboard: PvP and mob-kill tabs, fetched from the server when it opens. */
 public class LeaderboardScreen extends Screen {
     private enum Mode { PLAYERS, MOB_KILLS }
 
-    private final int panelWidth = 340;
-    private final int panelHeight = 260;
-    private final int rowHeight = 22;
-    private final int headerHeight = 58;
-    private final int footerHeight = 18;
-    private final int avatarSize = 16;
-    private final int tabHeight = 16;
+    private static final int MAX_PANEL_WIDTH = 340;
+    private static final int MAX_PANEL_HEIGHT = 260;
+    private static final int SCREEN_MARGIN = 8;
+    private static final int ROW_HEIGHT = 22;
+    private static final int HEADER_HEIGHT = 58;
+    private static final int FOOTER_HEIGHT = 18;
+    private static final int AVATAR_SIZE = 16;
+    private static final int TAB_WIDTH = 90;
+    private static final int TAB_HEIGHT = 16;
+    private static final int RANK_COLUMN_END = 40;
+    private static final int AVATAR_COLUMN_X = 46;
+    private static final int PAGE_SIZE = 60;
 
-    private final int rankColumnEnd = 40;
-    private final int avatarColumnX = 46;
-
-    private final int pageSize = 60;
-
-    private Mode mode = Mode.PLAYERS;
-    private int page = 0;
-    private int scrollOffset = 0;
-    private int[] prevButtonRect = null;
-    private int[] nextButtonRect = null;
-
-    /** Right edges of the PvP stat columns, measured from the panel's right edge. */
+    /** Right edges of the stat columns, measured from the panel's right edge. */
     private static final int COL_KD = 12;
     private static final int COL_DEATHS = 58;
     private static final int COL_KILLS = 104;
 
-    private int seenVersion = -1;
+    private static final int HEADER_COLOR = 0xFF888888;
+
+    private Mode mode = Mode.PLAYERS;
+    private int page;
+    private int scrollOffset;
+    private int[] prevButtonRect;
+    private int[] nextButtonRect;
+    private boolean requested;
+
+    // Labels, resolved once per init (the language can only change with this screen closed)
+    private String rankLabel = "";
+    private String playerLabel = "";
+    private String killsLabel = "";
+    private String deathsLabel = "";
+    private String kdLabel = "";
+    private String pvpTab = "";
+    private String mobTab = "";
+
+    /** The visible page as ready-to-draw strings, rebuilt only when the data, tab, page or width change. */
+    private record RowText(LeaderboardRow row, String rank, String name, String first, String second, String third) {
+    }
+
+    private List<RowText> rows = List.of();
+    private String rowsKey = "";
 
     public LeaderboardScreen() {
         super(Component.translatable("screen.krylix.leaderboard"));
@@ -45,34 +65,58 @@ public class LeaderboardScreen extends Screen {
 
     @Override
     protected void init() {
-        LeaderboardClient.request();
+        // init() runs again on every resize: ask the server only once
+        if (!requested) {
+            requested = true;
+            LeaderboardClient.request();
+        }
+        rankLabel = Component.translatable("krylix.leaderboard.header_rank").getString();
+        playerLabel = Component.translatable("krylix.leaderboard.header_player").getString();
+        killsLabel = Component.translatable("krylix.leaderboard.header_kills").getString();
+        deathsLabel = Component.translatable("krylix.leaderboard.header_deaths").getString();
+        kdLabel = Component.translatable("krylix.leaderboard.header_kd_ratio").getString();
+        pvpTab = Component.translatable("krylix.leaderboard.tab_pvp").getString();
+        mobTab = Component.translatable("krylix.leaderboard.tab_mob_kills").getString();
+        rowsKey = "";
+        clampScroll();
+    }
+
+    @Override
+    public void tick() {
+        LeaderboardClient.retryIfStuck();
     }
 
     /** Opens the Mob Kills tab (also used by the screenshot test). */
     public void showMobKills() {
-        mode = Mode.MOB_KILLS;
+        switchTo(Mode.MOB_KILLS);
+    }
+
+    private void switchTo(Mode newMode) {
+        mode = newMode;
         page = 0;
         scrollOffset = 0;
     }
 
-    private int panelX() { return (width - panelWidth) / 2; }
-    private int panelY() { return (height - panelHeight) / 2; }
-    private int listTop() { return panelY() + headerHeight; }
-    private int listBottom() { return panelY() + panelHeight - footerHeight; }
-    private int listHeight() { return listBottom() - listTop(); }
+    private int panelWidth() { return Math.min(MAX_PANEL_WIDTH, width - 2 * SCREEN_MARGIN); }
+    private int panelHeight() { return Math.min(MAX_PANEL_HEIGHT, height - 2 * SCREEN_MARGIN); }
+    private int panelX() { return (width - panelWidth()) / 2; }
+    private int panelY() { return (height - panelHeight()) / 2; }
+    private int listTop() { return panelY() + HEADER_HEIGHT; }
+    private int listBottom() { return panelY() + panelHeight() - FOOTER_HEIGHT; }
+    private int listHeight() { return Math.max(0, listBottom() - listTop()); }
 
     private List<LeaderboardRow> fullEntries() {
         return mode == Mode.PLAYERS ? LeaderboardClient.byKills() : LeaderboardClient.byMobKills();
     }
 
     private int totalPages() {
-        return Math.max(1, (fullEntries().size() + pageSize - 1) / pageSize);
+        return Math.max(1, (fullEntries().size() + PAGE_SIZE - 1) / PAGE_SIZE);
     }
 
     private List<LeaderboardRow> pageEntries() {
         List<LeaderboardRow> full = fullEntries();
-        int from = Math.max(0, Math.min(full.size(), page * pageSize));
-        int to = Math.max(0, Math.min(full.size(), (page + 1) * pageSize));
+        int from = Math.clamp((long) page * PAGE_SIZE, 0, full.size());
+        int to = Math.clamp((long) (page + 1) * PAGE_SIZE, 0, full.size());
         return full.subList(from, to);
     }
 
@@ -81,253 +125,266 @@ public class LeaderboardScreen extends Screen {
     }
 
     private int maxScroll() {
-        return Math.max(0, rowCount() * rowHeight - listHeight());
+        return Math.max(0, rowCount() * ROW_HEIGHT - listHeight());
+    }
+
+    private void clampScroll() {
+        page = Math.min(page, totalPages() - 1);
+        scrollOffset = Math.clamp(scrollOffset, 0, maxScroll());
+    }
+
+    private List<RowText> rowTexts() {
+        String key = LeaderboardClient.version() + "/" + mode + "/" + page + "/" + panelWidth();
+        if (!key.equals(rowsKey)) {
+            clampScroll();
+            rowsKey = key;
+            int nameX = AVATAR_COLUMN_X + AVATAR_SIZE + 6;
+            int nameRight = panelWidth() - (mode == Mode.PLAYERS ? COL_KILLS + 28 : COL_KD + 40);
+            int nameWidth = Math.max(20, nameRight - nameX);
+            List<LeaderboardRow> entries = pageEntries();
+            List<RowText> built = new ArrayList<>(entries.size());
+            for (int i = 0; i < entries.size(); i++) {
+                LeaderboardRow row = entries.get(i);
+                String name = fit(row.name(), nameWidth);
+                String rank = "#" + (page * PAGE_SIZE + i + 1);
+                if (mode == Mode.PLAYERS) {
+                    double kd = row.deaths() == 0 ? row.kills() : (double) row.kills() / row.deaths();
+                    built.add(new RowText(row, rank, name, String.valueOf(row.kills()), String.valueOf(row.deaths()),
+                        String.format(Locale.ROOT, "%.2f", kd)));
+                } else {
+                    built.add(new RowText(row, rank, name, String.valueOf(row.mobKills()), "", ""));
+                }
+            }
+            rows = built;
+        }
+        return rows;
+    }
+
+    /** The text, cut with an ellipsis if it is wider than {@code maxWidth}. */
+    private String fit(String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) {
+            return text;
+        }
+        return font.plainSubstrByWidth(text, maxWidth - font.width("…")) + "…";
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
-        if (seenVersion != LeaderboardClient.version()) {
-            seenVersion = LeaderboardClient.version();
-            page = Math.min(page, totalPages() - 1);
-            scrollOffset = Math.min(scrollOffset, maxScroll());
-        }
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        List<RowText> texts = rowTexts();
 
         int px = panelX();
         int py = panelY();
+        int pw = panelWidth();
+        int ph = panelHeight();
 
-        HudRender.roundedFill(guiGraphics, px, py, panelWidth, panelHeight, 6, 0xE6101014);
+        HudRender.roundedFill(graphics, px, py, pw, ph, 6, 0xE6101014);
+        graphics.centeredText(font, title, px + pw / 2, py + 8, 0xFFFFFFFF);
 
-        guiGraphics.centeredText(font, title, px + panelWidth / 2, py + 8, 0xFFFFFFFF);
-
-        int closeX = px + panelWidth - 18;
+        int closeX = px + pw - 18;
         int closeY = py + 7;
-        boolean closeHovered = mouseX >= closeX && mouseX <= closeX + 12 && mouseY >= closeY && mouseY <= closeY + 12;
-        guiGraphics.text(font, "x", closeX + 3, closeY + 2, closeHovered ? 0xFFFFFFFF : 0xFF999999);
+        boolean closeHovered = inside(mouseX, mouseY, closeX, closeY, 12, 12);
+        graphics.text(font, "x", closeX + 3, closeY + 2, closeHovered ? 0xFFFFFFFF : 0xFF999999);
 
-        renderTabs(guiGraphics, mouseX, mouseY, px, py);
+        renderTab(graphics, mouseX, mouseY, tabRect(0), pvpTab, Mode.PLAYERS);
+        renderTab(graphics, mouseX, mouseY, tabRect(1), mobTab, Mode.MOB_KILLS);
 
-        int headerY = py + headerHeight - 20;
-        guiGraphics.text(font, Component.translatable("krylix.leaderboard.header_rank").getString(), px + 12, headerY, 0xFF888888);
-        guiGraphics.text(font, Component.translatable("krylix.leaderboard.header_player").getString(), px + avatarColumnX, headerY, 0xFF888888);
+        int headerY = py + HEADER_HEIGHT - 20;
+        graphics.text(font, rankLabel, px + 12, headerY, HEADER_COLOR);
+        graphics.text(font, playerLabel, px + AVATAR_COLUMN_X, headerY, HEADER_COLOR);
         if (mode == Mode.PLAYERS) {
-            rightText(guiGraphics, Component.translatable("krylix.leaderboard.header_kills").getString(), px + panelWidth - COL_KILLS, headerY, 0xFF888888);
-            rightText(guiGraphics, Component.translatable("krylix.leaderboard.header_deaths").getString(), px + panelWidth - COL_DEATHS, headerY, 0xFF888888);
-            rightText(guiGraphics, Component.translatable("krylix.leaderboard.header_kd_ratio").getString(), px + panelWidth - COL_KD, headerY, 0xFF888888);
+            rightText(graphics, killsLabel, px + pw - COL_KILLS, headerY, HEADER_COLOR);
+            rightText(graphics, deathsLabel, px + pw - COL_DEATHS, headerY, HEADER_COLOR);
+            rightText(graphics, kdLabel, px + pw - COL_KD, headerY, HEADER_COLOR);
         } else {
-            rightText(guiGraphics, Component.translatable("krylix.leaderboard.tab_mob_kills").getString(), px + panelWidth - COL_KD, headerY, 0xFF888888);
+            rightText(graphics, mobTab, px + pw - COL_KD, headerY, HEADER_COLOR);
         }
-        guiGraphics.fill(px + 8, py + headerHeight - 4, px + panelWidth - 8, py + headerHeight - 3, 0x40FFFFFF);
+        graphics.fill(px + 8, py + HEADER_HEIGHT - 4, px + pw - 8, py + HEADER_HEIGHT - 3, 0x40FFFFFF);
 
-        LeaderboardClient.State state = LeaderboardClient.state();
-        if (fullEntries().isEmpty()) {
-            String key = switch (state) {
+        prevButtonRect = null;
+        nextButtonRect = null;
+        if (texts.isEmpty()) {
+            String key = switch (LeaderboardClient.state()) {
                 case LOADING -> "screen.krylix.leaderboard.loading";
                 case UNAVAILABLE -> "screen.krylix.leaderboard.unavailable";
                 default -> mode == Mode.PLAYERS ? "screen.krylix.leaderboard.empty_players" : "screen.krylix.leaderboard.empty_mob_kills";
             };
-            guiGraphics.centeredText(font, Component.translatable(key).getString(), px + panelWidth / 2, listTop() + listHeight() / 2 - 4, 0xFFAAAAAA);
+            graphics.centeredText(font, Component.translatable(key), px + pw / 2, listTop() + listHeight() / 2 - 4, 0xFFAAAAAA);
         } else {
-            renderRows(guiGraphics, mouseX, mouseY);
+            renderRows(graphics, texts, mouseX, mouseY);
         }
 
-        String footerText = Component.translatable("krylix.leaderboard.footer", LeaderboardClient.totalPlayers()).getString();
-        guiGraphics.centeredText(font, footerText, px + panelWidth / 2, py + panelHeight - 14, 0xFF777777);
+        graphics.centeredText(font, Component.translatable("krylix.leaderboard.footer", LeaderboardClient.totalPlayers()),
+            px + pw / 2, py + ph - 14, 0xFF777777);
     }
 
-    private int[] tabRect(int index, int px, int py) {
-        int tabWidth = 90;
+    private int[] tabRect(int index) {
         int gap = 6;
-        int totalWidth = tabWidth * 2 + gap;
-        int startX = px + (panelWidth - totalWidth) / 2;
-        int x = startX + index * (tabWidth + gap);
-        int y = py + 20;
-        return new int[]{x, y, tabWidth, tabHeight};
+        int startX = panelX() + (panelWidth() - (TAB_WIDTH * 2 + gap)) / 2;
+        return new int[]{startX + index * (TAB_WIDTH + gap), panelY() + 20, TAB_WIDTH, TAB_HEIGHT};
     }
 
-    private void renderTabs(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int px, int py) {
-        renderTab(guiGraphics, mouseX, mouseY, tabRect(0, px, py), Component.translatable("krylix.leaderboard.tab_pvp").getString(), Mode.PLAYERS);
-        renderTab(guiGraphics, mouseX, mouseY, tabRect(1, px, py), Component.translatable("krylix.leaderboard.tab_mob_kills").getString(), Mode.MOB_KILLS);
-    }
-
-    private void renderTab(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int[] rect, String label, Mode tabMode) {
-        int x = rect[0], y = rect[1], w = rect[2], h = rect[3];
+    private void renderTab(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int[] rect, String label, Mode tabMode) {
         boolean active = mode == tabMode;
-        boolean hovered = mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
-        
+        boolean hovered = inside(mouseX, mouseY, rect);
         int bg = active ? 0xCC3A7BD5 : (hovered ? 0x30FFFFFF : 0x20FFFFFF);
-        HudRender.roundedFill(guiGraphics, x, y, w, h, 3, bg);
-        
-        int textColor = active ? 0xFFFFFFFF : 0xFFAAAAAA;
-        int textWidth = font.width(label);
-        guiGraphics.text(font, label, x + (w - textWidth) / 2, y + (h - 8) / 2, textColor);
+        HudRender.roundedFill(graphics, rect[0], rect[1], rect[2], rect[3], 3, bg);
+        graphics.centeredText(font, label, rect[0] + rect[2] / 2, rect[1] + (rect[3] - 8) / 2, active ? 0xFFFFFFFF : 0xFFAAAAAA);
     }
 
-    private void renderRows(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+    private void renderRows(GuiGraphicsExtractor graphics, List<RowText> texts, int mouseX, int mouseY) {
         int px = panelX();
+        int pw = panelWidth();
         int top = listTop();
         int bottom = listBottom();
-        prevButtonRect = null;
-        nextButtonRect = null;
 
-        guiGraphics.enableScissor(px + 6, top, px + panelWidth - 6, bottom);
-        UUID localUuid = minecraft != null && minecraft.player != null ? minecraft.player.getUUID() : null;
-        List<LeaderboardRow> entries = pageEntries();
+        graphics.enableScissor(px + 6, top, px + pw - 6, bottom);
+        UUID self = minecraft != null && minecraft.player != null ? minecraft.player.getUUID() : null;
+        boolean mouseInList = mouseY >= top && mouseY < bottom;
 
         int y = top - scrollOffset;
-        for (int i = 0; i < entries.size(); i++) {
-            if (y + rowHeight >= top && y <= bottom) {
-                LeaderboardRow entry = entries.get(i);
-                boolean rowHovered = mouseX >= px + 6 && mouseX <= px + panelWidth - 6 && mouseY >= y && mouseY <= y + rowHeight;
-                boolean isSelf = entry.uuid().equals(localUuid);
-                
-                int bgColor = 0;
-                if (rowHovered) bgColor = 0x33FFFFFF;
-                else if (isSelf) bgColor = 0x2255AAFF;
-                else if (i % 2 == 0) bgColor = 0x18FFFFFF;
-                
-                if (bgColor != 0) {
-                    guiGraphics.fill(px + 6, y, px + panelWidth - 6, y + rowHeight, bgColor);
+        for (int i = 0; i < texts.size(); i++) {
+            if (y + ROW_HEIGHT >= top && y <= bottom) {
+                RowText text = texts.get(i);
+                boolean hovered = mouseInList && inside(mouseX, mouseY, px + 6, y, pw - 12, ROW_HEIGHT);
+                int bg = hovered ? 0x33FFFFFF : text.row().uuid().equals(self) ? 0x2255AAFF : i % 2 == 0 ? 0x18FFFFFF : 0;
+                if (bg != 0) {
+                    graphics.fill(px + 6, y, px + pw - 6, y + ROW_HEIGHT, bg);
                 }
-
-                renderRow(guiGraphics, entry, page * pageSize + i, px, y);
+                renderRow(graphics, text, px, pw, y);
             }
-            y += rowHeight;
+            y += ROW_HEIGHT;
         }
-
-        if (totalPages() > 1 && y + rowHeight >= top && y <= bottom) {
-            renderPaginationRow(guiGraphics, mouseX, mouseY, px, y);
+        if (totalPages() > 1 && y + ROW_HEIGHT >= top && y <= bottom) {
+            renderPaginationRow(graphics, mouseX, mouseY, px, pw, y);
         }
-        guiGraphics.disableScissor();
+        graphics.disableScissor();
     }
 
-    private void renderPaginationRow(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int px, int y) {
+    private void renderRow(GuiGraphicsExtractor graphics, RowText text, int px, int pw, int y) {
+        int textY = y + (ROW_HEIGHT - 8) / 2;
+        graphics.text(font, text.rank(), px + RANK_COLUMN_END - font.width(text.rank()), textY, 0xFFAAAAAA);
+        int avatarX = px + AVATAR_COLUMN_X;
+        Avatars.draw(graphics, text.row().uuid(), null, avatarX, y + (ROW_HEIGHT - AVATAR_SIZE) / 2, AVATAR_SIZE);
+        graphics.text(font, text.name(), avatarX + AVATAR_SIZE + 6, textY, 0xFFFFFFFF);
+        if (mode == Mode.PLAYERS) {
+            rightText(graphics, text.first(), px + pw - COL_KILLS, textY, 0xFFFF8080);
+            rightText(graphics, text.second(), px + pw - COL_DEATHS, textY, 0xFFCCCCCC);
+            rightText(graphics, text.third(), px + pw - COL_KD, textY, 0xFFFFD700);
+        } else {
+            rightText(graphics, text.first(), px + pw - COL_KD, textY, 0xFFCCCCCC);
+        }
+    }
+
+    private void renderPaginationRow(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int px, int pw, int y) {
         int btnSize = 16;
         int gap = 8;
-        String pageText = Component.translatable("krylix.leaderboard.page", page + 1, totalPages()).getString();
+        Component pageText = Component.translatable("krylix.leaderboard.page", page + 1, totalPages());
         int pageTextWidth = font.width(pageText);
-        int totalWidth = btnSize + gap + pageTextWidth + gap + btnSize;
-        int startX = px + (panelWidth - totalWidth) / 2;
-        int btnY = y + (rowHeight - btnSize) / 2;
-
-        boolean hasPrev = page > 0;
-        boolean hasNext = page < totalPages() - 1;
-
-        prevButtonRect = new int[]{startX, btnY, btnSize, btnSize};
-        nextButtonRect = new int[]{startX + btnSize + gap + pageTextWidth + gap, btnY, btnSize, btnSize};
-
-        renderPageButton(guiGraphics, mouseX, mouseY, prevButtonRect, false, hasPrev);
-        renderPageButton(guiGraphics, mouseX, mouseY, nextButtonRect, true, hasNext);
-        guiGraphics.text(font, pageText, startX + btnSize + gap, y + (rowHeight - 8) / 2, 0xFFCCCCCC);
+        int startX = px + (pw - (btnSize + gap + pageTextWidth + gap + btnSize)) / 2;
+        int btnY = y + (ROW_HEIGHT - btnSize) / 2;
+        // Clickable only while the buttons are inside the list, not scrolled under the footer
+        if (btnY >= listTop() && btnY + btnSize <= listBottom()) {
+            prevButtonRect = new int[]{startX, btnY, btnSize, btnSize};
+            nextButtonRect = new int[]{startX + btnSize + gap + pageTextWidth + gap, btnY, btnSize, btnSize};
+        }
+        renderPageButton(graphics, mouseX, mouseY, startX, btnY, btnSize, false, page > 0);
+        renderPageButton(graphics, mouseX, mouseY, startX + btnSize + gap + pageTextWidth + gap, btnY, btnSize, true, page < totalPages() - 1);
+        graphics.text(font, pageText, startX + btnSize + gap, y + (ROW_HEIGHT - 8) / 2, 0xFFCCCCCC);
     }
 
-    private void renderPageButton(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, int[] rect, boolean pointRight, boolean enabled) {
-        int x = rect[0], y = rect[1], w = rect[2], h = rect[3];
-        boolean hovered = enabled && mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
-        
-        int bg = !enabled ? 0x15FFFFFF : (hovered ? 0x40FFFFFF : 0x25FFFFFF);
-        HudRender.roundedFill(guiGraphics, x, y, w, h, 3, bg);
-        
+    private void renderPageButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int x, int y, int size, boolean pointRight, boolean enabled) {
+        boolean hovered = enabled && inside(mouseX, mouseY, x, y, size, size);
+        HudRender.roundedFill(graphics, x, y, size, size, 3, !enabled ? 0x15FFFFFF : hovered ? 0x40FFFFFF : 0x25FFFFFF);
         int color = enabled ? 0xFFFFFFFF : 0xFF555555;
-        renderArrow(guiGraphics, x, y, w, h, pointRight, color);
-    }
-
-    private void renderArrow(GuiGraphicsExtractor guiGraphics, int x, int y, int w, int h, boolean pointRight, int color) {
         int arrowW = 4;
         int arrowH = 7;
-        int originX = x + (w - arrowW) / 2;
-        int originY = y + (h - arrowH) / 2;
+        int originX = x + (size - arrowW) / 2;
+        int originY = y + (size - arrowH) / 2;
         int mid = arrowH / 2;
         for (int row = 0; row < arrowH; row++) {
-            int d = Math.abs(row - mid);
-            int length = Math.max(1, arrowW - d);
+            int length = Math.max(1, arrowW - Math.abs(row - mid));
             int rowY = originY + row;
             if (pointRight) {
-                guiGraphics.fill(originX, rowY, originX + length, rowY + 1, color);
+                graphics.fill(originX, rowY, originX + length, rowY + 1, color);
             } else {
-                guiGraphics.fill(originX + (arrowW - length), rowY, originX + arrowW, rowY + 1, color);
+                graphics.fill(originX + (arrowW - length), rowY, originX + arrowW, rowY + 1, color);
             }
         }
     }
 
-    private void rightText(GuiGraphicsExtractor guiGraphics, String text, int rightX, int y, int color) {
-        guiGraphics.text(font, text, rightX - font.width(text), y, color);
+    private void rightText(GuiGraphicsExtractor graphics, String text, int rightX, int y, int color) {
+        graphics.text(font, text, rightX - font.width(text), y, color);
     }
 
-    private void renderRow(GuiGraphicsExtractor guiGraphics, LeaderboardRow entry, int rank, int px, int y) {
-        int textY = y + (rowHeight - 8) / 2;
-        int avatarY = y + (rowHeight - avatarSize) / 2;
+    private static boolean inside(double mouseX, double mouseY, int[] rect) {
+        return rect != null && inside(mouseX, mouseY, rect[0], rect[1], rect[2], rect[3]);
+    }
 
-        String rankText = "#" + (rank + 1);
-        int rankX = px + rankColumnEnd - font.width(rankText);
-        guiGraphics.text(font, rankText, rankX, textY, 0xFFAAAAAA);
+    private static boolean inside(double mouseX, double mouseY, int x, int y, int w, int h) {
+        return mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y + h;
+    }
 
-        int avatarX = px + avatarColumnX;
-        Avatars.draw(guiGraphics, entry.uuid(), null, avatarX, avatarY, avatarSize);
-        guiGraphics.text(font, entry.name(), avatarX + avatarSize + 6, textY, 0xFFFFFFFF);
-
-        if (mode == Mode.PLAYERS) {
-            double kd = entry.deaths() == 0 ? entry.kills() : (double) entry.kills() / entry.deaths();
-            rightText(guiGraphics, String.valueOf(entry.kills()), px + panelWidth - COL_KILLS, textY, 0xFFFF8080);
-            rightText(guiGraphics, String.valueOf(entry.deaths()), px + panelWidth - COL_DEATHS, textY, 0xFFCCCCCC);
-            rightText(guiGraphics, String.format(Locale.ROOT, "%.2f", kd), px + panelWidth - COL_KD, textY, 0xFFFFD700);
-        } else {
-            rightText(guiGraphics, String.valueOf(entry.mobKills()), px + panelWidth - COL_KD, textY, 0xFFCCCCCC);
+    private void changePage(int delta) {
+        int next = Math.clamp(page + delta, 0, totalPages() - 1);
+        if (next != page) {
+            page = next;
+            scrollOffset = 0;
         }
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        scrollOffset = Math.max(0, Math.min(maxScroll(), scrollOffset - (int) (scrollY * rowHeight * 1.5)));
+        scrollOffset = Math.clamp(scrollOffset - (int) (scrollY * ROW_HEIGHT * 1.5), 0, maxScroll());
         return true;
     }
 
     @Override
-    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() != 0) {
+            return super.mouseClicked(event, doubleClick);
+        }
         double mouseX = event.x();
         double mouseY = event.y();
-        int px = panelX();
-        int py = panelY();
-        int closeX = px + panelWidth - 18;
-        int closeY = py + 7;
-        
-        if (mouseX >= closeX && mouseX <= closeX + 12 && mouseY >= closeY && mouseY <= closeY + 12) {
-            this.onClose();
+        if (inside(mouseX, mouseY, panelX() + panelWidth() - 18, panelY() + 7, 12, 12)) {
+            onClose();
             return true;
         }
-
-        int[] t0 = tabRect(0, px, py);
-        if (mouseX >= t0[0] && mouseX <= t0[0] + t0[2] && mouseY >= t0[1] && mouseY <= t0[1] + t0[3]) {
-            mode = Mode.PLAYERS;
-            page = 0;
-            scrollOffset = 0;
+        if (inside(mouseX, mouseY, tabRect(0))) {
+            switchTo(Mode.PLAYERS);
             return true;
         }
-        
-        int[] t1 = tabRect(1, px, py);
-        if (mouseX >= t1[0] && mouseX <= t1[0] + t1[2] && mouseY >= t1[1] && mouseY <= t1[1] + t1[3]) {
-            showMobKills();
+        if (inside(mouseX, mouseY, tabRect(1))) {
+            switchTo(Mode.MOB_KILLS);
             return true;
         }
-
-        if (prevButtonRect != null) {
-            int[] r = prevButtonRect;
-            if (page > 0 && mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
-                page--;
-                scrollOffset = 0;
-                return true;
-            }
+        if (inside(mouseX, mouseY, prevButtonRect)) {
+            changePage(-1);
+            return true;
         }
-        if (nextButtonRect != null) {
-            int[] r = nextButtonRect;
-            if (page < totalPages() - 1 && mouseX >= r[0] && mouseX <= r[0] + r[2] && mouseY >= r[1] && mouseY <= r[1] + r[3]) {
-                page++;
-                scrollOffset = 0;
-                return true;
-            }
+        if (inside(mouseX, mouseY, nextButtonRect)) {
+            changePage(1);
+            return true;
         }
-
         return super.mouseClicked(event, doubleClick);
+    }
+
+    /** Left / right: previous / next page; up / down: scroll; Tab key handling stays vanilla's. */
+    @Override
+    public boolean keyPressed(KeyEvent event) {
+        if (event.isLeft()) {
+            changePage(-1);
+            return true;
+        }
+        if (event.isRight()) {
+            changePage(1);
+            return true;
+        }
+        if (event.isUp() || event.isDown()) {
+            scrollOffset = Math.clamp(scrollOffset + (event.isUp() ? -ROW_HEIGHT : ROW_HEIGHT), 0, maxScroll());
+            return true;
+        }
+        return super.keyPressed(event);
     }
 
     @Override

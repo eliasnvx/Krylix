@@ -33,7 +33,6 @@
   "krylix.leaderboard.page": "第 %s / %s 頁",
   "krylix.command.killfeed_state": "擊殺欄: %s",
   "krylix.command.status": "擊殺欄: %s, 已追蹤玩家: %s",
-  "krylix.command.hud_state": "擊殺欄HUD: %s",
   "krylix.command.hud_cleared": "擊殺欄HUD已清空",
   "krylix.command.hud_count": "活躍通知數: %s",
   "krylix.command.leaderboard_filled": "已用 %s 名測試玩家填充排行榜(僅客戶端, 不會儲存)",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "死亡",
   "krylix.leaderboard.header_kd_ratio": "K/D",
   "screen.krylix.leaderboard.loading": "載入中…",
-  "screen.krylix.leaderboard.unavailable": "此伺服器未安裝 Krylix"
+  "screen.krylix.leaderboard.unavailable": "此伺服器未安裝 Krylix",
+  "krylix.deathrecap.badge.smash": "重錘猛擊",
+  "krylix.deathrecap.badge.longshot": "遠距離射擊",
+  "krylix.deathrecap.badge.crit": "爆擊"
 }

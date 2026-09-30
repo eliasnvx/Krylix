@@ -46,8 +46,9 @@ public record KillAnalysis(@Nullable LivingEntity killer, LivingEntity victim, S
         if (killer == victim) {
             killer = null;
         }
-        // Credited to someone who didn't deal the blow: the cause (or the pet) stands in for the weapon
-        boolean credited = killer != null && killer != attacker;
+        // Credited to someone who didn't deal the blow (or to no one, by an addon): the cause (or the pet) stands in
+        // for the weapon. A plain environmental death has neither, and keeps whatever item the source carries.
+        boolean credited = killer != attacker;
 
         ItemStack weaponStack = credited ? ItemStack.EMPTY : source.getWeaponItem();
         String weapon;
@@ -68,7 +69,8 @@ public record KillAnalysis(@Nullable LivingEntity killer, LivingEntity victim, S
         if (!credited && killer instanceof Player player && source.getDirectEntity() == player && isFallingCrit(player)) {
             flags |= KrylixPayloads.FLAG_CRITICAL;
         }
-        if (source.getDirectEntity() instanceof Projectile && distance >= LONGSHOT_BLOCKS) {
+        // The shooter's own shot only: a pet's or a turret's kill credited to someone far away is no long shot
+        if (!credited && source.getDirectEntity() instanceof Projectile && distance >= LONGSHOT_BLOCKS) {
             flags |= KrylixPayloads.FLAG_LONGSHOT;
         }
         return new KillAnalysis(killer, victim, weapon, distance, flags);

@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 /**
- * A player's statistic went up by one: after it was saved, on the server thread. For rewards, external leaderboards
- * or webhooks. Read-only.
+ * A player's statistic went up by one: after it was recorded (the world file is written later, with the next save), on
+ * the server thread. For rewards, external leaderboards or webhooks. Read-only.
  *
  * @param player     the player's UUID
  * @param playerName the player's name at the time

@@ -7,10 +7,13 @@ import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * A death Krylix is about to handle: a player died, or a player killed a hostile mob. Server thread.
+ *
+ * <p>Once a listener cancels it, the remaining listeners are not called, whatever their priority.
  *
  * <p>For a player's death Krylix sends the kill feed row, the victim's death recap and counts the kill and the death;
  * for a mob kill it counts the mob in the killer's statistics. Cancel to make Krylix ignore the death entirely, or
@@ -63,9 +66,12 @@ public final class KillEvent implements CancellableEvent {
         return weapon;
     }
 
-    /** @param weapon an item id; unknown items show the plain arrow */
+    /**
+     * @param weapon an item id; unknown items show the plain arrow
+     * @throws NullPointerException if {@code weapon} is null (use {@code minecraft:air} for no weapon)
+     */
     public void setWeapon(Identifier weapon) {
-        this.weapon = weapon;
+        this.weapon = Objects.requireNonNull(weapon, "weapon");
     }
 
     /** @return killer-to-victim distance in blocks, or -1 without a killer */

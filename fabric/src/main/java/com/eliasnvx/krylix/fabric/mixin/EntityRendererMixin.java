@@ -19,9 +19,14 @@ public abstract class EntityRendererMixin<T extends Entity, S extends EntityRend
         HealthIndicator.applyNameplate(entity, state, partialTick);
     }
 
-    @Inject(method = "submitNameDisplay(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("HEAD"), cancellable = true)
-    private void krylix$onSubmitNameDisplay(S state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState, CallbackInfo ci) {
-        if (HealthIndicator.onSubmitNameDisplay(state, poseStack, submitNodeCollector, cameraRenderState)) {
+    /**
+     * The final, 5-argument name display every renderer ends in: players' AvatarRenderer overrides the 4-argument one
+     * without calling super, so hooking that one would skip every player.
+     */
+    @Inject(method = "submitNameDisplay(Lnet/minecraft/client/renderer/entity/state/EntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;I)V", at = @At("HEAD"), cancellable = true)
+    private void krylix$onSubmitNameDisplay(EntityRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector,
+                                            CameraRenderState cameraRenderState, int offset, CallbackInfo ci) {
+        if (HealthIndicator.onSubmitNameDisplay(state, poseStack, submitNodeCollector, cameraRenderState, offset, true)) {
             ci.cancel();
         }
     }

@@ -21,22 +21,29 @@ kill milestones, absorption hearts on the health plate and a quieter feed.
 
 ## Setup
 
-Compile against the API jar only. Everything outside `com.eliasnvx.krylix.api` is internal and can change in any
-release. At runtime you need the full mod; the API classes are inside it, so players install nothing extra.
+Compile against the API only. Everything outside `com.eliasnvx.krylix.api` is internal and can change in any release.
+At runtime you need the full mod; the API classes are inside it, so players install nothing extra.
+
+The API jar (`krylix-api-<version>.jar`, with sources and javadoc) is attached to every
+[GitHub release](https://github.com/eliasnvx/Krylix/releases). The simplest setup needs no extra repository: compile
+against the mod jar from Modrinth's Maven, which contains the API.
 
 ```groovy
 repositories {
-    maven { url "https://api.modrinth.com/maven" } // the full mod, for dev runs
-    // + the Maven repository the API is published to (see the mod page)
+    maven { url "https://api.modrinth.com/maven" }
 }
 
 dependencies {
-    compileOnly "com.eliasnvx:krylix-api:1.0.0+26.3"
-
-    // Fabric module: the mod at runtime
+    // Fabric module (compile against the API inside the mod, run with the mod)
+    compileOnly "maven.modrinth:krylix:1.4.0+26.3-fabric"
     runtimeOnly "maven.modrinth:krylix:1.4.0+26.3-fabric"
+
     // NeoForge module
+    compileOnly "maven.modrinth:krylix:1.4.0+26.3-neoforge"
     runtimeOnly "maven.modrinth:krylix:1.4.0+26.3-neoforge"
+
+    // Or, where the API is published to a Maven repository (see the mod page), the API alone:
+    // compileOnly "com.eliasnvx:krylix-api:1.0.0+26.3"
 }
 ```
 
@@ -62,7 +69,11 @@ A multi-loader mod does both on the same class.
 
 `onInitialize` runs on both sides once Krylix is set up; `onInitializeClient` runs after it, on the physical client
 only. Register mob faces and health providers inside `onInitializeClient`: the registries close afterwards and a late
-registration throws. An addon that throws is logged and skipped; the others still load.
+registration throws. An addon whose `onInitialize` throws is logged and skipped from then on, client hook included; the
+others still load.
+
+Timing: on NeoForge `onInitialize` runs in common setup, after every mod's constructor; on Fabric it runs during
+Krylix's own initializer, which may be before yours. Register listeners there and read your mod's state when they fire.
 
 ## Mob faces without code
 
@@ -97,14 +108,16 @@ api.events().addListener(KillEvent.class, EventPriority.HIGH, event -> { ... });
 
 - Listeners run on the thread that posts the event: server events on the server thread, client events on the client
   thread.
-- `EventPriority.HIGHEST` runs first. Once a `CancellableEvent` is cancelled, lower priorities are not called.
+- `EventPriority.HIGHEST` runs first. Once a `CancellableEvent` is cancelled, the remaining listeners are not called,
+  whatever their priority.
+- `KillFlag` and `StatType` may gain constants in a minor API version: give a `switch` over them a default branch.
 - Events are matched by exact class. A listener that throws is logged and skipped.
 
 | Event | Side | Cancel | When |
 |---|---|---|---|
-| `KillCreditEvent` | server | – | a living entity died; decide who gets the kill |
+| `KillCreditEvent` | server | – | a player or a hostile mob died; decide who gets the kill |
 | `KillEvent` | server | yes | a player died, or a player killed a hostile mob; before the feed and the statistics |
-| `StatRecordedEvent` | server | – | a player's kill, death or mob-kill count went up (after saving) |
+| `StatRecordedEvent` | server | – | a player's kill, death or mob-kill count went up (saved with the world later) |
 | `FeedEntryEvent` | client | yes | a feed row arrived and is about to be shown |
 
 ## Kill credit

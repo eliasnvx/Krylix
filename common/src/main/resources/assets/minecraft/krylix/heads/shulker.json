@@ -2,8 +2,10 @@
   "layers": [
     {
       "texture": "minecraft:textures/entity/shulker/shulker.png",
-      "u": 8,
-      "v": 8
+      "u": 6,
+      "v": 58,
+      "width": 6,
+      "height": 6
     }
   ]
 }

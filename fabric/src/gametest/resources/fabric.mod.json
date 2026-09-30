@@ -12,6 +12,7 @@
       "com.eliasnvx.krylix.fabric.gametest.TestKrylixAddon"
     ],
     "fabric-client-gametest": [
+      "com.eliasnvx.krylix.fabric.gametest.KeyBindingsClientTest",
       "com.eliasnvx.krylix.fabric.gametest.AddonApiClientTest",
       "com.eliasnvx.krylix.fabric.gametest.HealthPlateClientTest",
       "com.eliasnvx.krylix.fabric.gametest.DocsShotsClientTest"

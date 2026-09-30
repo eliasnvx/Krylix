@@ -5,7 +5,8 @@ import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Decides who gets the kill for a death, before {@link KillEvent}. Server thread.
+ * Decides who gets the kill for a death, before {@link KillEvent}. Server thread. Posted for the deaths Krylix handles:
+ * players, and hostile mobs (a mob death then only counts if the credited killer is a player).
  *
  * <p>Krylix's own answer is already filled in: the attacker, else whoever knocked the victim off a ledge or into lava
  * (vanilla's kill credit), with a tamed pet's kill credited to its owner. Change it for your own mechanics, for

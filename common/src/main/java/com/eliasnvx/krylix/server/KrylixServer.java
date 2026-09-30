@@ -1,6 +1,8 @@
 package com.eliasnvx.krylix.server;
 
+import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.addon.KrylixApiImpl;
+import com.eliasnvx.krylix.platform.KrylixPlatform;
 import com.eliasnvx.krylix.api.event.KillEvent;
 import com.eliasnvx.krylix.api.event.StatRecordedEvent;
 import com.eliasnvx.krylix.api.stats.StatType;
@@ -10,7 +12,6 @@ import com.eliasnvx.krylix.network.KrylixNetwork;
 import com.eliasnvx.krylix.network.KrylixPayloads.DeathRecapPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads.KillFeedPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardPayload;
-import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardRow;
 import com.eliasnvx.krylix.network.KrylixPayloads.MobKillsPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads;
 import net.minecraft.resources.Identifier;
@@ -24,10 +25,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,12 +33,17 @@ import java.util.UUID;
  * Server-side Krylix: the loaders forward their events here. Runs on the server thread only.
  */
 public final class KrylixServer {
-    private static final long LEADERBOARD_REQUEST_COOLDOWN_MS = 1_000;
+    private static final int LEADERBOARD_REQUEST_COOLDOWN_TICKS = 20;
+    /** A changed table is rebuilt at most this often; everyone asking in between gets the same payload. */
+    private static final int LEADERBOARD_REBUILD_TICKS = 40;
 
     private static final CombatLog COMBAT = new CombatLog();
-    private static final Map<UUID, Long> lastLeaderboardRequest = new HashMap<>();
-    /** Switched by /krylix toggle; lasts until the server stops. */
-    private static boolean feedEnabled = true;
+    private static final Map<UUID, Integer> lastLeaderboardRequest = new HashMap<>();
+    private static @Nullable LeaderboardPayload leaderboard;
+    private static long leaderboardVersion = -1;
+    private static int leaderboardBuiltAt;
+    /** Switched by /krylix toggle; lasts until the server stops. Read by the API from any thread. */
+    private static volatile boolean feedEnabled = true;
 
     private KrylixServer() {
     }
@@ -53,25 +56,52 @@ public final class KrylixServer {
         feedEnabled = enabled;
     }
 
-    /** After a living entity took damage (after armor and shields). */
+    /** The server stopped: nothing may carry over to the next world or server in this JVM (singleplayer). */
+    public static void onServerStopped() {
+        COMBAT.clear();
+        lastLeaderboardRequest.clear();
+        leaderboard = null;
+        leaderboardVersion = -1;
+        feedEnabled = true;
+    }
+
+    /**
+     * A living entity lost health: the amount after armor, enchantments and absorption, as recorded in its combat
+     * tracker. Never throws: Krylix must not break vanilla damage handling.
+     */
     public static void onDamage(LivingEntity target, DamageSource source, float amount) {
-        if (source.getEntity() instanceof Player attacker && amount > 0) {
-            COMBAT.record(attacker.getUUID(), target.getUUID(), amount, System.currentTimeMillis());
+        try {
+            if (amount > 0 && source.getEntity() instanceof Player attacker && target.level() instanceof ServerLevel level) {
+                COMBAT.record(attacker.getUUID(), target.getUUID(), amount, level.getServer().getTickCount());
+            }
+        } catch (RuntimeException e) {
+            Krylix.LOGGER.error("Krylix failed to record damage to {}", target, e);
         }
     }
 
-    /** After a living entity died. */
+    /** After a living entity died. Never throws: Krylix must not break vanilla death handling. */
     public static void onDeath(LivingEntity victim, DamageSource source) {
+        try {
+            handleDeath(victim, source);
+        } catch (RuntimeException e) {
+            Krylix.LOGGER.error("Krylix failed to handle the death of {}", victim, e);
+        }
+    }
+
+    private static void handleDeath(LivingEntity victim, DamageSource source) {
         if (!(victim.level() instanceof ServerLevel level)) {
             return;
         }
-        MinecraftServer server = level.getServer();
-        KillAnalysis kill = KillAnalysis.of(victim, source);
-        boolean playerDied = victim instanceof ServerPlayer;
-        boolean mobKill = !playerDied && victim.getType().getCategory() == MobCategory.MONSTER && kill.killer() instanceof ServerPlayer;
-        if (!playerDied && !mobKill) {
+        // Only two kinds of death matter; skip the analysis (and addon events) for the cows and the fish
+        boolean playerDied = victim instanceof ServerPlayer player && isRealPlayer(player);
+        if (!playerDied && victim.getType().getCategory() != MobCategory.MONSTER) {
             return;
         }
+        KillAnalysis kill = KillAnalysis.of(victim, source);
+        if (!playerDied && !(kill.killer() instanceof ServerPlayer killer && isRealPlayer(killer))) {
+            return;
+        }
+        MinecraftServer server = level.getServer();
 
         boolean broadcast = true;
         boolean recordStats = true;
@@ -88,11 +118,11 @@ public final class KrylixServer {
 
         PlayerKillStatsData stats = PlayerKillStatsData.get(server);
         if (victim instanceof ServerPlayer player) {
-            sendDeathRecap(player, source, kill);
+            sendDeathRecap(player, source, kill, server.getTickCount());
             if (recordStats) {
                 int deaths = stats.recordDeath(player.getUUID(), player.getName().getString());
                 statRecorded(player, StatType.DEATH, null, deaths);
-                if (kill.killer() instanceof Player killer) {
+                if (kill.killer() instanceof ServerPlayer killer && isRealPlayer(killer)) {
                     int kills = stats.recordKill(killer.getUUID(), killer.getName().getString());
                     statRecorded(killer, StatType.KILL, null, kills);
                 }
@@ -108,6 +138,11 @@ public final class KrylixServer {
         }
     }
 
+    /** Machines that act as players (deployers, mob grinders) don't get statistics. */
+    private static boolean isRealPlayer(ServerPlayer player) {
+        return !KrylixPlatform.get().isFakePlayer(player);
+    }
+
     private static void statRecorded(Player player, StatType type, @Nullable Identifier entityType, int total) {
         if (KrylixApiImpl.EVENTS.hasListeners(StatRecordedEvent.class)) {
             KrylixApiImpl.EVENTS.post(new StatRecordedEvent(player.getUUID(), player.getName().getString(), type, entityType, total));
@@ -115,7 +150,11 @@ public final class KrylixServer {
     }
 
     public static void onJoin(ServerPlayer player) {
+        if (!isRealPlayer(player)) {
+            return;
+        }
         PlayerKillStatsData stats = PlayerKillStatsData.get(player.level().getServer());
+        stats.updateName(player.getUUID(), player.getName().getString()); // renamed since their last kill
         KrylixNetwork.toPlayer(player, new MobKillsPayload(true, stats.mobKillsOf(player.getUUID())));
     }
 
@@ -125,42 +164,34 @@ public final class KrylixServer {
     }
 
     public static void onLeaderboardRequest(ServerPlayer player) {
-        long now = System.currentTimeMillis();
-        Long last = lastLeaderboardRequest.get(player.getUUID());
-        if (last != null && now - last < LEADERBOARD_REQUEST_COOLDOWN_MS) {
+        MinecraftServer server = player.level().getServer();
+        int tick = server.getTickCount();
+        Integer last = lastLeaderboardRequest.get(player.getUUID());
+        if (last != null && tick - last >= 0 && tick - last < LEADERBOARD_REQUEST_COOLDOWN_TICKS) {
             return;
         }
-        lastLeaderboardRequest.put(player.getUUID(), now);
-
-        PlayerKillStatsData stats = PlayerKillStatsData.get(player.level().getServer());
-        List<LeaderboardRow> rows = new ArrayList<>(stats.stats.size());
-        for (Map.Entry<String, PlayerStat> entry : stats.stats.entrySet()) {
-            UUID uuid;
-            try {
-                uuid = UUID.fromString(entry.getKey());
-            } catch (IllegalArgumentException e) {
-                continue;
-            }
-            PlayerStat s = entry.getValue();
-            rows.add(new LeaderboardRow(uuid, s.lastName, s.kills, s.deaths, s.mobKills));
-        }
-        if (rows.size() > KrylixPayloads.MAX_LEADERBOARD_ROWS) {
-            // Keep the players who matter on either tab: top by kills, then fill with top by mob kills
-            rows.sort(Comparator.comparingInt(LeaderboardRow::kills).reversed());
-            List<LeaderboardRow> kept = new ArrayList<>(rows.subList(0, KrylixPayloads.MAX_LEADERBOARD_ROWS / 2));
-            rows.sort(Comparator.comparingInt(LeaderboardRow::mobKills).reversed());
-            for (LeaderboardRow row : rows) {
-                if (kept.size() >= KrylixPayloads.MAX_LEADERBOARD_ROWS) break;
-                if (!kept.contains(row)) kept.add(row);
-            }
-            rows = kept;
-        }
-        KrylixNetwork.toPlayer(player, new LeaderboardPayload(rows, stats.stats.size()));
+        lastLeaderboardRequest.put(player.getUUID(), tick);
+        KrylixNetwork.toPlayer(player, leaderboard(server, tick));
     }
 
-    private static void sendDeathRecap(ServerPlayer victim, DamageSource source, KillAnalysis kill) {
+    /** The table as a payload, rebuilt only when the statistics changed (and not more often than every 2 s). */
+    private static LeaderboardPayload leaderboard(MinecraftServer server, int tick) {
+        PlayerKillStatsData stats = PlayerKillStatsData.get(server);
+        LeaderboardPayload cached = leaderboard;
+        boolean stale = stats.version() != leaderboardVersion
+            && (tick - leaderboardBuiltAt >= LEADERBOARD_REBUILD_TICKS || tick < leaderboardBuiltAt);
+        if (cached != null && !stale) {
+            return cached;
+        }
+        leaderboard = new LeaderboardPayload(stats.leaderboardRows(KrylixPayloads.MAX_LEADERBOARD_ROWS), stats.stats.size());
+        leaderboardVersion = stats.version();
+        leaderboardBuiltAt = tick;
+        return leaderboard;
+    }
+
+    private static void sendDeathRecap(ServerPlayer victim, DamageSource source, KillAnalysis kill, int tick) {
         LivingEntity killer = kill.killer();
-        float dealt = killer != null ? COMBAT.dealt(victim.getUUID(), killer.getUUID(), System.currentTimeMillis()) : 0f;
+        float dealt = killer != null ? COMBAT.dealt(victim.getUUID(), killer.getUUID(), tick) : 0f;
         KrylixNetwork.toPlayer(victim, new DeathRecapPayload(
             kill.killerCombatant(),
             source.getLocalizedDeathMessage(victim).getString(),

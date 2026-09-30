@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.fabric;
 
+import net.fabricmc.fabric.api.entity.FakePlayer;
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.addon.AddonLoader;
 import com.eliasnvx.krylix.api.KrylixAddon;
@@ -24,6 +25,11 @@ final class FabricPlatform implements KrylixPlatform {
     @Override
     public boolean isModLoaded(String modId) {
         return FabricLoader.getInstance().isModLoaded(modId);
+    }
+
+    @Override
+    public boolean isFakePlayer(ServerPlayer player) {
+        return player instanceof FakePlayer;
     }
 
     @Override

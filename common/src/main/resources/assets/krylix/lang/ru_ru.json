@@ -34,7 +34,6 @@
   "krylix.leaderboard.page": "Страница %s / %s",
   "krylix.command.killfeed_state": "Лента убийств: %s",
   "krylix.command.status": "Лента убийств: %s, игроков в статистике: %s",
-  "krylix.command.hud_state": "HUD ленты убийств: %s",
   "krylix.command.hud_cleared": "HUD ленты убийств очищен",
   "krylix.command.leaderboard_filled": "Рейтинг заполнен %s тестовыми игроками (только на клиенте, не сохраняется)",
   "krylix.command.leaderboard_cleared": "Тестовые данные рейтинга очищены",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Смерти",
   "krylix.leaderboard.header_kd_ratio": "У/С",
   "screen.krylix.leaderboard.loading": "Загрузка…",
-  "screen.krylix.leaderboard.unavailable": "На этом сервере нет Krylix"
+  "screen.krylix.leaderboard.unavailable": "На этом сервере нет Krylix",
+  "krylix.deathrecap.badge.smash": "СОКРУШЕНИЕ",
+  "krylix.deathrecap.badge.longshot": "ДАЛЬНИЙ ВЫСТРЕЛ",
+  "krylix.deathrecap.badge.crit": "КРИТ"
 }

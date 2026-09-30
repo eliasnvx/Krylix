@@ -1,6 +1,7 @@
 package com.eliasnvx.krylix.server;
 
 import com.eliasnvx.krylix.Krylix;
+import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardRow;
 import com.eliasnvx.krylix.api.stats.KrylixStats;
 import com.eliasnvx.krylix.api.stats.PlayerStats;
 import com.mojang.serialization.Codec;
@@ -12,7 +13,11 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,6 +56,17 @@ public class PlayerKillStatsData extends SavedData {
     }
 
     private boolean legacyChecked;
+    /** Bumped on every change: lets the leaderboard reuse its last payload while nothing changed. Not saved. */
+    private long version;
+
+    public long version() {
+        return version;
+    }
+
+    private void changed() {
+        version++;
+        setDirty();
+    }
 
     /**
      * 1.3 counted mob kills in one pool for the whole world. When that pool exists and exactly one player has
@@ -73,7 +89,7 @@ public class PlayerKillStatsData extends SavedData {
         only.mobKillsByType.putAll(legacy.kills);
         legacy.kills.clear();
         legacy.setDirty();
-        setDirty();
+        changed();
         Krylix.LOGGER.info("Moved 1.3 world mob kill counts to player {}", only.lastName);
     }
 
@@ -86,14 +102,14 @@ public class PlayerKillStatsData extends SavedData {
     /** Returns the player's new kill total. */
     public int recordKill(UUID uuid, String name) {
         int kills = ++stat(uuid, name).kills;
-        setDirty();
+        changed();
         return kills;
     }
 
     /** Returns the player's new death total. */
     public int recordDeath(UUID uuid, String name) {
         int deaths = ++stat(uuid, name).deaths;
-        setDirty();
+        changed();
         return deaths;
     }
 
@@ -102,7 +118,7 @@ public class PlayerKillStatsData extends SavedData {
         PlayerStat stat = stat(uuid, name);
         stat.mobKills++;
         int count = stat.mobKillsByType.merge(entityType, 1, Integer::sum);
-        setDirty();
+        changed();
         return count;
     }
 
@@ -125,7 +141,7 @@ public class PlayerKillStatsData extends SavedData {
                         // not a UUID: skip, like the leaderboard does
                     }
                 }
-                return all;
+                return List.copyOf(all);
             }
         };
     }
@@ -141,8 +157,68 @@ public class PlayerKillStatsData extends SavedData {
         return new PlayerStats(uuid, stat.lastName, stat.kills, stat.deaths, stat.mobKills, byType);
     }
 
+    /** A copy: payloads are encoded later on the network thread, so they must never hold the live map. */
     public Map<String, Integer> mobKillsOf(UUID uuid) {
         PlayerStat stat = stats.get(uuid.toString());
-        return stat != null ? stat.mobKillsByType : Map.of();
+        return stat != null ? Map.copyOf(stat.mobKillsByType) : Map.of();
+    }
+
+    /** A player with stats joined under a new name: the leaderboard shows the current one. */
+    public void updateName(UUID uuid, String name) {
+        PlayerStat stat = stats.get(uuid.toString());
+        if (stat != null && !name.equals(stat.lastName)) {
+            stat.lastName = name;
+            changed();
+        }
+    }
+
+    /**
+     * Rows for the leaderboard. Above {@code max} players, it keeps whoever matters on either tab: the top half by
+     * PvP kills, then the top by mob kills.
+     */
+    public List<LeaderboardRow> leaderboardRows(int max) {
+        List<LeaderboardRow> rows = new ArrayList<>(stats.size());
+        for (Map.Entry<String, PlayerStat> entry : stats.entrySet()) {
+            UUID uuid;
+            try {
+                uuid = UUID.fromString(entry.getKey());
+            } catch (IllegalArgumentException e) {
+                continue;
+            }
+            PlayerStat s = entry.getValue();
+            rows.add(new LeaderboardRow(uuid, s.lastName, s.kills, s.deaths, s.mobKills));
+        }
+        if (rows.size() <= max) {
+            return rows;
+        }
+        List<LeaderboardRow> kept = new ArrayList<>(max);
+        Set<UUID> seen = new HashSet<>();
+        for (LeaderboardRow row : top(rows, max / 2, Comparator.comparingInt(LeaderboardRow::kills))) {
+            kept.add(row);
+            seen.add(row.uuid());
+        }
+        for (LeaderboardRow row : top(rows, max, Comparator.comparingInt(LeaderboardRow::mobKills))) {
+            if (kept.size() >= max) {
+                break;
+            }
+            if (seen.add(row.uuid())) {
+                kept.add(row);
+            }
+        }
+        return kept;
+    }
+
+    /** The {@code k} largest rows, largest first, without sorting everything. */
+    private static List<LeaderboardRow> top(List<LeaderboardRow> rows, int k, Comparator<LeaderboardRow> order) {
+        PriorityQueue<LeaderboardRow> heap = new PriorityQueue<>(k + 1, order);
+        for (LeaderboardRow row : rows) {
+            heap.offer(row);
+            if (heap.size() > k) {
+                heap.poll();
+            }
+        }
+        List<LeaderboardRow> top = new ArrayList<>(heap);
+        top.sort(order.reversed());
+        return top;
     }
 }

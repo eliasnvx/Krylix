@@ -47,11 +47,16 @@ public final class MobHeads {
         fromAddons.put(entityType, head);
     }
 
-    public static void draw(GuiGraphicsExtractor graphics, MobHead head, int x, int y, int size) {
+    public static void draw(GuiGraphicsExtractor graphics, MobHead head, int x, int y, int size, int color) {
         for (MobHead.Layer layer : head.layers()) {
             graphics.blit(RenderPipelines.GUI_TEXTURED, layer.texture(), x, y, layer.u(), layer.v(), size, size,
-                layer.width(), layer.height(), layer.textureWidth(), layer.textureHeight());
+                layer.width(), layer.height(), layer.textureWidth(), layer.textureHeight(), color);
         }
+    }
+
+    /** Left a server: forget the entity ids it sent (a misbehaving server could send thousands). */
+    public static void clearCache() {
+        IDS.clear();
     }
 
     /** Reads every {@code krylix/heads} JSON on resource reload. Registered by each loader's client entrypoint. */

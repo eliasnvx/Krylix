@@ -1,5 +1,7 @@
 // Public API for addons: interfaces, records and events. Depends on vanilla Minecraft only — never on :common.
 architectury {
+    // No @ExpectPlatform anywhere: don't ship Architectury's PlatformMethods helper classes in the jars
+    injectInjectables = false
     common(rootProject.platforms.split(","))
 }
 

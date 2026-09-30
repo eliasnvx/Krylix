@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.fabric;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.addon.KrylixApiImpl;
 import com.eliasnvx.krylix.config.KrylixConfig;
@@ -33,11 +34,8 @@ public final class KrylixFabric implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registries, environment) -> KrylixServerCommands.register(dispatcher));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> KrylixServer.onJoin(handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> KrylixServer.onLeave(handler.getPlayer()));
-        ServerLivingEntityEvents.AFTER_DAMAGE.register((entity, source, baseDamage, damageTaken, blocked) -> {
-            if (!blocked) {
-                KrylixServer.onDamage(entity, source, damageTaken);
-            }
-        });
+        // Damage is recorded by CombatTrackerMixin: the health actually lost, the same number NeoForge reports
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> KrylixServer.onServerStopped());
         ServerLivingEntityEvents.AFTER_DEATH.register(KrylixServer::onDeath);
 
         KrylixApiImpl.init(); // last: addons see a fully set up Krylix

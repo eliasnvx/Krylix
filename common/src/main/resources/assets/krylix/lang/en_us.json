@@ -34,7 +34,6 @@
   "krylix.leaderboard.page": "Page %s / %s",
   "krylix.command.killfeed_state": "Kill feed: %s",
   "krylix.command.status": "Kill feed: %s, players tracked: %s",
-  "krylix.command.hud_state": "Kill feed HUD: %s",
   "krylix.command.hud_cleared": "Kill feed HUD cleared",
   "krylix.command.leaderboard_filled": "Filled leaderboard with %s test players (client-only, not saved)",
   "krylix.command.leaderboard_cleared": "Cleared test leaderboard data",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Deaths",
   "krylix.leaderboard.header_kd_ratio": "K/D",
   "screen.krylix.leaderboard.loading": "Loading…",
-  "screen.krylix.leaderboard.unavailable": "This server doesn't have Krylix"
+  "screen.krylix.leaderboard.unavailable": "This server doesn't have Krylix",
+  "krylix.deathrecap.badge.smash": "SMASH",
+  "krylix.deathrecap.badge.longshot": "LONG SHOT",
+  "krylix.deathrecap.badge.crit": "CRIT"
 }

@@ -279,6 +279,53 @@ def mob_face(path, box, scale, overlay=None):
     return img.resize((img.width * scale, img.height * scale), Image.NEAREST)
 
 
+HEADS = os.path.join(ROOT, "common", "src", "main", "resources", "assets", "minecraft", "krylix", "heads")
+# Faces added in 1.4.0: marked in gold on the faces picture
+NEW_FACES = {"creaking", "parched", "illusioner", "sulfur_cube", "silverfish", "endermite"}
+
+
+def json_face(name, size):
+    """A mob face exactly as Krylix draws it: the layers of its heads JSON, each region scaled into the square."""
+    import json
+    with open(os.path.join(HEADS, name + ".json"), encoding="utf-8") as f:
+        layers = json.load(f)["layers"]
+    out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    for layer in layers:
+        ns, path = layer["texture"].split(":", 1)
+        tex = Image.open(io.BytesIO(client_jar().read(f"assets/{ns}/{path}"))).convert("RGBA")
+        u, v = layer["u"], layer["v"]
+        w, h = layer.get("width", 8), layer.get("height", 8)
+        # the texture size in the JSON is the UV space; scale if the file is a higher-resolution version
+        sx = tex.width / layer.get("texture_width", 64)
+        sy = tex.height / layer.get("texture_height", 64)
+        region = tex.crop((round(u * sx), round(v * sy), round((u + w) * sx), round((v + h) * sy)))
+        out.alpha_composite(region.resize((size, size), Image.NEAREST))
+    return out
+
+
+def faces(width=1920):
+    """Every mob face Krylix ships, rendered from its JSON; the ones new in 1.4.0 framed in gold."""
+    names = sorted(f[:-5] for f in os.listdir(HEADS) if f.endswith(".json"))
+    names.sort(key=lambda n: (n not in NEW_FACES, n))  # new ones first
+    cols, cell, face = 11, 150, 96
+    rows = math.ceil(len(names) / cols)
+    h = 170 + rows * cell + 110
+    img = background(width, h)
+    title = "MOB FACES"
+    draw_text(img, title, (width - text_width(title, 9)) // 2, 50, 9, WHITE, shadow=INK, outline=CRIMSON_DARK)
+    left = (width - cols * cell) // 2
+    for i, name in enumerate(names):
+        x = left + (i % cols) * cell
+        y = 170 + (i // cols) * cell
+        tile = Image.new("RGBA", (face, face), (24, 20, 28, 255))
+        tile.alpha_composite(json_face(name, face))
+        frame = framed(tile, border=GOLD if name in NEW_FACES else BONE, width=5, radius=12, shadow=False)
+        paste(img, frame, x + (cell - frame.width) // 2, y + (cell - frame.height) // 2)
+    note = f"{len(names)} MOBS - NEW IN 1.4.0 IN GOLD - ADD YOUR OWN WITH A JSON FILE"
+    draw_text(img, note, (width - text_width(note, 3)) // 2, 170 + rows * cell + 30, 3, BONE, shadow=INK)
+    return img.convert("RGB")
+
+
 # ------------------------------------------------------------------------------------------------ screenshots
 
 def shot(name, required=True):
@@ -404,7 +451,8 @@ HEADERS = {
     "header_leaderboard": ("LEADERBOARD", "item/golden_helmet"),
     "header_config": ("CONFIG & KEYS", "item/comparator"),
     "header_languages": ("LANGUAGES", "item/writable_book"),
-    "header_server": ("SERVERS & ADDONS", "item/command_block_minecart"),
+    "header_server": ("SERVERS", "item/command_block_minecart"),
+    "header_addons": ("ADDON API", "item/knowledge_book"),
     "header_install": ("INSTALLATION", "item/bundle"),
 }
 
@@ -434,6 +482,7 @@ def build():
     gallery("DEATH RECAP", [
         (recap.crop((430, 130, 1490, 890)), "WHO, WITH WHAT, HOW MUCH HEALTH THEY KEPT", None, BONE),
     ], 1, 1060, 760).save(os.path.join(OUT, "recap.png"), optimize=True)
+    faces().save(os.path.join(OUT, "faces.png"), optimize=True)
     print("wrote", sorted(os.listdir(OUT)))
 
 

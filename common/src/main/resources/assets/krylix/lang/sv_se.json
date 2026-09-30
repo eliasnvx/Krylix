@@ -33,7 +33,6 @@
   "krylix.leaderboard.page": "Sida %s / %s",
   "krylix.command.killfeed_state": "Dödsflöde: %s",
   "krylix.command.status": "Dödsflöde: %s, spårade spelare: %s",
-  "krylix.command.hud_state": "Dödsflödes-HUD: %s",
   "krylix.command.hud_cleared": "Dödsflödes-HUD rensat",
   "krylix.command.hud_count": "Aktiva aviseringar: %s",
   "krylix.command.leaderboard_filled": "Topplistan fylld med %s testspelare (endast klient, sparas ej)",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Dödsfall",
   "krylix.leaderboard.header_kd_ratio": "K/D",
   "screen.krylix.leaderboard.loading": "Laddar…",
-  "screen.krylix.leaderboard.unavailable": "Den här servern har inte Krylix"
+  "screen.krylix.leaderboard.unavailable": "Den här servern har inte Krylix",
+  "krylix.deathrecap.badge.smash": "KROSSAD",
+  "krylix.deathrecap.badge.longshot": "LÅNGSKOTT",
+  "krylix.deathrecap.badge.crit": "KRIT"
 }

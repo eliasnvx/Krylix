@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.client;
 
+import net.minecraft.util.Util;
 import com.eliasnvx.krylix.network.KrylixPayloads;
 import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardPayload;
 import com.eliasnvx.krylix.network.KrylixPayloads.LeaderboardRow;
@@ -19,6 +20,9 @@ public final class LeaderboardClient {
     private static int totalPlayers;
     /** Bumped whenever the data changes, so an open screen knows to reset its scroll. */
     private static int version;
+    private static long requestedAt;
+    /** No answer this long after a request (the server's cooldown dropped it): ask again. */
+    private static final long RETRY_MS = 2_000;
 
     private LeaderboardClient() {
     }
@@ -28,11 +32,19 @@ public final class LeaderboardClient {
         KrylixPlatform platform = KrylixPlatform.get();
         if (platform.canSendToServer(KrylixPayloads.LeaderboardRequestPayload.TYPE)) {
             platform.sendToServer(KrylixPayloads.LeaderboardRequestPayload.INSTANCE);
+            requestedAt = Util.getMillis();
             if (state != State.READY) {
                 state = State.LOADING;
             }
         } else if (state != State.READY) {
             state = State.UNAVAILABLE; // the server doesn't run Krylix
+        }
+    }
+
+    /** Called every tick while the screen is open: a request that got no answer is sent again. */
+    public static void retryIfStuck() {
+        if (state == State.LOADING && Util.getMillis() - requestedAt > RETRY_MS) {
+            request();
         }
     }
 

@@ -1,5 +1,6 @@
 package com.eliasnvx.krylix.neoforge;
 
+import net.neoforged.neoforge.common.util.FakePlayer;
 import com.eliasnvx.krylix.Krylix;
 import com.eliasnvx.krylix.addon.AddonLoader;
 import com.eliasnvx.krylix.api.KrylixAddon;
@@ -29,6 +30,11 @@ final class NeoForgePlatform implements KrylixPlatform {
     @Override
     public boolean isModLoaded(String modId) {
         return ModList.get().isLoaded(modId);
+    }
+
+    @Override
+    public boolean isFakePlayer(ServerPlayer player) {
+        return player instanceof FakePlayer;
     }
 
     @Override

@@ -195,7 +195,7 @@ public final class DocsShotsClientTest implements FabricClientGameTest {
     private static void feed(ClientGameTestContext context) {
         context.runOnClient(mc -> {
             KillFeedHud.clear();
-            long now = System.currentTimeMillis();
+            long now = net.minecraft.util.Util.getMillis();
             Combatant me = new Combatant(mc.player.getName().getString(), mc.player.getUUID(), "minecraft:player");
             KillFeedHud.add(new KillEntry(player("NightOwl"), player("Pixel_Knight"), 12f, "minecraft:bow", 42f, KrylixPayloads.FLAG_LONGSHOT, now));
             KillFeedHud.add(new KillEntry(new Combatant("Skeleton", null, "minecraft:skeleton"), player("Vortex_"), 20f, "minecraft:bow", 17f, 0, now));

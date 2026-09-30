@@ -17,6 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      # Set in the repository secrets to publish the API jar (optional)
+      KRYLIX_MAVEN_URL: ${{ secrets.KRYLIX_MAVEN_URL }}
 
     steps:
       - name: 📥 Checkout repository
@@ -29,7 +32,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '25'
-          cache: 'gradle'
+
+      - name: 🐘 Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: ✅ Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
@@ -52,6 +57,14 @@ jobs:
             echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           fi
           echo "MC_VERSION=$(grep '^minecraft_version=' gradle.properties | cut -d= -f2)" >> $GITHUB_OUTPUT
+
+      - name: 🔎 Check the tag matches the mod version
+        run: |
+          MOD_VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          if [ "$MOD_VERSION" != "${{ steps.version.outputs.VERSION }}" ]; then
+            echo "::error::Tag/input version ${{ steps.version.outputs.VERSION }} does not match mod_version=$MOD_VERSION in gradle.properties"
+            exit 1
+          fi
 
       - name: 📋 Generate changelog
         id: changelog
@@ -92,10 +105,21 @@ jobs:
           files: |
             fabric/build/libs/krylix-*-fabric.jar
             neoforge/build/libs/krylix-*-neoforge.jar
+            api/build/libs/krylix-api-?.?.?.jar
+            api/build/libs/krylix-api-*-sources.jar
+            api/build/libs/krylix-api-*-javadoc.jar
           draft: false
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # The API jar for addon authors; runs only when a Maven repository is configured in the repo secrets
+      - name: 📚 Publish the API to Maven
+        if: env.KRYLIX_MAVEN_URL != ''
+        run: ./gradlew :api:publishMavenApiPublicationToReleaseRepository --no-daemon --stacktrace
+        env:
+          KRYLIX_MAVEN_USER: ${{ secrets.KRYLIX_MAVEN_USER }}
+          KRYLIX_MAVEN_PASSWORD: ${{ secrets.KRYLIX_MAVEN_PASSWORD }}
 
       - name: ✅ Release summary
         run: |

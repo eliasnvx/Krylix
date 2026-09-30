@@ -11,7 +11,10 @@ package com.eliasnvx.krylix.api;
  * </ul>
  * A multi-loader addon does both on the same class.
  *
- * <p>Each addon is created once. An addon that throws is logged and skipped; the others still load. Krylix is an
+ * <p>Each addon is created once. An addon whose {@link #onInitialize} throws is logged and skipped from then on (its
+ * client hook isn't called); the others still load. {@link #onInitialize} runs after every mod's constructor on NeoForge
+ * (common setup) but during Krylix's own initializer on Fabric, so don't rely on your mod's initializer having run:
+ * register listeners here and read your own state when they fire. Krylix is an
  * optional dependency for most addons: declare it as {@code suggests}/{@code optional} and the entrypoint simply never
  * runs without it.
  */
@@ -20,7 +23,8 @@ public interface KrylixAddon {
     String FABRIC_ENTRYPOINT = "krylix";
 
     /**
-     * Called once on both physical sides, after Krylix itself has initialized. Register event listeners here.
+     * Called once on both physical sides, after Krylix itself has initialized, on the main thread. Register event listeners
+     * here.
      *
      * @param api the API
      */

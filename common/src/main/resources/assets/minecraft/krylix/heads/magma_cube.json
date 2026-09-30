@@ -3,7 +3,8 @@
     {
       "texture": "minecraft:textures/entity/slime/magmacube.png",
       "u": 8,
-      "v": 8
+      "v": 24,
+      "height": 12
     }
   ]
 }

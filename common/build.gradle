@@ -1,4 +1,6 @@
 architectury {
+    // No @ExpectPlatform anywhere: don't ship Architectury's PlatformMethods helper classes in the jars
+    injectInjectables = false
     common(rootProject.platforms.split(","))
 }
 
@@ -7,9 +9,17 @@ dependencies {
     compileOnly "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
 
     api project(":api")
+    // The Architectury transformer rebuilds stack frames and needs the API's class hierarchy; it can't read the
+    // project dependency's classes directory, so it also gets the API jar
+    compileOnly files(rootProject.project(":api").tasks.named("jar").flatMap { it.archiveFile })
     // Config screen and file (AutoConfig); each loader ships its own Cloth Config build
     compileOnly "me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}"
 }
 
 // The Architectury transformer reads :api classes; make sure the api jar is complete first (parallel builds).
 tasks.matching { it.name.startsWith("transformProduction") }.configureEach { dependsOn(":api:jar") }
+
+// KrylixApiImpl.API_VERSION must match api_version in gradle.properties (checked by ApiVersionTest)
+tasks.named("test") {
+    systemProperty "krylix.apiVersion", rootProject.api_version
+}

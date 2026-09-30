@@ -17,19 +17,20 @@ public final class KrylixServerCommands {
                 .then(Commands.literal("toggle").executes(context -> {
                     KrylixServer.setFeedEnabled(!KrylixServer.isFeedEnabled());
                     context.getSource().sendSuccess(
-                        () -> Component.translatable("krylix.command.killfeed_state", onOff(KrylixServer.isFeedEnabled())), true);
+                        () -> Component.translatableWithFallback("krylix.command.killfeed_state", "Kill feed: %s", onOff(KrylixServer.isFeedEnabled())), true);
                     return 1;
                 }))
                 .then(Commands.literal("status").executes(context -> {
                     int players = PlayerKillStatsData.get(context.getSource().getServer()).stats.size();
                     context.getSource().sendSuccess(
-                        () -> Component.translatable("krylix.command.status", onOff(KrylixServer.isFeedEnabled()), players), false);
+                        () -> Component.translatableWithFallback("krylix.command.status", "Kill feed: %s, players tracked: %s", onOff(KrylixServer.isFeedEnabled()), players), false);
                     return 1;
                 }))
         );
     }
 
     private static Component onOff(boolean on) {
-        return Component.translatable(on ? "krylix.toggle.on" : "krylix.toggle.off");
+        // With fallbacks: operators on clients without Krylix get English instead of raw keys
+        return on ? Component.translatableWithFallback("krylix.toggle.on", "§aON") : Component.translatableWithFallback("krylix.toggle.off", "§cOFF");
     }
 }

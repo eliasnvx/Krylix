@@ -18,6 +18,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.sounds.SoundEvents;
 
 /** Client-side Krylix: the loaders forward their events here. Client thread only. */
@@ -27,36 +28,46 @@ public final class KrylixClient {
 
     /** End of every client tick. */
     public static void onTick(Minecraft minecraft) {
-        while (KrylixKeyBindings.TOGGLE_KILL_FEED.consumeClick()) {
+        if (KrylixKeyBindings.ready()) {
+            handleKeys(minecraft);
+        }
+        HealthIndicator.updateTarget();
+        if (DeathRecapClient.isStale(minecraft.player != null && minecraft.player.isAlive()
+            && !(minecraft.gui.screen() instanceof DeathScreen))) {
+            DeathRecapClient.clear(); // respawned
+        }
+    }
+
+    private static void handleKeys(Minecraft minecraft) {
+        while (KrylixKeyBindings.toggleKillFeed().consumeClick()) {
             boolean enabled = !KillFeedHud.isHudEnabled();
             KillFeedHud.setEnabled(enabled);
             notifyToggle(minecraft, "krylix.toggle.killfeed", enabled);
         }
-        while (KrylixKeyBindings.TOGGLE_MOB_STATS.consumeClick()) {
+        while (KrylixKeyBindings.toggleMobStats().consumeClick()) {
             boolean enabled = !MobStatsHud.isStatsEnabled();
             MobStatsHud.setEnabled(enabled);
             notifyToggle(minecraft, "krylix.toggle.mobstats", enabled);
         }
-        while (KrylixKeyBindings.OPEN_LEADERBOARD.consumeClick()) {
+        while (KrylixKeyBindings.openLeaderboard().consumeClick()) {
             if (minecraft.gui.screen() == null) {
                 minecraft.gui.setScreen(new LeaderboardScreen());
             }
         }
-        while (KrylixKeyBindings.TOGGLE_HEALTH_PLATES.consumeClick()) {
+        while (KrylixKeyBindings.toggleHealthPlates().consumeClick()) {
             boolean enabled = !HealthIndicator.isIndicatorEnabled();
             HealthIndicator.setEnabled(enabled);
             notifyToggle(minecraft, "krylix.toggle.health_indicator", enabled);
-        }
-        HealthIndicator.updateTarget();
-        if (DeathRecapClient.hasRecap() && minecraft.player != null && minecraft.player.isAlive()
-            && !(minecraft.gui.screen() instanceof DeathScreen)) {
-            DeathRecapClient.clear(); // respawned
         }
     }
 
     /** The kill feed and the mob panel, drawn with the HUD. */
     public static void renderHud(GuiGraphicsExtractor graphics) {
-        Screen screen = Minecraft.getInstance().gui.screen();
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.gui.hud.isHidden()) {
+            return; // F1: NeoForge draws mod layers even then, Fabric's chat hook doesn't
+        }
+        Screen screen = minecraft.gui.screen();
         if (screen != null && !(screen instanceof ChatScreen)) {
             return; // don't draw over inventories and menus; chat is fine
         }
@@ -76,13 +87,15 @@ public final class KrylixClient {
         LeaderboardClient.clear();
         DeathRecapClient.clear();
         HealthIndicator.reset();
+        Avatars.clearCache();
+        MobHeads.clearCache();
     }
 
     /** A Krylix payload from the server, on the client thread. */
     public static void handle(CustomPacketPayload payload) {
         switch (payload) {
             case KillFeedPayload p -> {
-                KillEntry entry = KillEntry.of(p, System.currentTimeMillis());
+                KillEntry entry = KillEntry.of(p, Util.getMillis());
                 if (!isHiddenByAddon(entry)) {
                     KillFeedHud.add(entry);
                 }

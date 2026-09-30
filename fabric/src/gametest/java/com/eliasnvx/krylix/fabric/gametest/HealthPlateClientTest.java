@@ -1,6 +1,8 @@
 package com.eliasnvx.krylix.fabric.gametest;
 
 import com.eliasnvx.krylix.client.HealthIndicator;
+import com.eliasnvx.krylix.config.HealthBarStyle;
+import com.eliasnvx.krylix.config.KrylixConfig;
 import com.eliasnvx.krylix.config.ModConfig;
 import me.shedaniel.autoconfig.AutoConfigClient;
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
@@ -34,7 +36,32 @@ public final class HealthPlateClientTest implements FabricClientGameTest {
             cmd(world, "execute as @p at @s anchored eyes run tp @s ~ ~ ~ facing entity @e[tag=t,limit=1] eyes");
             context.waitTicks(10);
             expectTarget(context, "husk");
+            expectDrawn(context, "husk");
             context.takeScreenshot("check_plates");
+
+            // Every bar style builds and draws (screenshots for a look)
+            for (HealthBarStyle style : HealthBarStyle.values()) {
+                context.runOnClient(mc -> KrylixConfig.get().healthBarStyle = style);
+                expectDrawn(context, style.name());
+                context.takeScreenshot("check_style_" + style.name().toLowerCase(java.util.Locale.ROOT));
+            }
+            context.runOnClient(mc -> KrylixConfig.get().healthBarStyle = HealthBarStyle.HEARTS);
+
+            // F1 hides every name, so the plate too
+            context.runOnClient(mc -> mc.gui.hud.toggle());
+            context.waitTicks(3);
+            expectTarget(context, null);
+            context.runOnClient(mc -> mc.gui.hud.toggle());
+            context.waitTicks(3);
+            expectTarget(context, "husk");
+
+            // Servers hide names with the name tag distance attribute: the plate follows
+            cmd(world, "attribute @e[tag=t,limit=1] minecraft:name_tag_distance base set 1");
+            context.waitTicks(5);
+            expectTarget(context, null);
+            cmd(world, "attribute @e[tag=t,limit=1] minecraft:name_tag_distance base reset");
+            context.waitTicks(5);
+            expectTarget(context, "husk");
 
             // Invisible: no plate
             cmd(world, "effect give @e[tag=t] minecraft:invisibility 60 0 true");
@@ -54,6 +81,22 @@ public final class HealthPlateClientTest implements FabricClientGameTest {
             context.waitTicks(5);
             expectTarget(context, "husk");
 
+            // Players' renderer (a mannequin uses the same one) must get the plate too, not the plain nametag
+            cmd(world, "kill @e[tag=t]");
+            cmd(world, "summon minecraft:mannequin ~ ~ ~2.6 {Tags:[\"m\"],Rotation:[180f,0f]}");
+            cmd(world, "execute as @p at @s anchored eyes run tp @s ~ ~ ~ facing entity @e[tag=m,limit=1] eyes");
+            context.waitTicks(10);
+            expectTarget(context, "mannequin");
+            expectDrawn(context, "mannequin");
+            cmd(world, "kill @e[tag=m]");
+
+            // A plain armor stand is decoration: no plate
+            cmd(world, "summon minecraft:armor_stand ~ ~ ~2.6 {Tags:[\"s\"],Rotation:[180f,0f]}");
+            cmd(world, "execute as @p at @s anchored eyes run tp @s ~ ~ ~ facing entity @e[tag=s,limit=1] eyes");
+            context.waitTicks(10);
+            expectTarget(context, null);
+            cmd(world, "kill @e[tag=s]");
+
             // The config screen builds and opens (the Mod Menu / mod list button uses the same factory)
             context.setScreen(() -> AutoConfigClient.getConfigScreen(ModConfig.class, null).get());
             context.waitTicks(10);
@@ -64,6 +107,16 @@ public final class HealthPlateClientTest implements FabricClientGameTest {
 
     private static void cmd(TestSingleplayerContext world, String command) {
         world.getServer().runCommand(command);
+    }
+
+    /** The plate was really drawn over the target in the next frames, not only picked. */
+    private static void expectDrawn(ClientGameTestContext context, String what) {
+        int before = context.computeOnClient(mc -> HealthIndicator.platesDrawn());
+        context.waitTicks(3);
+        int after = context.computeOnClient(mc -> HealthIndicator.platesDrawn());
+        if (after <= before) {
+            throw new AssertionError("no health plate drawn for " + what);
+        }
     }
 
     private static void expectTarget(ClientGameTestContext context, String type) {

@@ -9,22 +9,58 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.Locale;
 
 /** The card under the death screen's buttons. Kept until the player respawns or leaves. */
 public final class DeathRecapClient {
     private static final Identifier HEART_SPRITE = Identifier.withDefaultNamespace("hud/heart/full");
+    /** A recap younger than this is kept even if the player still looks alive: on NeoForge it arrives before the death. */
+    private static final long GRACE_MS = 1_500;
+    private static final int MAX_MESSAGE_LINES = 3;
+
     private static @Nullable DeathRecapPayload recap;
+    private static long receivedAt;
+    // Text worked out once per recap, not every frame
+    private static String dealtText = "";
+    private static String distanceText = "";
+    private static String badge = "";
+    private static int badgeColor;
 
     private DeathRecapClient() {
     }
 
     public static void set(DeathRecapPayload payload) {
         recap = payload;
+        receivedAt = Util.getMillis();
+        dealtText = Component.translatable("krylix.deathrecap.damage_dealt", String.format(Locale.ROOT, "%.1f", payload.damageDealt())).getString();
+        distanceText = payload.distance() >= 3 ? " (" + (int) payload.distance() + "m)" : "";
+        if ((payload.flags() & KrylixPayloads.FLAG_SMASH) != 0) {
+            badge = "🔨 " + Component.translatable("krylix.deathrecap.badge.smash").getString();
+            badgeColor = 0xFFFF8822;
+        } else if ((payload.flags() & KrylixPayloads.FLAG_LONGSHOT) != 0) {
+            badge = "🎯 " + Component.translatable("krylix.deathrecap.badge.longshot").getString();
+            badgeColor = 0xFF50DCC8;
+        } else if ((payload.flags() & KrylixPayloads.FLAG_CRITICAL) != 0) {
+            badge = "⚡ " + Component.translatable("krylix.deathrecap.badge.crit").getString();
+            badgeColor = 0xFFFFD700;
+        } else {
+            badge = "";
+        }
+    }
+
+    /** The player respawned: they are alive with no death screen, and the recap isn't one that just arrived. */
+    public static boolean isStale(boolean aliveWithoutDeathScreen) {
+        return recap != null && aliveWithoutDeathScreen && Util.getMillis() - receivedAt > GRACE_MS;
     }
 
     public static void clear() {
         recap = null;
+        badge = "";
     }
 
     public static boolean hasRecap() {
@@ -55,7 +91,10 @@ public final class DeathRecapClient {
 
         if (r.killer() == null) {
             // No living killer: the vanilla death message, wrapped under the title
-            graphics.textWithWordWrap(font, Component.literal(r.deathMessage()), cardX + 12, cardY + 26, cardWidth - 24, 0xFFFFFFFF);
+            List<FormattedCharSequence> lines = font.split(Component.literal(r.deathMessage()), cardWidth - 24);
+            for (int i = 0; i < Math.min(lines.size(), MAX_MESSAGE_LINES); i++) {
+                graphics.text(font, lines.get(i), cardX + 12, cardY + 26 + i * 10, 0xFFFFFFFF, true);
+            }
             graphics.pose().popMatrix();
             return;
         }
@@ -79,8 +118,8 @@ public final class DeathRecapClient {
         graphics.text(font, hpText, textX, avatarY + 16, 0xFFFFFFFF);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, HEART_SPRITE, textX + font.width(hpText) + 3, avatarY + 15, 9, 9);
 
-        String dealt = Component.translatable("krylix.deathrecap.damage_dealt", String.format("%.1f", r.damageDealt())).getString();
-        String dist = r.distance() >= 3 ? " (" + (int) r.distance() + "m)" : "";
+        String dealt = dealtText;
+        String dist = distanceText;
         int bottomWidth = font.width(dealt) + font.width(dist);
         int bottomX = cardX + (cardWidth - bottomWidth) / 2;
         graphics.text(font, dealt, bottomX, cardY + cardHeight - 14, 0xFFFFAA00);
@@ -88,17 +127,6 @@ public final class DeathRecapClient {
             graphics.text(font, dist, bottomX + font.width(dealt), cardY + cardHeight - 14, 0xFFAAAAAA);
         }
 
-        String badge = "";
-        int badgeColor = 0xFFFFD700;
-        if ((r.flags() & KrylixPayloads.FLAG_SMASH) != 0) {
-            badge = "🔨 SMASH";
-            badgeColor = 0xFFFF8822;
-        } else if ((r.flags() & KrylixPayloads.FLAG_LONGSHOT) != 0) {
-            badge = "🎯 LONGSHOT";
-            badgeColor = 0xFF50DCC8;
-        } else if ((r.flags() & KrylixPayloads.FLAG_CRITICAL) != 0) {
-            badge = "⚡ CRIT";
-        }
         if (!badge.isEmpty()) {
             graphics.text(font, badge, cardX + cardWidth - font.width(badge) - 12, cardY + 8, badgeColor);
         }

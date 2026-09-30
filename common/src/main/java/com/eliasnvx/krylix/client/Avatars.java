@@ -33,16 +33,27 @@ public final class Avatars {
 
     /** A player's face (skin with hat layer) when {@code player} is set, otherwise the mob's face. */
     public static void draw(GuiGraphicsExtractor graphics, @Nullable UUID player, @Nullable String entityType, int x, int y, int size) {
+        draw(graphics, player, entityType, x, y, size, -1);
+    }
+
+    /** @param color tint as ARGB; {@code -1} draws it as is, a lower alpha fades it (the kill feed rows) */
+    public static void draw(GuiGraphicsExtractor graphics, @Nullable UUID player, @Nullable String entityType, int x, int y, int size, int color) {
         if (player != null) {
-            PlayerFaceExtractor.extractRenderState(graphics, skinOf(player), x, y, size, true, false, -1);
+            PlayerFaceExtractor.extractRenderState(graphics, skinOf(player), x, y, size, true, false, color);
             return;
         }
         MobHead head = entityType != null ? MobHeads.get(entityType) : null;
         if (head != null) {
-            MobHeads.draw(graphics, head, x, y, size);
+            MobHeads.draw(graphics, head, x, y, size, color);
         } else {
-            HudRender.roundedFill(graphics, x, y, size, size, Math.max(1, size / 6), FALLBACK_COLOR);
+            int alpha = (color >>> 24) * (FALLBACK_COLOR >>> 24) / 255;
+            HudRender.roundedFill(graphics, x, y, size, size, Math.max(1, size / 6), (alpha << 24) | (FALLBACK_COLOR & 0xFFFFFF));
         }
+    }
+
+    /** Left a server: its item ids don't matter for the next one. */
+    public static void clearCache() {
+        ITEMS.clear();
     }
 
     /** The player's skin if they are on this server, else the default skin their UUID gets. */

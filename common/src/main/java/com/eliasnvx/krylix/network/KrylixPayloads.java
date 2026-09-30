@@ -19,8 +19,9 @@ import java.util.UUID;
  */
 public final class KrylixPayloads {
     /** Longest player / entity name we send (custom names can be long; vanilla caps them far below this). */
-    private static final int MAX_NAME = 256;
-    private static final int MAX_ID = 256;
+    public static final int MAX_NAME = 256;
+    public static final int MAX_ID = 256;
+    public static final int MAX_DEATH_MESSAGE = 1024;
     /** Leaderboard rows per reply; the screen pages through 60 at a time. */
     public static final int MAX_LEADERBOARD_ROWS = 2000;
     /** Distinct mob types in one player's panel (vanilla has ~80 living types; modpacks have more). */
@@ -37,8 +38,24 @@ public final class KrylixPayloads {
         return new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, path));
     }
 
+    /**
+     * Writes a string cut to {@code max} chars. {@code writeUtf} throws on longer strings, and a throwing encoder
+     * disconnects the player: a mob renamed to 300 characters must not kick everyone who sees its kill.
+     */
+    private static void writeClipped(FriendlyByteBuf buf, String value, int max) {
+        buf.writeUtf(clip(value, max), max);
+    }
+
+    static String clip(String value, int max) {
+        if (value.length() <= max) {
+            return value;
+        }
+        int end = Character.isHighSurrogate(value.charAt(max - 1)) ? max - 1 : max; // don't split a surrogate pair
+        return value.substring(0, end);
+    }
+
     private static void writeNullableUtf(FriendlyByteBuf buf, @Nullable String value) {
-        buf.writeUtf(value != null ? value : "", MAX_ID);
+        writeClipped(buf, value != null ? value : "", MAX_ID);
     }
 
     private static @Nullable String readNullableUtf(FriendlyByteBuf buf) {
@@ -72,7 +89,7 @@ public final class KrylixPayloads {
     public record Combatant(String name, @Nullable UUID uuid, @Nullable String entityType) {
         static final StreamCodec<FriendlyByteBuf, Combatant> CODEC = StreamCodec.of(
             (buf, c) -> {
-                buf.writeUtf(c.name(), MAX_NAME);
+                writeClipped(buf, c.name(), MAX_NAME);
                 writeNullableUuid(buf, c.uuid());
                 writeNullableUtf(buf, c.entityType());
             },
@@ -98,7 +115,7 @@ public final class KrylixPayloads {
                 }
                 Combatant.CODEC.encode(buf, p.victim());
                 buf.writeFloat(p.killerHealth());
-                buf.writeUtf(p.weapon(), MAX_ID);
+                writeClipped(buf, p.weapon(), MAX_ID);
                 buf.writeFloat(p.distance());
                 buf.writeVarInt(p.flags());
             },
@@ -139,17 +156,17 @@ public final class KrylixPayloads {
                 if (p.killer() != null) {
                     Combatant.CODEC.encode(buf, p.killer());
                 }
-                buf.writeUtf(p.deathMessage(), 1024);
+                writeClipped(buf, p.deathMessage(), MAX_DEATH_MESSAGE);
                 buf.writeFloat(p.killerHealth());
                 buf.writeFloat(p.killerMaxHealth());
-                buf.writeUtf(p.weapon(), MAX_ID);
+                writeClipped(buf, p.weapon(), MAX_ID);
                 buf.writeFloat(p.distance());
                 buf.writeFloat(p.damageDealt());
                 buf.writeVarInt(p.flags());
             },
             buf -> new DeathRecapPayload(
                 buf.readBoolean() ? Combatant.CODEC.decode(buf) : null,
-                buf.readUtf(1024),
+                buf.readUtf(MAX_DEATH_MESSAGE),
                 buf.readFloat(),
                 buf.readFloat(),
                 buf.readUtf(MAX_ID),
@@ -170,6 +187,11 @@ public final class KrylixPayloads {
      * listed types' new totals (one entry per kill).
      */
     public record MobKillsPayload(boolean replace, Map<String, Integer> counts) implements CustomPacketPayload {
+        /** Immutable: payloads are encoded on the network thread, later. */
+        public MobKillsPayload {
+            counts = Map.copyOf(counts);
+        }
+
         public static final Type<MobKillsPayload> TYPE = payloadType("mob_kills");
         public static final StreamCodec<FriendlyByteBuf, MobKillsPayload> STREAM_CODEC = StreamCodec.of(
             (buf, p) -> {
@@ -180,7 +202,7 @@ public final class KrylixPayloads {
                     if (written++ >= MAX_MOB_TYPES) {
                         break;
                     }
-                    buf.writeUtf(entry.getKey(), MAX_ID);
+                    writeClipped(buf, entry.getKey(), MAX_ID);
                     buf.writeVarInt(entry.getValue());
                 }
             },
@@ -205,7 +227,7 @@ public final class KrylixPayloads {
         static final StreamCodec<FriendlyByteBuf, LeaderboardRow> CODEC = StreamCodec.of(
             (buf, r) -> {
                 buf.writeUUID(r.uuid());
-                buf.writeUtf(r.name(), MAX_NAME);
+                writeClipped(buf, r.name(), MAX_NAME);
                 buf.writeVarInt(r.kills());
                 buf.writeVarInt(r.deaths());
                 buf.writeVarInt(r.mobKills());
@@ -216,6 +238,11 @@ public final class KrylixPayloads {
 
     /** The server's all-time table, sent in reply to {@link LeaderboardRequestPayload}. */
     public record LeaderboardPayload(List<LeaderboardRow> rows, int totalPlayers) implements CustomPacketPayload {
+        /** Immutable: one payload is cached and sent to many players, and encoded on the network thread. */
+        public LeaderboardPayload {
+            rows = List.copyOf(rows);
+        }
+
         public static final Type<LeaderboardPayload> TYPE = payloadType("leaderboard");
         public static final StreamCodec<FriendlyByteBuf, LeaderboardPayload> STREAM_CODEC = StreamCodec.of(
             (buf, p) -> {

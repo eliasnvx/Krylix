@@ -33,7 +33,6 @@
   "krylix.leaderboard.page": "Сторінка %s / %s",
   "krylix.command.killfeed_state": "Стрічка вбивств: %s",
   "krylix.command.status": "Стрічка вбивств: %s, гравців у статистиці: %s",
-  "krylix.command.hud_state": "HUD стрічки вбивств: %s",
   "krylix.command.hud_cleared": "HUD стрічки вбивств очищено",
   "krylix.command.hud_count": "Активних сповіщень: %s",
   "krylix.command.leaderboard_filled": "Рейтинг заповнено %s тестовими гравцями (лише на клієнті, не зберігається)",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Смерті",
   "krylix.leaderboard.header_kd_ratio": "В/С",
   "screen.krylix.leaderboard.loading": "Завантаження…",
-  "screen.krylix.leaderboard.unavailable": "На цьому сервері немає Krylix"
+  "screen.krylix.leaderboard.unavailable": "На цьому сервері немає Krylix",
+  "krylix.deathrecap.badge.smash": "РОЗТРОЩЕННЯ",
+  "krylix.deathrecap.badge.longshot": "ДАЛЕКИЙ ПОСТРІЛ",
+  "krylix.deathrecap.badge.crit": "КРИТ"
 }

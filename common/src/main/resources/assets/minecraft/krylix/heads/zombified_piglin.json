@@ -3,7 +3,8 @@
     {
       "texture": "minecraft:textures/entity/piglin/zombified_piglin.png",
       "u": 8,
-      "v": 8
+      "v": 8,
+      "width": 10
     }
   ]
 }

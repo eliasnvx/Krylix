@@ -12,12 +12,17 @@ import com.eliasnvx.krylix.api.internal.KrylixApiHolder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Optional;
+import java.util.Set;
 
 public final class KrylixClientApiImpl implements KrylixClientApi {
     private static final KrylixClientApiImpl INSTANCE = new KrylixClientApiImpl();
     private static final SimpleApiRegistry<HealthProvider> HEALTH_PROVIDERS =
         new SimpleApiRegistry<>(Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "health_provider"));
+    /** Client thread only. */
+    private static final Set<HealthProvider> BROKEN_PROVIDERS = Collections.newSetFromMap(new IdentityHashMap<>());
     private static boolean frozen;
 
     private KrylixClientApiImpl() {
@@ -59,13 +64,19 @@ public final class KrylixClientApiImpl implements KrylixClientApi {
     /** The first addon answer, else vanilla health. */
     public static HealthProvider.Health healthOf(LivingEntity entity) {
         for (HealthProvider provider : HEALTH_PROVIDERS.values()) {
+            if (BROKEN_PROVIDERS.contains(provider)) {
+                continue;
+            }
             try {
                 HealthProvider.Health health = provider.health(entity);
                 if (health != null && health.max() > 0) {
                     return health;
                 }
             } catch (Throwable t) {
-                Krylix.LOGGER.error("A Krylix health provider failed for {}", entity, t);
+                // Asked every frame: log once and stop asking, instead of a stack trace per frame
+                BROKEN_PROVIDERS.add(provider);
+                Krylix.LOGGER.error("Krylix health provider {} failed and is disabled",
+                    HEALTH_PROVIDERS.ids().stream().filter(id -> HEALTH_PROVIDERS.get(id).orElse(null) == provider).findFirst().orElse(null), t);
             }
         }
         return new HealthProvider.Health(entity.getHealth(), entity.getMaxHealth());

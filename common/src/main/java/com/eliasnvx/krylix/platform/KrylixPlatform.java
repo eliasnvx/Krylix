@@ -17,6 +17,9 @@ public interface KrylixPlatform {
 
     boolean isModLoaded(String modId);
 
+    /** A mod's machine acting as a player (Fabric / NeoForge {@code FakePlayer}): no statistics, no packets. */
+    boolean isFakePlayer(ServerPlayer player);
+
     /** Sends a Krylix payload if the player's client has Krylix; vanilla clients simply don't get it. */
     void sendToPlayer(ServerPlayer player, CustomPacketPayload payload);
 

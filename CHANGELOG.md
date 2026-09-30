@@ -25,8 +25,18 @@ kill feed, stats and HUD code, so they behave the same.
   on the client, add mob faces and supply health numbers for the health plate. Guide:
   [`docs/api/README.md`](docs/api/README.md), with a working [example addon](example-addon) for both loaders.
 - **Own key binding category** "Krylix" in Controls.
+- **Health bar styles work:** Hearts, Blocks, ASCII, Dots or Number only (the option did nothing before).
 
 ### Changed
+- **New default keys: J for the mob panel, U for the leaderboard.** L also opened Advancements, and in 26.3 O opens the
+  Friends overlay before mods ever see it. Keys you rebound yourself stay as they are.
+- **Health plates follow all of the game's nametag rules:** no plate for players sneaking more than 32 blocks away,
+  beyond a server's name tag distance, with the HUD hidden (F1), for plain armor stands or for ridden mobs. A dying
+  mob no longer hides the plate of the one behind it. Finding the target is cheaper (it stops at the first wall).
+- **Kill feed:** starts below the potion effect icons instead of covering them, fades its faces and icons with the text,
+  cuts very long names, and plays one sound when many kills arrive at once.
+- **Leaderboard:** fits small windows, pages with the arrow keys, and is built once on the server and reused while
+  nothing changes.
 - **The leaderboard is sent when you open it,** not to every player after every mob kill. Much less network traffic on
   busy servers. It shows a loading line until the server answers.
 - **Leaderboard columns:** Kills, Deaths and K/D each have their own column.
@@ -38,7 +48,21 @@ kill feed, stats and HUD code, so they behave the same.
 - Feed timings use your own clock, so rows fade correctly even when the server's clock is off.
 
 ### Fixed
+- **Fabric: no health plate over players.** Players (and mannequins) showed their plain nametag instead.
+- **NeoForge: the health plate was drawn twice** over players with a below-name scoreboard score, and the score vanished.
+- **Fabric: "Damage Dealt" on the death recap counted damage before armor,** so it was far higher than on NeoForge. Both
+  now count the health the killer actually lost.
+- **A mob renamed to a very long name, or a very long death message, disconnected players** who received the feed row.
+- **NeoForge: the death recap could vanish right away,** as it arrives just before the death screen.
+- **Machines acting as players** (deployers, mob grinders) no longer get statistics and leaderboard rows.
+- `/krylix toggle` carried over into the next world in singleplayer.
+- The leaderboard could stay on "Loading" forever, and asked the server again on every window resize.
+- Operators without Krylix saw raw translation keys for `/krylix toggle` and `/krylix status`.
+- The death recap's badges (smash, long shot, crit) are translated into all 13 languages.
+- Out-of-range values in `krylix.json5` are clamped instead of hiding the HUD.
 - The kill feed, mob panel, death recap and leaderboard no longer carry over from one world or server to the next.
+- **Mob faces that were blank or wrong** since the 26.1 textures: Ghast, Guardian, Elder Guardian, Shulker, Ender
+  Dragon, Magma Cube, Phantom and Breeze; piglins' faces were cut off at the sides.
 - Malformed or oversized Krylix packets are rejected instead of allocating huge lists.
 - NeoForge: the mod icon uses `iconFile` instead of the deprecated `logoFile`.
 

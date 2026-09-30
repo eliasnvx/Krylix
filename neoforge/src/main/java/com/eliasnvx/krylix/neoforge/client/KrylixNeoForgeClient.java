@@ -39,8 +39,10 @@ public final class KrylixNeoForgeClient {
             (mod, parent) -> AutoConfigClient.getConfigScreen(ModConfig.class, parent).get());
 
         modBus.addListener((RegisterKeyMappingsEvent event) -> {
-            event.registerCategory(KrylixKeyBindings.CATEGORY);
-            for (KeyMapping key : KrylixKeyBindings.ALL) {
+            // NeoForge: a plain category registered through the event (Category.register is deprecated here)
+            KeyMapping.Category category = new KeyMapping.Category(KrylixKeyBindings.CATEGORY_ID);
+            event.registerCategory(category);
+            for (KeyMapping key : KrylixKeyBindings.create(category)) {
                 event.register(key);
             }
         });
@@ -49,7 +51,7 @@ public final class KrylixNeoForgeClient {
             Identifier.fromNamespaceAndPath(Krylix.MOD_ID, "hud"), (graphics, deltaTracker) -> KrylixClient.renderHud(graphics)));
 
         modBus.addListener((AddClientReloadListenersEvent event) -> event.addListener(MobHeads.RELOAD_LISTENER_ID, new MobHeads.Loader()));
-        // Client setup: after every mod's constructor, so the common addon init (in Krylix's) has run
+        // Client setup runs after common setup's queued work, so the addons' common init has run
         modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(KrylixClientApiImpl::init));
 
         NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> KrylixClient.onTick(Minecraft.getInstance()));
@@ -68,7 +70,10 @@ public final class KrylixNeoForgeClient {
             }
         });
         NeoForge.EVENT_BUS.addListener((RenderNameTagEvent.DoRender event) -> {
-            if (HealthIndicator.onSubmitNameDisplay(event.getEntityRenderState(), event.getPoseStack(), event.getSubmitNodeCollector(), event.getCameraRenderState())) {
+            // Posted once for the below-name score and once for the name: only the name becomes the plate
+            if (event.getContent() == event.getEntityRenderState().nameTag
+                && HealthIndicator.onSubmitNameDisplay(event.getEntityRenderState(), event.getPoseStack(),
+                    event.getSubmitNodeCollector(), event.getCameraRenderState(), 0, false)) {
                 event.setCanceled(true);
             }
         });

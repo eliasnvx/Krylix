@@ -33,7 +33,6 @@
   "krylix.leaderboard.page": "Strona %s / %s",
   "krylix.command.killfeed_state": "Kanał zabójstw: %s",
   "krylix.command.status": "Kanał zabójstw: %s, śledzonych graczy: %s",
-  "krylix.command.hud_state": "HUD kanału zabójstw: %s",
   "krylix.command.hud_cleared": "Wyczyszczono HUD kanału zabójstw",
   "krylix.command.hud_count": "Aktywnych powiadomień: %s",
   "krylix.command.leaderboard_filled": "Wypełniono ranking %s testowymi graczami (tylko po stronie klienta, niezapisywane)",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Śmierci",
   "krylix.leaderboard.header_kd_ratio": "Z/Ś",
   "screen.krylix.leaderboard.loading": "Wczytywanie…",
-  "screen.krylix.leaderboard.unavailable": "Ten serwer nie ma Krylix"
+  "screen.krylix.leaderboard.unavailable": "Ten serwer nie ma Krylix",
+  "krylix.deathrecap.badge.smash": "MIAŻDŻENIE",
+  "krylix.deathrecap.badge.longshot": "DALEKI STRZAŁ",
+  "krylix.deathrecap.badge.crit": "KRYTYK"
 }

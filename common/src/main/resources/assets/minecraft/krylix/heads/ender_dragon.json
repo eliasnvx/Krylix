@@ -2,8 +2,12 @@
   "layers": [
     {
       "texture": "minecraft:textures/entity/enderdragon/dragon.png",
-      "u": 8,
-      "v": 8
+      "u": 128,
+      "v": 46,
+      "width": 16,
+      "height": 16,
+      "texture_width": 256,
+      "texture_height": 256
     }
   ]
 }

@@ -30,7 +30,8 @@ public final class KrylixFabricClient implements ClientModInitializer {
         for (KrylixPayloads.Entry<?> entry : KrylixPayloads.CLIENTBOUND) {
             registerReceiver(entry.type());
         }
-        for (KeyMapping key : KrylixKeyBindings.ALL) {
+        // Fabric: vanilla's Category.register, which Fabric API hooks to sort modded categories
+        for (KeyMapping key : KrylixKeyBindings.create(KeyMapping.Category.register(KrylixKeyBindings.CATEGORY_ID))) {
             KeyMappingHelper.registerKeyMapping(key);
         }
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registries) ->

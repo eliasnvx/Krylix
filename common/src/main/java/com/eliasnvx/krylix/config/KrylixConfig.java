@@ -1,6 +1,5 @@
 package com.eliasnvx.krylix.config;
 
-import com.eliasnvx.krylix.Krylix;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 
@@ -9,12 +8,9 @@ public final class KrylixConfig {
     private KrylixConfig() {
     }
 
+    /** Cloth already falls back to defaults for a malformed file; a failure here is a real bug, so it is not hidden. */
     public static void init() {
-        try {
-            AutoConfig.register(ModConfig.class, JanksonConfigSerializer::new);
-        } catch (RuntimeException e) {
-            Krylix.LOGGER.error("Could not load the Krylix config, using defaults", e);
-        }
+        AutoConfig.register(ModConfig.class, JanksonConfigSerializer::new);
     }
 
     public static KrylixConfigData get() {

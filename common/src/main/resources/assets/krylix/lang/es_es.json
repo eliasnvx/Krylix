@@ -33,7 +33,6 @@
   "krylix.leaderboard.page": "Página %s / %s",
   "krylix.command.killfeed_state": "Feed de bajas: %s",
   "krylix.command.status": "Feed de bajas: %s, jugadores registrados: %s",
-  "krylix.command.hud_state": "HUD del feed de bajas: %s",
   "krylix.command.hud_cleared": "HUD del feed de bajas vaciado",
   "krylix.command.hud_count": "Notificaciones activas: %s",
   "krylix.command.leaderboard_filled": "Clasificación rellenada con %s jugadores de prueba (solo cliente, no se guarda)",
@@ -46,5 +45,8 @@
   "krylix.leaderboard.header_deaths": "Muertes",
   "krylix.leaderboard.header_kd_ratio": "K/D",
   "screen.krylix.leaderboard.loading": "Cargando…",
-  "screen.krylix.leaderboard.unavailable": "Este servidor no tiene Krylix"
+  "screen.krylix.leaderboard.unavailable": "Este servidor no tiene Krylix",
+  "krylix.deathrecap.badge.smash": "APLASTAMIENTO",
+  "krylix.deathrecap.badge.longshot": "TIRO LEJANO",
+  "krylix.deathrecap.badge.crit": "CRÍTICO"
 }

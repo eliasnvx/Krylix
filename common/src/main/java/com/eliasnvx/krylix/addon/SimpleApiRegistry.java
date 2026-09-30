@@ -5,8 +5,10 @@ import net.minecraft.resources.Identifier;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -28,6 +30,8 @@ public final class SimpleApiRegistry<T> implements ApiRegistry<T> {
 
     @Override
     public synchronized <V extends T> V register(Identifier entryId, V entry) {
+        Objects.requireNonNull(entryId, "id");
+        Objects.requireNonNull(entry, "entry");
         if (frozen) {
             throw new IllegalStateException("Registry " + id + " is frozen: register during KrylixAddon initialization");
         }
@@ -46,7 +50,7 @@ public final class SimpleApiRegistry<T> implements ApiRegistry<T> {
 
     @Override
     public synchronized Set<Identifier> ids() {
-        return Collections.unmodifiableSet(new java.util.LinkedHashSet<>(entries.keySet()));
+        return Collections.unmodifiableSet(new LinkedHashSet<>(entries.keySet()));
     }
 
     @Override
